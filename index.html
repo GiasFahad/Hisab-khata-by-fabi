@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>হিসাব খাতা — By FaBi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6EFDF;
+    --paper-card:#FCF8EE;
+    --ink:#2B2420;
+    --ink-soft:#6B6055;
+    --maroon:#7A1F2B;
+    --maroon-dark:#5C1620;
+    --gold:#B8860B;
+    --line:#DED0AC;
+    --green:#2F6E4F;
+    --green-bg:#E4EFE3;
+    --red:#B23A32;
+    --red-bg:#F5E4DF;
+    --shadow:0 2px 8px rgba(90,60,30,0.10);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0; height:100%; overflow:hidden;}
+  body{
+    font-family:'Hind Siliguri', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  h1,h2,h3,.serif{font-family:'Tiro Bangla', serif;}
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:
+      linear-gradient(90deg, transparent 0 40px, rgba(122,31,43,0.25) 40px 41px, transparent 41px 100%),
+      repeating-linear-gradient(var(--paper), var(--paper) 33px, var(--line) 34px);
+  }
+  header.topbar{
+    background:var(--maroon);
+    color:#F3E9DC;
+    padding:18px 20px 16px 20px;
+    box-shadow:var(--shadow);
+    flex-shrink:0;
+    z-index:10;
+  }
+  header.topbar h1{
+    margin:0; font-size:22px; font-weight:400; letter-spacing:0.5px;
+  }
+  header.topbar .sub{
+    font-size:13px; color:#E7C9C2; margin-top:2px;
+  }
+  .back-row{
+    display:flex; align-items:center; gap:10px;
+  }
+  .icon-btn{
+    background:none; border:none; color:inherit; font-size:20px;
+    cursor:pointer; padding:4px; line-height:1; display:flex; align-items:center;
+  }
+  main{
+    flex:1;
+    min-height:0;
+    padding:16px 16px 90px 16px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .fab-btn{
+    position:absolute;
+    right:20px; bottom:76px;
+    width:56px; height:56px;
+    border-radius:50%;
+    background:var(--maroon);
+    color:#F3E9DC;
+    border:none;
+    font-size:28px;
+    box-shadow:0 3px 10px rgba(90,20,30,0.35);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    z-index:30;
+  }
+  .fab-btn:active{transform:scale(0.95);}
+  nav.bottomnav{
+    flex-shrink:0;
+    background:var(--paper-card);
+    border-top:1px solid var(--line);
+    display:flex;
+    box-shadow:0 -2px 8px rgba(90,60,30,0.08);
+    z-index:20;
+    position:relative;
+  }
+  nav.bottomnav button{
+    flex:1;
+    background:none; border:none;
+    padding:10px 0 8px 0;
+    font-family:'Hind Siliguri', sans-serif;
+    font-size:13px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  nav.bottomnav button .ic{font-size:20px;}
+  nav.bottomnav button.active{color:var(--maroon); font-weight:600;}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-state .big{font-size:40px; margin-bottom:10px;}
+  .empty-state p{font-size:14px; line-height:1.6;}
+
+  .search-box{
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:9px 12px; margin-bottom:14px;
+  }
+  .search-box input{
+    border:none; outline:none; flex:1; font-family:'Hind Siliguri', sans-serif;
+    font-size:14px; background:transparent; color:var(--ink);
+  }
+  .search-box .ic{color:var(--ink-soft); font-size:15px;}
+
+  .filter-chips{ display:flex; gap:8px; margin-bottom:14px; }
+  .chip{
+    padding:6px 14px; border-radius:16px; border:1px solid var(--line);
+    background:#fff; font-size:13px; color:var(--ink-soft); cursor:pointer;
+  }
+  .chip.active{background:var(--maroon); color:#F3E9DC; border-color:var(--maroon);}
+
+  .person-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-left:4px solid var(--maroon);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .person-card:active{background:#F1E9D6;}
+  .person-name{font-size:16px; font-weight:600;}
+  .person-meta{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .balance{font-size:15px; font-weight:700; text-align:right;}
+  .balance-label{font-size:11px; font-weight:400; margin-top:2px;}
+  .pos{color:var(--green);}
+  .neg{color:var(--red);}
+  .zero{color:var(--ink-soft);}
+
+  .summary-cards{
+    display:flex; gap:10px; margin-bottom:18px;
+  }
+  .stat-card{
+    flex:1;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .stat-card .label{font-size:12px; color:var(--ink-soft);}
+  .stat-card .val{font-size:18px; font-weight:700; margin-top:4px;}
+
+  .section-title{
+    font-size:14px; color:var(--ink-soft); margin:18px 0 8px 2px; font-weight:600;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .link-btn{
+    font-size:13px; color:var(--maroon); text-decoration:underline; cursor:pointer; font-weight:400;
+  }
+
+  .txn-row{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    box-shadow:var(--shadow);
+  }
+  .txn-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .txn-amt{font-size:16px; font-weight:700;}
+  .txn-date{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .txn-note{font-size:13px; color:var(--ink); margin-top:6px; white-space:pre-wrap;}
+  .txn-tag{
+    display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px;
+    margin-bottom:2px;
+  }
+  .tag-gave{background:var(--green-bg); color:var(--green);}
+  .tag-got{background:var(--red-bg); color:var(--red);}
+  .txn-actions{display:flex; gap:14px; margin-top:8px; justify-content:flex-end;}
+  .txn-actions span{font-size:12px; color:var(--maroon); cursor:pointer; text-decoration:underline;}
+
+  .person-header-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+    text-align:center;
+  }
+  .person-header-card .name{font-size:20px; font-weight:600;}
+  .person-header-card .bal{font-size:26px; font-weight:700; margin-top:8px;}
+  .person-header-card .baltxt{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .person-actions{display:flex; justify-content:center; gap:16px; margin-top:12px; flex-wrap:wrap;}
+  .person-actions span{font-size:13px; color:var(--maroon); cursor:pointer; text-decoration:underline;}
+
+  .summary-list-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 4px; border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .summary-list-row:last-child{border-bottom:none;}
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(43,36,32,0.45);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:100;
+  }
+  .sheet{
+    background:var(--paper-card);
+    width:100%; max-width:480px;
+    border-radius:16px 16px 0 0;
+    padding:20px 20px 24px 20px;
+    max-height:88vh; overflow-y:auto;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+  }
+  .sheet h2{margin:0 0 16px 0; font-size:18px; font-weight:400;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:13px; color:var(--ink-soft); margin-bottom:5px;}
+  .field input, .field textarea{
+    width:100%;
+    font-family:'Hind Siliguri', sans-serif;
+    font-size:15px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .type-toggle{display:flex; gap:10px;}
+  .type-toggle button{
+    flex:1; padding:12px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; font-family:'Hind Siliguri', sans-serif; font-size:14px; font-weight:600;
+    cursor:pointer; color:var(--ink-soft);
+  }
+  .type-toggle button.sel-gave{border-color:var(--green); color:var(--green); background:var(--green-bg);}
+  .type-toggle button.sel-got{border-color:var(--red); color:var(--red); background:var(--red-bg);}
+  .sheet-actions{display:flex; gap:10px; margin-top:18px;}
+  .btn{
+    flex:1;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    font-family:'Hind Siliguri', sans-serif;
+    font-size:15px; font-weight:600;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--maroon); color:#F3E9DC;}
+  .btn-primary:active{background:var(--maroon-dark);}
+  .btn-secondary{background:#fff; color:var(--ink); border:1px solid var(--line);}
+  .btn-danger{background:var(--red-bg); color:var(--red); border:1px solid var(--red);}
+
+  .toast{
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#F3E9DC; padding:10px 18px; border-radius:20px;
+    font-size:13px; z-index:200; box-shadow:0 2px 10px rgba(0,0,0,0.25);
+  }
+
+  .lock-screen{
+    flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:24px 24px 50px 24px; text-align:center;
+  }
+  .lock-screen .icon{font-size:44px; margin-bottom:14px;}
+  .lock-screen h2{margin:0 0 6px 0; font-size:19px;}
+  .lock-screen p{font-size:13px; color:var(--ink-soft); margin:0 0 22px 0; line-height:1.6; max-width:300px;}
+  .pin-dots{display:flex; gap:14px; margin-bottom:22px;}
+  .pin-dot{width:14px; height:14px; border-radius:50%; border:1.5px solid var(--maroon); background:transparent;}
+  .pin-dot.filled{background:var(--maroon);}
+  .pin-pad{display:grid; grid-template-columns:repeat(3,64px); gap:14px; margin-bottom:10px;}
+  .pin-key{
+    width:64px; height:64px; border-radius:50%; border:1px solid var(--line);
+    background:var(--paper-card); font-size:20px; font-weight:600; color:var(--ink);
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-family:'Hind Siliguri', sans-serif;
+  }
+  .pin-key:active{background:#EDE3CC;}
+  .pin-key.empty{visibility:hidden;}
+  .pin-error{color:var(--red); font-size:13px; margin-top:12px; min-height:18px;}
+  .lock-link{font-size:13px; color:var(--maroon); text-decoration:underline; cursor:pointer; margin-top:18px;}
+  .auth-tabs{
+    display:flex; gap:6px; background:#fff; border:1px solid var(--line);
+    border-radius:10px; padding:4px; margin-bottom:18px; width:100%; max-width:280px;
+  }
+  .auth-tab{
+    flex:1; padding:9px 0; border:none; border-radius:7px; background:transparent;
+    font-family:'Hind Siliguri', sans-serif; font-size:14px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer;
+  }
+  .auth-tab.active{background:var(--maroon); color:#F3E9DC;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+let data = { persons: [], transactions: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null };
+let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
+
+function canEdit(){
+  return !!state.currentUser && (state.currentUser.role === 'admin' || state.currentUser.role === 'editor');
+}
+function isAdmin(){
+  return !!state.currentUser && state.currentUser.role === 'admin';
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function todayStr(){
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function fmtAmt(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + '৳' + Math.abs(n).toLocaleString('en-IN');
+}
+
+const MONTHS = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+function fmtDate(iso){
+  const [y,m,d] = iso.split('-');
+  return d + ' ' + MONTHS[parseInt(m,10)-1] + ' ' + y;
+}
+
+const FB_BASE = "https://hisab-khata-fabi-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+async function fbGet(path){
+  const res = await fetch(`${FB_BASE}/${path}.json`);
+  if(!res.ok) throw new Error('fb get failed');
+  return await res.json();
+}
+
+async function fbSet(path, value){
+  const res = await fetch(`${FB_BASE}/${path}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(value)
+  });
+  if(!res.ok) throw new Error('fb set failed');
+  return true;
+}
+
+async function loadData(){
+  try{
+    const parsed = await fbGet('hisabKhata/ledgerData');
+    if(parsed){
+      data.persons = parsed.persons || [];
+      data.transactions = parsed.transactions || [];
+    }else{
+      data.persons = [];
+      data.transactions = [];
+    }
+  }catch(e){
+    showToast('ইন্টারনেট সংযোগ পরীক্ষা করুন — ডেটা লোড করা যায়নি');
+  }
+}
+
+async function saveData(){
+  try{
+    await fbSet('hisabKhata/ledgerData', data);
+  }catch(e){
+    showToast('সংরক্ষণে সমস্যা হয়েছে — ইন্টারনেট সংযোগ পরীক্ষা করুন');
+  }
+}
+
+function personBalance(personId){
+  let bal = 0;
+  data.transactions.forEach(t=>{
+    if(t.personId === personId){
+      bal += t.type === 'gave' ? t.amount : -t.amount;
+    }
+  });
+  return bal;
+}
+
+function personTxns(personId){
+  return data.transactions
+    .filter(t=>t.personId===personId)
+    .sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+}
+
+function showToast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1800);
+}
+
+function setView(v, personId){
+  state.view = v;
+  state.personId = personId || null;
+  state.txnFilter = 'all';
+  render();
+}
+
+function setSearchQuery(val){
+  state.searchQuery = val;
+  render();
+  const input = document.getElementById('search-input');
+  if(input){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+}
+
+function setTxnFilter(f){
+  state.txnFilter = f;
+  render();
+}
+
+function openAddPerson(){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.personModal = { mode:'add', name:'' };
+  render();
+}
+
+function openEditPerson(personId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  const p = data.persons.find(x=>x.id===personId);
+  state.personModal = { mode:'edit', id:personId, name:p.name };
+  render();
+}
+
+function closePersonModal(){
+  state.personModal = null;
+  render();
+}
+
+async function savePersonModal(){
+  const input = document.getElementById('person-name-input');
+  const name = input.value.trim();
+  if(!name){ showToast('নাম লিখুন'); return; }
+  if(state.personModal.mode === 'add'){
+    data.persons.push({ id: uid(), name });
+    showToast('ব্যক্তি যোগ হয়েছে');
+  }else{
+    const p = data.persons.find(x=>x.id===state.personModal.id);
+    p.name = name;
+    showToast('নাম পরিবর্তন হয়েছে');
+  }
+  await saveData();
+  state.personModal = null;
+  render();
+}
+
+function confirmDeletePerson(personId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.confirmModal = {
+    title:'ব্যক্তি মুছে ফেলবেন?',
+    msg:'এই ব্যক্তির সব হিসাবও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।',
+    onYes: async ()=>{
+      data.persons = data.persons.filter(p=>p.id!==personId);
+      data.transactions = data.transactions.filter(t=>t.personId!==personId);
+      await saveData();
+      state.confirmModal = null;
+      setView('home');
+      showToast('মুছে ফেলা হয়েছে');
+    }
+  };
+  render();
+}
+
+function openAddTxn(personId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.txnModal = { mode:'add', personId, type:'gave', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openEditTxn(txnId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  const t = data.transactions.find(x=>x.id===txnId);
+  state.txnModal = { mode:'edit', id:txnId, personId:t.personId, type:t.type, amount:String(t.amount), date:t.date, note:t.note||'' };
+  render();
+}
+
+function closeTxnModal(){
+  state.txnModal = null;
+  render();
+}
+
+function setTxnType(type){
+  state.txnModal.type = type;
+  render();
+}
+
+async function saveTxnModal(){
+  const amtInput = document.getElementById('txn-amount-input');
+  const dateInput = document.getElementById('txn-date-input');
+  const noteInput = document.getElementById('txn-note-input');
+  const amount = parseFloat(amtInput.value);
+  if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
+  const date = dateInput.value || todayStr();
+  const note = noteInput.value.trim();
+  const m = state.txnModal;
+  if(m.mode === 'add'){
+    data.transactions.push({
+      id: uid(), personId: m.personId, type: m.type,
+      amount, date, note, createdAt: Date.now()
+    });
+    showToast('হিসাব যোগ হয়েছে');
+  }else{
+    const t = data.transactions.find(x=>x.id===m.id);
+    t.type = m.type; t.amount = amount; t.date = date; t.note = note;
+    showToast('হিসাব পরিবর্তন হয়েছে');
+  }
+  await saveData();
+  state.txnModal = null;
+  render();
+}
+
+function confirmDeleteTxn(txnId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.confirmModal = {
+    title:'হিসাব মুছে ফেলবেন?',
+    msg:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+    onYes: async ()=>{
+      data.transactions = data.transactions.filter(t=>t.id!==txnId);
+      await saveData();
+      state.confirmModal = null;
+      render();
+      showToast('মুছে ফেলা হয়েছে');
+    }
+  };
+  render();
+}
+
+function closeConfirm(){
+  state.confirmModal = null;
+  if(lock.status !== 'unlocked'){ renderLock(); } else { render(); }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderHome(){
+  let persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ persons = persons.filter(p=>p.name.toLowerCase().includes(q)); }
+
+  const searchHtml = `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>`;
+
+  if(data.persons.length===0){
+    return `
+      <div class="empty-state">
+        <div class="big">📒</div>
+        <h3 class="serif">এখনও কেউ যোগ করা হয়নি</h3>
+        <p>নিচের + বাটনে চেপে প্রথম ব্যক্তি যোগ করুন এবং তার সাথে টাকা লেনদেনের হিসাব রাখা শুরু করুন।</p>
+      </div>`;
+  }
+  if(persons.length===0){
+    return searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" নামে কেউ পাওয়া যায়নি।</p></div>`;
+  }
+  const list = persons.map(p=>{
+    const bal = personBalance(p.id);
+    const cnt = data.transactions.filter(t=>t.personId===p.id).length;
+    let cls='zero', label='সমান';
+    if(bal>0){cls='pos'; label='পাবেন';}
+    else if(bal<0){cls='neg'; label='দিবেন';}
+    return `
+      <div class="person-card" onclick="setView('person','${p.id}')">
+        <div>
+          <div class="person-name">${escapeHtml(p.name)}</div>
+          <div class="person-meta">${cnt} টি এন্ট্রি</div>
+        </div>
+        <div>
+          <div class="balance ${cls}">${fmtAmt(Math.abs(bal))}</div>
+          <div class="balance-label ${cls}">${label}</div>
+        </div>
+      </div>`;
+  }).join('');
+  return searchHtml + list;
+}
+
+function renderPerson(){
+  const p = data.persons.find(x=>x.id===state.personId);
+  if(!p) return `<div class="empty-state">ব্যক্তি পাওয়া যায়নি</div>`;
+  const bal = personBalance(p.id);
+  let cls='zero', label='হিসাব সমান';
+  if(bal>0){cls='pos'; label='আপনি পাবেন';}
+  else if(bal<0){cls='neg'; label='আপনি দিবেন';}
+
+  let txns = personTxns(p.id);
+  if(state.txnFilter==='gave') txns = txns.filter(t=>t.type==='gave');
+  if(state.txnFilter==='got') txns = txns.filter(t=>t.type==='got');
+
+  const filterHtml = `
+    <div class="filter-chips">
+      <span class="chip ${state.txnFilter==='all'?'active':''}" onclick="setTxnFilter('all')">সব</span>
+      <span class="chip ${state.txnFilter==='gave'?'active':''}" onclick="setTxnFilter('gave')">দিলাম</span>
+      <span class="chip ${state.txnFilter==='got'?'active':''}" onclick="setTxnFilter('got')">পেলাম</span>
+    </div>`;
+
+  const txnHtml = txns.length===0
+    ? `<div class="empty-state"><p>এই তালিকায় কোনো এন্ট্রি নেই।</p></div>`
+    : txns.map(t=>`
+      <div class="txn-row">
+        <div class="txn-top">
+          <div>
+            <span class="txn-tag ${t.type==='gave'?'tag-gave':'tag-got'}">${t.type==='gave'?'দিলাম':'পেলাম'}</span>
+            <div class="txn-date">${fmtDate(t.date)}</div>
+          </div>
+          <div class="txn-amt ${t.type==='gave'?'pos':'neg'}">${fmtAmt(t.amount)}</div>
+        </div>
+        ${t.note ? `<div class="txn-note">${escapeHtml(t.note)}</div>` : ''}
+        ${canEdit() ? `
+        <div class="txn-actions">
+          <span onclick="openEditTxn('${t.id}')">সম্পাদনা</span>
+          <span onclick="confirmDeleteTxn('${t.id}')">মুছুন</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="person-header-card">
+      <div class="name serif">${escapeHtml(p.name)}</div>
+      <div class="bal ${cls}">${fmtAmt(Math.abs(bal))}</div>
+      <div class="baltxt">${label}</div>
+      <div class="person-actions">
+        ${canEdit() ? `<span onclick="openEditPerson('${p.id}')">নাম পরিবর্তন</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeletePerson('${p.id}')">ব্যক্তি মুছুন</span>` : ''}
+        <span onclick="exportPersonPDF('${p.id}')">PDF রিপোর্ট</span>
+      </div>
+    </div>
+    <div class="section-title">লেনদেনের হিসাব</div>
+    ${filterHtml}
+    ${txnHtml}
+  `;
+}
+
+function renderSummary(){
+  let persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ persons = persons.filter(p=>p.name.toLowerCase().includes(q)); }
+
+  let totalGave=0, totalGot=0;
+  data.transactions.forEach(t=>{
+    if(t.type==='gave') totalGave += t.amount; else totalGot += t.amount;
+  });
+  const net = totalGave - totalGot;
+
+  const searchHtml = data.persons.length>0 ? `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>` : '';
+
+  const rows = persons.map(p=>{
+    const bal = personBalance(p.id);
+    let cls='zero', label='সমান';
+    if(bal>0){cls='pos'; label='পাবেন';}
+    else if(bal<0){cls='neg'; label='দিবেন';}
+    return `<div class="summary-list-row" onclick="setView('person','${p.id}')" style="cursor:pointer;">
+      <span>${escapeHtml(p.name)}</span>
+      <span class="${cls}" style="font-weight:600;">${fmtAmt(Math.abs(bal))} <span style="font-weight:400; font-size:12px;">(${label})</span></span>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="summary-cards">
+      <div class="stat-card">
+        <div class="label">মোট পাবেন</div>
+        <div class="val pos">${fmtAmt(totalGave)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">মোট দিবেন</div>
+        <div class="val neg">${fmtAmt(totalGot)}</div>
+      </div>
+    </div>
+    <div class="stat-card" style="margin-bottom:16px;">
+      <div class="label">সব মিলিয়ে নিট হিসাব</div>
+      <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?'(পাবেন)':net<0?'(দিবেন)':''}</div>
+    </div>
+    <div class="section-title">
+      <span>ব্যক্তিভিত্তিক হিসাব</span>
+      ${data.persons.length>0 ? `<span class="link-btn" onclick="exportSummaryPDF()">PDF রিপোর্ট</span>` : ''}
+    </div>
+    ${searchHtml}
+    ${persons.length===0 ? `<div class="empty-state"><p>${data.persons.length===0 ? 'এখনও কোনো ব্যক্তি নেই।' : 'কেউ পাওয়া যায়নি।'}</p></div>` : rows}
+    <div style="text-align:center; margin-top:26px; display:flex; flex-direction:column; gap:10px; align-items:center;">
+      <span class="link-btn" onclick="openChangeMyPassword()">🔒 আমার পাসওয়ার্ড পরিবর্তন করুন</span>
+      ${isAdmin() ? `<span class="link-btn" onclick="setView('admin')">⚙️ অ্যাডমিন প্যানেল</span>` : ''}
+    </div>
+  `;
+}
+
+function renderPersonModal(){
+  if(!state.personModal) return '';
+  const m = state.personModal;
+  return `
+    <div class="overlay" onclick="if(event.target===this) closePersonModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? 'নতুন ব্যক্তি যোগ করুন' : 'নাম পরিবর্তন করুন'}</h2>
+        <div class="field">
+          <label>নাম</label>
+          <input id="person-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="যেমনঃ করিম মিয়া">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closePersonModal()">বাতিল</button>
+          <button class="btn btn-primary" onclick="savePersonModal()">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderTxnModal(){
+  if(!state.txnModal) return '';
+  const m = state.txnModal;
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeTxnModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? 'নতুন হিসাব যোগ করুন' : 'হিসাব সম্পাদনা'}</h2>
+        <div class="field">
+          <label>ধরন</label>
+          <div class="type-toggle">
+            <button class="${m.type==='gave'?'sel-gave':''}" onclick="setTxnType('gave')">টাকা দিলাম</button>
+            <button class="${m.type==='got'?'sel-got':''}" onclick="setTxnType('got')">টাকা পেলাম</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>পরিমাণ (৳)</label>
+          <input id="txn-amount-input" type="number" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="০">
+        </div>
+        <div class="field">
+          <label>তারিখ</label>
+          <input id="txn-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>নোট (ঐচ্ছিক)</label>
+          <textarea id="txn-note-input" placeholder="যেমনঃ বাজারের জন্য টাকা">${escapeHtml(m.note)}</textarea>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeTxnModal()">বাতিল</button>
+          <button class="btn btn-primary" onclick="saveTxnModal()">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function runConfirmYes(){
+  if(state.confirmModal && typeof state.confirmModal.onYes === 'function'){
+    state.confirmModal.onYes();
+  }
+}
+
+function renderConfirmModal(){
+  if(!state.confirmModal) return '';
+  const c = state.confirmModal;
+  return `
+    <div class="overlay">
+      <div class="sheet">
+        <h2 class="serif">${escapeHtml(c.title)}</h2>
+        <p style="font-size:14px; color:var(--ink-soft); margin:0 0 8px 0;">${escapeHtml(c.msg)}</p>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeConfirm()">না, থাক</button>
+          <button class="btn btn-danger" onclick="runConfirmYes()">হ্যাঁ, মুছুন</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function genDateStr(){
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return fmtDate(local.toISOString().slice(0,10));
+}
+
+function downloadReport(filename, bodyHtml){
+  const fullHtml = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${filename}</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Hind Siliguri',sans-serif; color:#2B2420; padding:24px; max-width:700px; margin:0 auto;}
+  h1{font-family:'Tiro Bangla',serif; font-size:22px; margin-bottom:2px;}
+  .pmeta{font-size:12px; color:#6B6055; margin-bottom:16px;}
+  .rtot{margin:14px 0; font-size:15px; font-weight:600; background:#F6EFDF; padding:10px 14px; border-radius:8px;}
+  table{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+  th,td{border:1px solid #DED0AC; padding:8px 10px; text-align:left;}
+  th{background:#F6EFDF;}
+  .hint{margin-top:24px; font-size:12px; color:#6B6055; border-top:1px solid #DED0AC; padding-top:12px;}
+  .brand{margin-top:6px; font-size:11px; color:#B8860B;}
+  @media print{ .hint{display:none;} }
+</style>
+</head>
+<body>
+${bodyHtml}
+<div class="hint">এই ফাইলটি থেকে PDF বানাতে চাইলে ব্রাউজারে এই ফাইল খুলে Ctrl+P (বা মোবাইলে শেয়ার/প্রিন্ট আইকন) চেপে "Save as PDF" বেছে নিন।</div>
+<div class="brand">হিসাব খাতা — By FaBi</div>
+</body>
+</html>`;
+  const blob = new Blob([fullHtml], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  showToast('রিপোর্ট ডাউনলোড হয়েছে — ফাইলটি খুলে Print > Save as PDF করুন');
+}
+
+function exportPersonPDF(personId){
+  const p = data.persons.find(x=>x.id===personId);
+  const bal = personBalance(personId);
+  const label = bal>0 ? 'আপনি পাবেন' : bal<0 ? 'আপনি দিবেন' : 'হিসাব সমান';
+  const txns = personTxns(personId);
+  const rows = txns.map(t=>`
+    <tr>
+      <td>${fmtDate(t.date)}</td>
+      <td>${t.type==='gave'?'দিলাম':'পেলাম'}</td>
+      <td>${fmtAmt(t.amount)}</td>
+      <td>${escapeHtml(t.note||'-')}</td>
+    </tr>`).join('');
+  const html = `
+    <h1>হিসাব খাতা — ${escapeHtml(p.name)}</h1>
+    <div class="pmeta">রিপোর্ট তৈরির তারিখঃ ${genDateStr()}</div>
+    <div class="rtot">সর্বমোট হিসাবঃ ${fmtAmt(Math.abs(bal))} — ${label}</div>
+    <table>
+      <thead><tr><th>তারিখ</th><th>ধরন</th><th>পরিমাণ</th><th>নোট</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="4">কোনো এন্ট্রি নেই</td></tr>'}</tbody>
+    </table>`;
+  downloadReport(`report-${p.name}.html`, html);
+}
+
+function exportSummaryPDF(){
+  let totalGave=0, totalGot=0;
+  data.transactions.forEach(t=>{
+    if(t.type==='gave') totalGave += t.amount; else totalGot += t.amount;
+  });
+  const net = totalGave - totalGot;
+  const persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const rows = persons.map(p=>{
+    const bal = personBalance(p.id);
+    const label = bal>0 ? 'পাবেন' : bal<0 ? 'দিবেন' : 'সমান';
+    return `<tr><td>${escapeHtml(p.name)}</td><td>${fmtAmt(Math.abs(bal))}</td><td>${label}</td></tr>`;
+  }).join('');
+  const html = `
+    <h1>হিসাব খাতা — সারসংক্ষেপ রিপোর্ট</h1>
+    <div class="pmeta">রিপোর্ট তৈরির তারিখঃ ${genDateStr()}</div>
+    <div class="rtot">মোট পাবেনঃ ${fmtAmt(totalGave)} &nbsp; | &nbsp; মোট দিবেনঃ ${fmtAmt(totalGot)} &nbsp; | &nbsp; নিট হিসাবঃ ${fmtAmt(Math.abs(net))} ${net>0?'(পাবেন)':net<0?'(দিবেন)':''}</div>
+    <table>
+      <thead><tr><th>নাম</th><th>পরিমাণ</th><th>অবস্থা</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="3">কোনো ব্যক্তি নেই</td></tr>'}</tbody>
+    </table>`;
+  downloadReport('report-summary.html', html);
+}
+
+async function loadUsers(){
+  try{
+    let users = await fbGet('hisabKhata/users');
+    if(!users || !users.length){
+      users = [{ username: 'FaBi-Admin', password: '1234', role: 'admin' }];
+      await fbSet('hisabKhata/users', users);
+    }
+    lock.users = users;
+  }catch(e){
+    lock.users = [];
+    lock.error = 'ইন্টারনেট সংযোগ পরীক্ষা করুন';
+  }
+  lock.status = 'auth';
+}
+
+async function saveUsers(){
+  await fbSet('hisabKhata/users', lock.users);
+}
+
+function setLockUsername(val){
+  lock.usernameInput = val;
+  lock.error = '';
+  renderLock();
+  const input = document.getElementById('lock-username-input');
+  if(input){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+}
+
+function pinPress(digit){
+  const uname = lock.usernameInput.trim();
+  if(!uname){
+    lock.error = 'আগে ইউজারনেম লিখুন';
+    renderLock();
+    return;
+  }
+  if(lock.entry.length < 4) lock.entry += digit;
+  if(lock.entry.length === 4){
+    setTimeout(async ()=>{
+      const match = lock.users.find(u=>u.username.toLowerCase()===uname.toLowerCase() && u.password===lock.entry);
+      if(match){
+        state.currentUser = match;
+        lock.status = 'unlocked';
+        await bootApp();
+      }else{
+        lock.error = 'ইউজারনেম অথবা পাসওয়ার্ড সঠিক নয়, আবার চেষ্টা করুন';
+        lock.entry = '';
+        renderLock();
+      }
+    }, 150);
+  }
+  renderLock();
+}
+
+function pinBackspace(){
+  lock.entry = lock.entry.slice(0,-1);
+  renderLock();
+}
+
+function renderPinPad(pressFn, backFn){
+  const keys = ['1','2','3','4','5','6','7','8','9','','0','back'];
+  return `<div class="pin-pad">${keys.map(k=>{
+    if(k==='') return `<div class="pin-key empty"></div>`;
+    if(k==='back') return `<button class="pin-key" onclick="${backFn}()">⌫</button>`;
+    return `<button class="pin-key" onclick="${pressFn}('${k}')">${k}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderLock(){
+  const app = document.getElementById('app');
+  const dotsCount = lock.entry.length;
+  const usernameField = `
+    <div class="field" style="width:100%; max-width:280px; text-align:left;">
+      <label>ইউজারনেম</label>
+      <input id="lock-username-input" type="text" placeholder="ইউজারনেম লিখুন" value="${escapeHtml(lock.usernameInput)}" oninput="setLockUsername(this.value)">
+    </div>`;
+
+  app.innerHTML = `
+    <header class="topbar">
+      <div class="back-row">
+        <div>
+          <h1>হিসাব খাতা — By FaBi</h1>
+          <div class="sub">সুরক্ষিত প্রবেশ</div>
+        </div>
+      </div>
+    </header>
+    <div class="lock-screen">
+      <div class="icon">🔒</div>
+      <h2 class="serif">লগইন করুন</h2>
+      <p>ইউজারনেম ও পাসওয়ার্ড দিন। অ্যাডমিন আপনার অ্যাকাউন্ট তৈরি করে দেবে।</p>
+      ${usernameField}
+      <div class="pin-dots">
+        ${[0,1,2,3].map(i=>`<div class="pin-dot ${i<dotsCount?'filled':''}"></div>`).join('')}
+      </div>
+      ${renderPinPad('pinPress','pinBackspace')}
+      <div class="pin-error">${lock.error}</div>
+    </div>
+  `;
+  lock.error = '';
+}
+
+/* ---------- Change my own password ---------- */
+function openChangeMyPassword(){
+  state.pwModal = { type:'self', old:'', n1:'', n2:'', step:'old', error:'' };
+  render();
+}
+
+function closePwModal(){
+  state.pwModal = null;
+  render();
+}
+
+async function submitPwModal(){
+  const m = state.pwModal;
+  if(!m) return;
+  if(m.step === 'old'){
+    if(m.old.length !== 4){ m.error = '৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
+    if(m.old !== state.currentUser.password){ m.error = 'পাসওয়ার্ড সঠিক নয়'; render(); return; }
+    m.step = 'new';
+    m.error = '';
+    render();
+    return;
+  }
+  if(m.n1.length !== 4 || m.n2.length !== 4){ m.error = 'দুই জায়গাতেই ৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
+  if(m.n1 !== m.n2){ m.error = 'নতুন পাসওয়ার্ড দুইবার একই দিন'; render(); return; }
+  if(m.type === 'self'){
+    const target = lock.users.find(u=>u.username===state.currentUser.username);
+    target.password = m.n1;
+    state.currentUser.password = m.n1;
+  }else{
+    const target = lock.users.find(u=>u.username===m.targetUsername);
+    if(target) target.password = m.n1;
+  }
+  await saveUsers();
+  state.pwModal = null;
+  render();
+  showToast('পাসওয়ার্ড পরিবর্তন হয়েছে');
+}
+
+function renderPwModal(){
+  const m = state.pwModal;
+  if(!m) return '';
+  const isAdminReset = m.type === 'adminReset';
+  if(m.step === 'old'){
+    return `
+      <div class="overlay" onclick="if(event.target===this) closePwModal()">
+        <div class="sheet">
+          <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}"-এর পাসওয়ার্ড পরিবর্তন` : 'পুরাতন পাসওয়ার্ড দিন'}</h2>
+          <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">${isAdminReset ? 'নিরাপত্তার জন্য আগে আপনার (অ্যাডমিনের) নিজের পাসওয়ার্ড দিন।' : 'নিরাপত্তার জন্য আগে আপনার বর্তমান পাসওয়ার্ড দিন।'}</p>
+          <div class="field">
+            <label>${isAdminReset ? 'আপনার অ্যাডমিন পাসওয়ার্ড (৪ ডিজিট)' : 'পুরাতন পাসওয়ার্ড (৪ ডিজিট)'}</label>
+            <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.old)}" oninput="state.pwModal.old=this.value.replace(/\\D/g,'').slice(0,4); render();">
+          </div>
+          <div class="pin-error">${m.error||''}</div>
+          <div class="sheet-actions">
+            <button class="btn btn-secondary" onclick="closePwModal()">বাতিল</button>
+            <button class="btn btn-primary" onclick="submitPwModal()">পরবর্তী</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="overlay" onclick="if(event.target===this) closePwModal()">
+      <div class="sheet">
+        <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}"-এর নতুন পাসওয়ার্ড` : 'নতুন পাসওয়ার্ড দিন'}</h2>
+        <div class="field">
+          <label>নতুন পাসওয়ার্ড (৪ ডিজিট)</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.n1)}" oninput="state.pwModal.n1=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="field">
+          <label>নতুন পাসওয়ার্ড আবার লিখুন</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.n2)}" oninput="state.pwModal.n2=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="pin-error">${m.error||''}</div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closePwModal()">বাতিল</button>
+          <button class="btn btn-primary" onclick="submitPwModal()">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------- Admin: reset another user's password ---------- */
+function openAdminResetPassword(username){
+  state.pwModal = { type:'adminReset', targetUsername: username, old:'', n1:'', n2:'', step:'old', error:'' };
+  render();
+}
+
+/* ---------- Admin: create new user ---------- */
+function openCreateUser(){
+  state.newUserModal = { username:'', p1:'', p2:'', role:'editor', error:'' };
+  render();
+}
+
+function closeNewUserModal(){
+  state.newUserModal = null;
+  render();
+}
+
+async function submitNewUser(){
+  const m = state.newUserModal;
+  const uname = m.username.trim();
+  if(!uname){ m.error = 'ইউজারনেম লিখুন'; render(); return; }
+  if(lock.users.some(u=>u.username.toLowerCase()===uname.toLowerCase())){
+    m.error = 'এই ইউজারনেম আগে থেকেই আছে';
+    render();
+    return;
+  }
+  if(m.p1.length !== 4 || m.p2.length !== 4){ m.error = 'দুই জায়গাতেই ৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
+  if(m.p1 !== m.p2){ m.error = 'পাসওয়ার্ড দুইবার একই দিন'; render(); return; }
+  lock.users.push({ username: uname, password: m.p1, role: m.role });
+  await saveUsers();
+  state.newUserModal = null;
+  render();
+  showToast('নতুন ইউজার তৈরি হয়েছে');
+}
+
+function renderNewUserModal(){
+  const m = state.newUserModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeNewUserModal()">
+      <div class="sheet">
+        <h2 class="serif">নতুন ইউজার তৈরি করুন</h2>
+        <div class="field">
+          <label>ইউজারনেম</label>
+          <input type="text" value="${escapeHtml(m.username)}" oninput="state.newUserModal.username=this.value; render();" placeholder="যেমনঃ রহিম">
+        </div>
+        <div class="field">
+          <label>পাসওয়ার্ড (৪ ডিজিট)</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p1)}" oninput="state.newUserModal.p1=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="field">
+          <label>পাসওয়ার্ড আবার লিখুন</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p2)}" oninput="state.newUserModal.p2=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="field">
+          <label>অ্যাক্সেস</label>
+          <div class="type-toggle">
+            <button class="${m.role==='editor'?'sel-gave':''}" onclick="state.newUserModal.role='editor'; render();">এডিট করতে পারবে</button>
+            <button class="${m.role==='viewer'?'sel-got':''}" onclick="state.newUserModal.role='viewer'; render();">শুধু দেখতে পারবে</button>
+          </div>
+        </div>
+        <div class="pin-error">${m.error||''}</div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeNewUserModal()">বাতিল</button>
+          <button class="btn btn-primary" onclick="submitNewUser()">তৈরি করুন</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleUserRole(username){
+  const u = lock.users.find(x=>x.username===username);
+  if(!u) return;
+  u.role = u.role === 'editor' ? 'viewer' : 'editor';
+  saveUsers();
+  render();
+}
+
+function confirmDeleteUser(username){
+  state.confirmModal = {
+    title:'ইউজার মুছে ফেলবেন?',
+    msg:`"${username}" ইউজারটি মুছে ফেলা হবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।`,
+    onYes: async ()=>{
+      lock.users = lock.users.filter(u=>u.username!==username);
+      await saveUsers();
+      state.confirmModal = null;
+      render();
+      showToast('ইউজার মুছে ফেলা হয়েছে');
+    }
+  };
+  render();
+}
+
+function renderAdminPanel(){
+  const others = lock.users.filter(u=>u.role!=='admin');
+  const rows = others.map(u=>`
+    <div class="txn-row">
+      <div class="txn-top">
+        <div>
+          <span class="txn-tag ${u.role==='editor'?'tag-gave':'tag-got'}">${u.role==='editor'?'এডিট অ্যাক্সেস':'শুধু ভিউ'}</span>
+          <div style="font-size:15px; font-weight:600; margin-top:4px;">${escapeHtml(u.username)}</div>
+        </div>
+      </div>
+      <div class="txn-actions" style="margin-top:10px;">
+        <span onclick="toggleUserRole('${escapeHtml(u.username)}')">${u.role==='editor'?'ভিউ-অনলি করুন':'এডিট দিন'}</span>
+        <span onclick="openAdminResetPassword('${escapeHtml(u.username)}')">পাসওয়ার্ড পরিবর্তন</span>
+        <span onclick="confirmDeleteUser('${escapeHtml(u.username)}')">মুছুন</span>
+      </div>
+    </div>`).join('');
+
+  return `
+    <div class="stat-card" style="margin-bottom:18px; text-align:center;">
+      <div class="label">লগইন করা আছেঃ</div>
+      <div class="val" style="font-size:16px;">${escapeHtml(state.currentUser.username)} (অ্যাডমিন)</div>
+    </div>
+    <div class="section-title">
+      <span>ইউজার তালিকা</span>
+      <span class="link-btn" onclick="openCreateUser()">+ নতুন ইউজার</span>
+    </div>
+    ${others.length===0 ? `<div class="empty-state"><p>এখনও কোনো ইউজার তৈরি করা হয়নি।</p></div>` : rows}
+  `;
+}
+
+async function bootApp(){
+
+  document.getElementById('app').innerHTML = `<div class="empty-state"><p>লোড হচ্ছে...</p></div>`;
+  await loadData();
+  render();
+  startSyncPolling();
+}
+
+function startSyncPolling(){
+  if(window.__syncInterval) return;
+  window.__syncInterval = setInterval(async ()=>{
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal;
+    if(modalOpen) return;
+    try{
+      const parsed = await fbGet('hisabKhata/ledgerData');
+      const fresh = parsed || { persons: [], transactions: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions });
+      if(freshStr !== currentStr){
+        data.persons = fresh.persons || [];
+        data.transactions = fresh.transactions || [];
+        render();
+      }
+    }catch(e){}
+  }, 6000);
+}
+
+function render(){
+  const app = document.getElementById('app');
+  let headerTitle = 'হিসাব খাতা — By FaBi';
+  let headerSub = '';
+  let backBtn = '';
+  let mainHtml = '';
+
+  if(state.view === 'home'){
+    const roleLabel = state.currentUser ? (state.currentUser.role==='admin' ? 'অ্যাডমিন' : state.currentUser.role==='editor' ? 'এডিটর' : 'ভিউয়ার') : '';
+    headerSub = 'সবার হিসাব এক জায়গায় (শেয়ার্ড)' + (state.currentUser ? ' · ' + escapeHtml(state.currentUser.username) + ' (' + roleLabel + ')' : '');
+    mainHtml = renderHome();
+  }else if(state.view === 'person'){
+    const p = data.persons.find(x=>x.id===state.personId);
+    headerTitle = p ? p.name : 'ব্যক্তি';
+    backBtn = `<button class="icon-btn" onclick="setView('home')">←</button>`;
+    mainHtml = renderPerson();
+  }else if(state.view === 'summary'){
+    headerTitle = 'সারসংক্ষেপ রিপোর্ট';
+    headerSub = 'সব ব্যক্তির মোট হিসাব';
+    mainHtml = renderSummary();
+  }else if(state.view === 'admin'){
+    headerTitle = 'অ্যাডমিন প্যানেল';
+    backBtn = `<button class="icon-btn" onclick="setView('summary')">←</button>`;
+    mainHtml = isAdmin() ? renderAdminPanel() : `<div class="empty-state"><p>আপনার এই পাতা দেখার অনুমতি নেই।</p></div>`;
+  }
+
+  app.innerHTML = `
+    <header class="topbar">
+      <div class="back-row">
+        ${backBtn}
+        <div>
+          <h1>${headerTitle}</h1>
+          ${headerSub ? `<div class="sub">${headerSub}</div>` : ''}
+        </div>
+      </div>
+    </header>
+    <main>${mainHtml}</main>
+    ${state.view==='home' && canEdit() ? `<button class="fab-btn" onclick="openAddPerson()">+</button>` : ''}
+    ${state.view==='person' && canEdit() ? `<button class="fab-btn" onclick="openAddTxn('${state.personId}')">+</button>` : ''}
+    <nav class="bottomnav">
+      <button class="${state.view==='home'||state.view==='person'?'active':''}" onclick="setView('home')">
+        <span class="ic">🏠</span>হোম
+      </button>
+      <button class="${state.view==='summary'||state.view==='admin'?'active':''}" onclick="setView('summary')">
+        <span class="ic">📊</span>সারসংক্ষেপ
+      </button>
+    </nav>
+    ${renderPersonModal()}
+    ${renderTxnModal()}
+    ${renderConfirmModal()}
+    ${renderPwModal()}
+    ${renderNewUserModal()}
+  `;
+}
+
+(async function init(){
+  document.getElementById('app').innerHTML = `<div class="empty-state"><p>লোড হচ্ছে...</p></div>`;
+  await loadUsers();
+  if(lock.status === 'unlocked'){
+    await loadData();
+    render();
+  }else{
+    renderLock();
+  }
+})();
+</script>
+</body>
+</html>
