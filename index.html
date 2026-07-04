@@ -703,6 +703,7 @@ function renderSummary(){
     <div style="text-align:center; margin-top:26px; display:flex; flex-direction:column; gap:10px; align-items:center;">
       <span class="link-btn" onclick="openChangeMyPassword()">🔒 আমার পাসওয়ার্ড পরিবর্তন করুন</span>
       ${isAdmin() ? `<span class="link-btn" onclick="setView('admin')">⚙️ অ্যাডমিন প্যানেল</span>` : ''}
+      <span class="link-btn" style="color:var(--red);" onclick="logout()">🚪 লগআউট</span>
     </div>
   `;
 }
@@ -871,6 +872,26 @@ function exportSummaryPDF(){
       <tbody>${rows || '<tr><td colspan="3">কোনো ব্যক্তি নেই</td></tr>'}</tbody>
     </table>`;
   downloadReport('report-summary.html', html);
+}
+
+function logout(){
+  state.confirmModal = {
+    title: 'লগআউট করবেন?',
+    msg: 'আবার ঢুকতে হলে ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করতে হবে।',
+    onYes: ()=>{
+      if(window.__syncInterval){ clearInterval(window.__syncInterval); window.__syncInterval = null; }
+      state.currentUser = null;
+      state.confirmModal = null;
+      state.view = 'home';
+      state.personId = null;
+      lock.status = 'auth';
+      lock.usernameInput = '';
+      lock.entry = '';
+      lock.error = '';
+      renderLock();
+    }
+  };
+  render();
 }
 
 async function loadUsers(){
