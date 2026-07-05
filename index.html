@@ -657,8 +657,10 @@ function renderSummary(){
   if(q){ persons = persons.filter(p=>p.name.toLowerCase().includes(q)); }
 
   let totalGave=0, totalGot=0;
-  data.transactions.forEach(t=>{
-    if(t.type==='gave') totalGave += t.amount; else totalGot += t.amount;
+  data.persons.forEach(p=>{
+    const bal = personBalance(p.id);
+    if(bal > 0) totalGave += bal;
+    else if(bal < 0) totalGot += Math.abs(bal);
   });
   const net = totalGave - totalGot;
 
@@ -853,8 +855,10 @@ function exportPersonPDF(personId){
 
 function exportSummaryPDF(){
   let totalGave=0, totalGot=0;
-  data.transactions.forEach(t=>{
-    if(t.type==='gave') totalGave += t.amount; else totalGot += t.amount;
+  data.persons.forEach(p=>{
+    const bal = personBalance(p.id);
+    if(bal > 0) totalGave += bal;
+    else if(bal < 0) totalGot += Math.abs(bal);
   });
   const net = totalGave - totalGot;
   const persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
@@ -907,6 +911,10 @@ async function loadUsers(){
     lock.error = 'ইন্টারনেট সংযোগ পরীক্ষা করুন';
   }
   lock.status = 'auth';
+  try{
+    const remembered = localStorage.getItem('hisabKhataLastUsername');
+    if(remembered) lock.usernameInput = remembered;
+  }catch(e){}
 }
 
 async function saveUsers(){
@@ -935,6 +943,7 @@ function pinPress(digit){
       if(match){
         state.currentUser = match;
         lock.status = 'unlocked';
+        try{ localStorage.setItem('hisabKhataLastUsername', match.username); }catch(e){}
         await bootApp();
       }else{
         lock.error = 'ইউজারনেম অথবা পাসওয়ার্ড সঠিক নয়, আবার চেষ্টা করুন';
