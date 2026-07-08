@@ -315,7 +315,7 @@
 
 <script>
 let data = { persons: [], transactions: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
 function canEdit(){
@@ -323,6 +323,52 @@ function canEdit(){
 }
 function isAdmin(){
   return !!state.currentUser && state.currentUser.role === 'admin';
+}
+
+function requestPasswordConfirm(onSuccess){
+  state.pwConfirmModal = { entry:'', error:'', onSuccess };
+  render();
+}
+
+function closePwConfirm(){
+  state.pwConfirmModal = null;
+  render();
+}
+
+function submitPwConfirm(){
+  const m = state.pwConfirmModal;
+  if(!m) return;
+  if(m.entry.length !== 4){ m.error = '৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
+  if(m.entry !== state.currentUser.password){
+    m.error = 'পাসওয়ার্ড সঠিক নয়';
+    m.entry = '';
+    render();
+    return;
+  }
+  const action = m.onSuccess;
+  state.pwConfirmModal = null;
+  action();
+}
+
+function renderPwConfirmModal(){
+  const m = state.pwConfirmModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closePwConfirm()">
+      <div class="sheet">
+        <h2 class="serif">পাসওয়ার্ড দিয়ে নিশ্চিত করুন</h2>
+        <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">এই কাজটি করতে আপনার নিজের লগইন পাসওয়ার্ড দিন।</p>
+        <div class="field">
+          <label>পাসওয়ার্ড (৪ ডিজিট)</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.entry)}" oninput="state.pwConfirmModal.entry=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="pin-error">${m.error||''}</div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closePwConfirm()">বাতিল</button>
+          <button class="btn btn-primary" onclick="submitPwConfirm()">নিশ্চিত করুন</button>
+        </div>
+      </div>
+    </div>`;
 }
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -436,9 +482,11 @@ function openAddPerson(){
 
 function openEditPerson(personId){
   if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
-  const p = data.persons.find(x=>x.id===personId);
-  state.personModal = { mode:'edit', id:personId, name:p.name };
-  render();
+  requestPasswordConfirm(()=>{
+    const p = data.persons.find(x=>x.id===personId);
+    state.personModal = { mode:'edit', id:personId, name:p.name };
+    render();
+  });
 }
 
 function closePersonModal(){
@@ -465,19 +513,21 @@ async function savePersonModal(){
 
 function confirmDeletePerson(personId){
   if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
-  state.confirmModal = {
-    title:'ব্যক্তি মুছে ফেলবেন?',
-    msg:'এই ব্যক্তির সব হিসাবও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।',
-    onYes: async ()=>{
-      data.persons = data.persons.filter(p=>p.id!==personId);
-      data.transactions = data.transactions.filter(t=>t.personId!==personId);
-      await saveData();
-      state.confirmModal = null;
-      setView('home');
-      showToast('মুছে ফেলা হয়েছে');
-    }
-  };
-  render();
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:'ব্যক্তি মুছে ফেলবেন?',
+      msg:'এই ব্যক্তির সব হিসাবও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।',
+      onYes: async ()=>{
+        data.persons = data.persons.filter(p=>p.id!==personId);
+        data.transactions = data.transactions.filter(t=>t.personId!==personId);
+        await saveData();
+        state.confirmModal = null;
+        setView('home');
+        showToast('মুছে ফেলা হয়েছে');
+      }
+    };
+    render();
+  });
 }
 
 function openAddTxn(personId){
@@ -488,9 +538,11 @@ function openAddTxn(personId){
 
 function openEditTxn(txnId){
   if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
-  const t = data.transactions.find(x=>x.id===txnId);
-  state.txnModal = { mode:'edit', id:txnId, personId:t.personId, type:t.type, amount:String(t.amount), date:t.date, note:t.note||'' };
-  render();
+  requestPasswordConfirm(()=>{
+    const t = data.transactions.find(x=>x.id===txnId);
+    state.txnModal = { mode:'edit', id:txnId, personId:t.personId, type:t.type, amount:String(t.amount), date:t.date, note:t.note||'' };
+    render();
+  });
 }
 
 function closeTxnModal(){
@@ -530,18 +582,20 @@ async function saveTxnModal(){
 
 function confirmDeleteTxn(txnId){
   if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
-  state.confirmModal = {
-    title:'হিসাব মুছে ফেলবেন?',
-    msg:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
-    onYes: async ()=>{
-      data.transactions = data.transactions.filter(t=>t.id!==txnId);
-      await saveData();
-      state.confirmModal = null;
-      render();
-      showToast('মুছে ফেলা হয়েছে');
-    }
-  };
-  render();
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:'হিসাব মুছে ফেলবেন?',
+      msg:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+      onYes: async ()=>{
+        data.transactions = data.transactions.filter(t=>t.id!==txnId);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast('মুছে ফেলা হয়েছে');
+      }
+    };
+    render();
+  });
 }
 
 function closeConfirm(){
@@ -1217,7 +1271,7 @@ async function bootApp(){
 function startSyncPolling(){
   if(window.__syncInterval) return;
   window.__syncInterval = setInterval(async ()=>{
-    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal;
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal;
     if(modalOpen) return;
     try{
       const parsed = await fbGet('hisabKhata/ledgerData');
@@ -1285,6 +1339,7 @@ function render(){
     ${renderConfirmModal()}
     ${renderPwModal()}
     ${renderNewUserModal()}
+    ${renderPwConfirmModal()}
   `;
 }
 
