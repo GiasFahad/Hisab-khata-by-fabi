@@ -269,6 +269,12 @@
   .btn-primary:active{background:var(--maroon-dark);}
   .btn-secondary{background:#fff; color:var(--ink); border:1px solid var(--line);}
   .btn-danger{background:var(--red-bg); color:var(--red); border:1px solid var(--red);}
+  .calc-eq-btn{
+    width:48px; flex-shrink:0; border-radius:8px; border:1px solid var(--maroon);
+    background:var(--maroon); color:#F3E9DC; font-size:18px; font-weight:700;
+    cursor:pointer; font-family:'Hind Siliguri', sans-serif;
+  }
+  .calc-eq-btn:active{background:var(--maroon-dark);}
 
   .toast{
     position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
@@ -391,15 +397,53 @@ function fmtDate(iso){
 }
 
 const FB_BASE = "https://hisab-khata-fabi-default-rtdb.asia-southeast1.firebasedatabase.app";
+const FB_API_KEY = "AIzaSyAW59wLxDrloAF_90WMANd3bxvhCcXKKnI";
+let fbAuth = { idToken: null, refreshToken: null, expiresAt: 0 };
+
+async function ensureFirebaseAuth(){
+  const now = Date.now();
+  if(fbAuth.idToken && now < fbAuth.expiresAt - 60000){
+    return fbAuth.idToken;
+  }
+  if(fbAuth.refreshToken){
+    try{
+      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=refresh_token&refresh_token=${fbAuth.refreshToken}`
+      });
+      if(res.ok){
+        const d = await res.json();
+        fbAuth.idToken = d.id_token;
+        fbAuth.refreshToken = d.refresh_token;
+        fbAuth.expiresAt = Date.now() + (parseInt(d.expires_in) * 1000);
+        return fbAuth.idToken;
+      }
+    }catch(e){}
+  }
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ returnSecureToken: true })
+  });
+  if(!res.ok) throw new Error('firebase auth failed');
+  const d = await res.json();
+  fbAuth.idToken = d.idToken;
+  fbAuth.refreshToken = d.refreshToken;
+  fbAuth.expiresAt = Date.now() + (parseInt(d.expiresIn) * 1000);
+  return fbAuth.idToken;
+}
 
 async function fbGet(path){
-  const res = await fetch(`${FB_BASE}/${path}.json`);
+  const token = await ensureFirebaseAuth();
+  const res = await fetch(`${FB_BASE}/${path}.json?auth=${token}`);
   if(!res.ok) throw new Error('fb get failed');
   return await res.json();
 }
 
 async function fbSet(path, value){
-  const res = await fetch(`${FB_BASE}/${path}.json`, {
+  const token = await ensureFirebaseAuth();
+  const res = await fetch(`${FB_BASE}/${path}.json?auth=${token}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(value)
@@ -555,11 +599,36 @@ function setTxnType(type){
   render();
 }
 
+function evaluateExpression(expr){
+  const cleaned = expr.trim();
+  if(!cleaned) return null;
+  if(!/^[0-9+\-*/.() \s]+$/.test(cleaned)) return null;
+  try{
+    const result = Function('"use strict"; return (' + cleaned + ')')();
+    if(typeof result !== 'number' || !isFinite(result)) return null;
+    return Math.round(result * 100) / 100;
+  }catch(e){
+    return null;
+  }
+}
+
+function calcAmountField(){
+  const input = document.getElementById('txn-amount-input');
+  if(!input) return;
+  const result = evaluateExpression(input.value);
+  if(result === null){
+    showToast('হিসাবটি সঠিক নয় — শুধু সংখ্যা ও + - * / চিহ্ন ব্যবহার করুন');
+    return;
+  }
+  input.value = String(result);
+  showToast('ফলাফল বসানো হয়েছে');
+}
+
 async function saveTxnModal(){
   const amtInput = document.getElementById('txn-amount-input');
   const dateInput = document.getElementById('txn-date-input');
   const noteInput = document.getElementById('txn-note-input');
-  const amount = parseFloat(amtInput.value);
+  const amount = evaluateExpression(amtInput.value);
   if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
   const date = dateInput.value || todayStr();
   const note = noteInput.value.trim();
@@ -798,8 +867,11 @@ function renderTxnModal(){
           </div>
         </div>
         <div class="field">
-          <label>পরিমাণ (৳)</label>
-          <input id="txn-amount-input" type="number" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="০">
+          <label>পরিমাণ (৳) — সরাসরি লিখুন, অথবা হিসাব করতে যেমনঃ 500+200-50</label>
+          <div style="display:flex; gap:8px;">
+            <input id="txn-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="যেমনঃ ১২০০ অথবা ৫০০+২০০" style="flex:1;">
+            <button type="button" class="calc-eq-btn" onclick="calcAmountField()">=</button>
+          </div>
         </div>
         <div class="field">
           <label>তারিখ</label>
