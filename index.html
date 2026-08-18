@@ -21,6 +21,10 @@
     --green-bg:#E4EFE3;
     --red:#B23A32;
     --red-bg:#F5E4DF;
+    --khoiri:#6B4226;
+    --khoiri-bg:#EBE0D5;
+    --loan-blue:#2C5F8A;
+    --loan-blue-bg:#DCE7EF;
     --shadow:0 2px 8px rgba(90,60,30,0.10);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
@@ -134,6 +138,30 @@
   }
   .chip.active{background:var(--maroon); color:#F3E9DC; border-color:var(--maroon);}
 
+  .cat-tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .cat-tab{
+    flex:1; padding:10px 0; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; font-family:'Hind Siliguri', sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer; text-align:center;
+  }
+  .cat-tab.cat-loan.active{background:var(--loan-blue); color:#fff; border-color:var(--loan-blue);}
+  .cat-tab.cat-income.active{background:var(--green); color:#fff; border-color:var(--green);}
+  .cat-tab.cat-expense.active{background:var(--khoiri); color:#fff; border-color:var(--khoiri);}
+
+  .ie-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px; margin-bottom:8px; box-shadow:var(--shadow);
+  }
+  .ie-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .ie-name{ font-size:15px; font-weight:600; }
+  .ie-date{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .ie-amt{ font-size:16px; font-weight:700; }
+  .ie-amt.income{ color:var(--green); }
+  .ie-amt.expense{ color:var(--khoiri); }
+  .ie-note{ font-size:13px; color:var(--ink); margin-top:6px; white-space:pre-wrap; }
+  .ie-actions{ display:flex; gap:14px; margin-top:8px; justify-content:flex-end; }
+  .ie-actions span{ font-size:12px; color:var(--maroon); cursor:pointer; text-decoration:underline; }
+
   .person-card{
     background:var(--paper-card);
     border:1px solid var(--line);
@@ -153,6 +181,8 @@
   .pos{color:var(--green);}
   .neg{color:var(--red);}
   .zero{color:var(--ink-soft);}
+  .khoiri-txt{color:var(--khoiri);}
+  .blue-txt{color:var(--loan-blue);}
 
   .summary-cards{
     display:flex; gap:10px; margin-bottom:18px;
@@ -320,8 +350,8 @@
 <div id="app"></div>
 
 <script>
-let data = { persons: [], transactions: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null };
+let data = { persons: [], transactions: [], income: [], expenses: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', ieModal: null };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
 function canEdit(){
@@ -458,9 +488,13 @@ async function loadData(){
     if(parsed){
       data.persons = parsed.persons || [];
       data.transactions = parsed.transactions || [];
+      data.income = parsed.income || [];
+      data.expenses = parsed.expenses || [];
     }else{
       data.persons = [];
       data.transactions = [];
+      data.income = [];
+      data.expenses = [];
     }
   }catch(e){
     showToast('ইন্টারনেট সংযোগ পরীক্ষা করুন — ডেটা লোড করা যায়নি');
@@ -555,6 +589,46 @@ async function savePersonModal(){
   render();
 }
 
+function convertPersonToExpense(personId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  const p = data.persons.find(x=>x.id===personId);
+  if(!p) return;
+  const txns = data.transactions.filter(t=>t.personId===personId);
+  const gaveTxns = txns.filter(t=>t.type==='gave');
+  const gotTxns = txns.filter(t=>t.type==='got');
+
+  if(gaveTxns.length === 0){
+    showToast('এই ব্যক্তির কোনো "দিলাম" এন্ট্রি নেই — খরচে রূপান্তর করার কিছু নেই');
+    return;
+  }
+
+  requestPasswordConfirm(()=>{
+    let msg = `"${p.name}"-এর ${gaveTxns.length} টি "দিলাম" এন্ট্রি খরচ (Expense) তালিকায় নিয়ে যাওয়া হবে, প্রতিটার নাম হবে "${p.name}"। এরপর এই ব্যক্তিটি ধার-দেনার তালিকা থেকে মুছে যাবে।`;
+    if(gotTxns.length > 0){
+      msg += ` ⚠️ এই ব্যক্তির ${gotTxns.length} টি "পেলাম" এন্ট্রি আছে — সেগুলো খরচ না হওয়ায় বাদ দেওয়া হবে এবং মুছে যাবে।`;
+    }
+    state.confirmModal = {
+      title: 'খরচ (Expense)-এ রূপান্তর করবেন?',
+      msg,
+      onYes: async ()=>{
+        gaveTxns.forEach(t=>{
+          data.expenses.push({
+            id: uid(), name: p.name, amount: t.amount, date: t.date, note: t.note || '', createdAt: t.createdAt || Date.now()
+          });
+        });
+        data.persons = data.persons.filter(x=>x.id!==personId);
+        data.transactions = data.transactions.filter(t=>t.personId!==personId);
+        await saveData();
+        state.confirmModal = null;
+        state.category = 'expense';
+        setView('home');
+        showToast('খরচে রূপান্তরিত হয়েছে');
+      }
+    };
+    render();
+  });
+}
+
 function confirmDeletePerson(personId){
   if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
   requestPasswordConfirm(()=>{
@@ -612,8 +686,8 @@ function evaluateExpression(expr){
   }
 }
 
-function calcAmountField(){
-  const input = document.getElementById('txn-amount-input');
+function calcFieldById(id){
+  const input = document.getElementById(id);
   if(!input) return;
   const result = evaluateExpression(input.value);
   if(result === null){
@@ -622,6 +696,10 @@ function calcAmountField(){
   }
   input.value = String(result);
   showToast('ফলাফল বসানো হয়েছে');
+}
+
+function calcAmountField(){
+  calcFieldById('txn-amount-input');
 }
 
 async function saveTxnModal(){
@@ -676,7 +754,29 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function setCategory(cat){
+  state.category = cat;
+  state.searchQuery = '';
+  render();
+}
+
+function renderCategoryTabs(){
+  return `
+    <div class="cat-tabs">
+      <button class="cat-tab cat-loan ${state.category==='loan'?'active':''}" onclick="setCategory('loan')">ধার-দেনা</button>
+      <button class="cat-tab cat-income ${state.category==='income'?'active':''}" onclick="setCategory('income')">আয়</button>
+      <button class="cat-tab cat-expense ${state.category==='expense'?'active':''}" onclick="setCategory('expense')">খরচ</button>
+    </div>`;
+}
+
 function renderHome(){
+  const tabs = renderCategoryTabs();
+  if(state.category === 'income') return tabs + renderIEList('income');
+  if(state.category === 'expense') return tabs + renderIEList('expense');
+  return tabs + renderLoanList();
+}
+
+function renderLoanList(){
   let persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
   const q = state.searchQuery.trim().toLowerCase();
   if(q){ persons = persons.filter(p=>p.name.toLowerCase().includes(q)); }
@@ -705,7 +805,7 @@ function renderHome(){
     if(bal>0){cls='pos'; label='পাবেন';}
     else if(bal<0){cls='neg'; label='দিবেন';}
     return `
-      <div class="person-card" onclick="setView('person','${p.id}')">
+      <div class="person-card" style="border-left-color:var(--loan-blue);" onclick="setView('person','${p.id}')">
         <div>
           <div class="person-name">${escapeHtml(p.name)}</div>
           <div class="person-meta">${cnt} টি এন্ট্রি</div>
@@ -717,6 +817,166 @@ function renderHome(){
       </div>`;
   }).join('');
   return searchHtml + list;
+}
+
+function ieItems(type){
+  const list = type === 'income' ? data.income : data.expenses;
+  return [...list].sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+}
+
+function renderIEList(type){
+  const isIncome = type === 'income';
+  const catLabel = isIncome ? 'আয়' : 'খরচ';
+  const colorClass = isIncome ? 'income' : 'expense';
+  let items = ieItems(type);
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ items = items.filter(i=>i.name.toLowerCase().includes(q)); }
+  const total = ieItems(type).reduce((s,i)=>s+i.amount, 0);
+
+  const searchHtml = (type==='income'?data.income:data.expenses).length>0 ? `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>` : '';
+
+  const totalCard = `
+    <div class="stat-card" style="margin-bottom:16px; text-align:center;">
+      <div class="label">মোট ${catLabel}</div>
+      <div class="val ${isIncome?'pos':'khoiri-txt'}">${fmtAmt(total)}</div>
+    </div>`;
+
+  if((isIncome?data.income:data.expenses).length===0){
+    return totalCard + `
+      <div class="empty-state">
+        <div class="big">${isIncome?'💰':'🧾'}</div>
+        <h3 class="serif">এখনও কোনো ${catLabel} এন্ট্রি নেই</h3>
+        <p>নিচের + বাটনে চেপে প্রথম ${catLabel} এন্ট্রি যোগ করুন।</p>
+      </div>`;
+  }
+  if(items.length===0){
+    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" নামে কিছু পাওয়া যায়নি।</p></div>`;
+  }
+
+  const rows = items.map(i=>`
+    <div class="ie-card">
+      <div class="ie-top">
+        <div>
+          <div class="ie-name">${escapeHtml(i.name)}</div>
+          <div class="ie-date">${fmtDate(i.date)}</div>
+        </div>
+        <div class="ie-amt ${colorClass}">${fmtAmt(i.amount)}</div>
+      </div>
+      ${i.note ? `<div class="ie-note">${escapeHtml(i.note)}</div>` : ''}
+      ${canEdit() ? `
+      <div class="ie-actions">
+        <span onclick="openEditIE('${type}','${i.id}')">সম্পাদনা</span>
+        <span onclick="confirmDeleteIE('${type}','${i.id}')">মুছুন</span>
+      </div>` : ''}
+    </div>`).join('');
+
+  return totalCard + searchHtml + rows;
+}
+
+function openAddIE(type){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.ieModal = { mode:'add', type, name:'', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openEditIE(type, id){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  requestPasswordConfirm(()=>{
+    const list = type === 'income' ? data.income : data.expenses;
+    const item = list.find(x=>x.id===id);
+    state.ieModal = { mode:'edit', type, id, name:item.name, amount:String(item.amount), date:item.date, note:item.note||'' };
+    render();
+  });
+}
+
+function confirmDeleteIE(type, id){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: (type==='income'?'আয়':'খরচ') + ' এন্ট্রি মুছে ফেলবেন?',
+      msg: 'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+      onYes: async ()=>{
+        if(type==='income'){ data.income = data.income.filter(x=>x.id!==id); }
+        else{ data.expenses = data.expenses.filter(x=>x.id!==id); }
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast('মুছে ফেলা হয়েছে');
+      }
+    };
+    render();
+  });
+}
+
+function closeIEModal(){
+  state.ieModal = null;
+  render();
+}
+
+async function saveIEModal(){
+  const nameInput = document.getElementById('ie-name-input');
+  const amtInput = document.getElementById('ie-amount-input');
+  const dateInput = document.getElementById('ie-date-input');
+  const noteInput = document.getElementById('ie-note-input');
+  const name = nameInput.value.trim();
+  if(!name){ showToast('নাম লিখুন'); return; }
+  const amount = evaluateExpression(amtInput.value);
+  if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
+  const date = dateInput.value || todayStr();
+  const note = noteInput.value.trim();
+  const m = state.ieModal;
+  const list = m.type === 'income' ? data.income : data.expenses;
+  if(m.mode === 'add'){
+    list.push({ id: uid(), name, amount, date, note, createdAt: Date.now() });
+    showToast('এন্ট্রি যোগ হয়েছে');
+  }else{
+    const item = list.find(x=>x.id===m.id);
+    item.name = name; item.amount = amount; item.date = date; item.note = note;
+    showToast('এন্ট্রি পরিবর্তন হয়েছে');
+  }
+  await saveData();
+  state.ieModal = null;
+  render();
+}
+
+function renderIEModal(){
+  const m = state.ieModal;
+  if(!m) return '';
+  const isIncome = m.type === 'income';
+  const catLabel = isIncome ? 'আয়' : 'খরচ';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeIEModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? `নতুন ${catLabel} এন্ট্রি` : `${catLabel} এন্ট্রি সম্পাদনা`}</h2>
+        <div class="field">
+          <label>নাম / খাত</label>
+          <input id="ie-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${isIncome?'যেমনঃ বেতন':'যেমনঃ বাজার খরচ'}">
+        </div>
+        <div class="field">
+          <label>পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200</label>
+          <div style="display:flex; gap:8px;">
+            <input id="ie-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="০" style="flex:1;">
+            <button type="button" class="calc-eq-btn" onclick="calcFieldById('ie-amount-input')">=</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>তারিখ</label>
+          <input id="ie-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>নোট (ঐচ্ছিক)</label>
+          <textarea id="ie-note-input" placeholder="বিস্তারিত লিখুন">${escapeHtml(m.note)}</textarea>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeIEModal()">বাতিল</button>
+          <button class="btn btn-primary" onclick="saveIEModal()">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>`;
 }
 
 function renderPerson(){
@@ -767,6 +1027,7 @@ function renderPerson(){
         ${canEdit() ? `<span onclick="confirmDeletePerson('${p.id}')">ব্যক্তি মুছুন</span>` : ''}
         <span onclick="exportPersonPDF('${p.id}')">PDF রিপোর্ট</span>
       </div>
+      ${canEdit() ? `<div style="text-align:center; margin-top:12px;"><span class="link-btn" style="color:var(--khoiri);" onclick="convertPersonToExpense('${p.id}')">🧾 এটাকে খরচ (Expense) এ রূপান্তর করুন</span></div>` : ''}
     </div>
     <div class="section-title">লেনদেনের হিসাব</div>
     ${filterHtml}
@@ -804,7 +1065,12 @@ function renderSummary(){
     </div>`;
   }).join('');
 
+  const totalIncome = data.income.reduce((s,i)=>s+i.amount, 0);
+  const totalExpense = data.expenses.reduce((s,i)=>s+i.amount, 0);
+  const netIE = totalIncome - totalExpense;
+
   return `
+    <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">ধার-দেনা</span></div>
     <div class="summary-cards">
       <div class="stat-card">
         <div class="label">মোট পাবেন</div>
@@ -815,10 +1081,27 @@ function renderSummary(){
         <div class="val neg">${fmtAmt(totalGot)}</div>
       </div>
     </div>
-    <div class="stat-card" style="margin-bottom:16px;">
+    <div class="stat-card" style="margin-bottom:20px;">
       <div class="label">সব মিলিয়ে নিট হিসাব</div>
       <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?'(পাবেন)':net<0?'(দিবেন)':''}</div>
     </div>
+
+    <div class="section-title" style="margin-top:0;"><span style="font-weight:700; color:var(--green);">আয় ও খরচ</span></div>
+    <div class="summary-cards">
+      <div class="stat-card">
+        <div class="label">মোট আয়</div>
+        <div class="val pos">${fmtAmt(totalIncome)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">মোট খরচ</div>
+        <div class="val khoiri-txt">${fmtAmt(totalExpense)}</div>
+      </div>
+    </div>
+    <div class="stat-card" style="margin-bottom:16px;">
+      <div class="label">আয় − খরচ (নিট সঞ্চয়)</div>
+      <div class="val ${netIE>0?'pos':netIE<0?'khoiri-txt':'zero'}">${fmtAmt(Math.abs(netIE))} ${netIE>0?'(উদ্বৃত্ত)':netIE<0?'(ঘাটতি)':''}</div>
+    </div>
+
     <div class="section-title">
       <span>ব্যক্তিভিত্তিক হিসাব</span>
       ${data.persons.length>0 ? `<span class="link-btn" onclick="exportSummaryPDF()">PDF রিপোর্ট</span>` : ''}
@@ -1343,16 +1626,18 @@ async function bootApp(){
 function startSyncPolling(){
   if(window.__syncInterval) return;
   window.__syncInterval = setInterval(async ()=>{
-    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal;
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.ieModal;
     if(modalOpen) return;
     try{
       const parsed = await fbGet('hisabKhata/ledgerData');
-      const fresh = parsed || { persons: [], transactions: [] };
-      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[] });
-      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions });
+      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses });
       if(freshStr !== currentStr){
         data.persons = fresh.persons || [];
         data.transactions = fresh.transactions || [];
+        data.income = fresh.income || [];
+        data.expenses = fresh.expenses || [];
         render();
       }
     }catch(e){}
@@ -1396,7 +1681,9 @@ function render(){
       </div>
     </header>
     <main>${mainHtml}</main>
-    ${state.view==='home' && canEdit() ? `<button class="fab-btn" onclick="openAddPerson()">+</button>` : ''}
+    ${state.view==='home' && state.category==='loan' && canEdit() ? `<button class="fab-btn" onclick="openAddPerson()">+</button>` : ''}
+    ${state.view==='home' && state.category==='income' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddIE('income')">+</button>` : ''}
+    ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openAddIE('expense')">+</button>` : ''}
     ${state.view==='person' && canEdit() ? `<button class="fab-btn" onclick="openAddTxn('${state.personId}')">+</button>` : ''}
     <nav class="bottomnav">
       <button class="${state.view==='home'||state.view==='person'?'active':''}" onclick="setView('home')">
@@ -1408,6 +1695,7 @@ function render(){
     </nav>
     ${renderPersonModal()}
     ${renderTxnModal()}
+    ${renderIEModal()}
     ${renderConfirmModal()}
     ${renderPwModal()}
     ${renderNewUserModal()}
