@@ -350,15 +350,77 @@
 <div id="app"></div>
 
 <script>
-let data = { persons: [], transactions: [], income: [], expenses: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', ieModal: null };
+let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', ieModal: null, expenseEntryModal: null };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
+let appLang = 'en';
+try{
+  const savedLang = localStorage.getItem('hisabKhataLang');
+  if(savedLang === 'bn' || savedLang === 'en') appLang = savedLang;
+}catch(e){}
+
+const T = {
+  appTitle: { en:'Hisab Khata — By FaBi', bn:'হিসাব খাতা — By FaBi' },
+  navHome: { en:'Home', bn:'হোম' },
+  navSummary: { en:'Summary', bn:'সারসংক্ষেপ' },
+  navSettings: { en:'Settings', bn:'সেটিংস' },
+  tabLoan: { en:'Loans', bn:'ধার-দেনা' },
+  tabIncome: { en:'Income', bn:'আয়' },
+  tabExpense: { en:'Expense', bn:'খরচ' },
+  homeSubShared: { en:'Everyone\'s ledger in one place (shared)', bn:'সবার হিসাব এক জায়গায় (শেয়ার্ড)' },
+  homeSubPrivate: { en:'Your private ledger', bn:'আপনার ব্যক্তিগত হিসাব' },
+  summaryTitle: { en:'Summary Report', bn:'সারসংক্ষেপ রিপোর্ট' },
+  summarySub: { en:'Total ledger for everyone', bn:'সব ব্যক্তির মোট হিসাব' },
+  settingsTitle: { en:'Settings', bn:'সেটিংস' },
+  adminPanelTitle: { en:'Admin Panel', bn:'অ্যাডমিন প্যানেল' },
+  loginTitle: { en:'Login', bn:'লগইন করুন' },
+  loginDesc: { en:'Enter your username and password. Ask your admin to create your account.', bn:'ইউজারনেম ও পাসওয়ার্ড দিন। অ্যাডমিন আপনার অ্যাকাউন্ট তৈরি করে দেবে।' },
+  loginUsernameLabel: { en:'Username', bn:'ইউজারনেম' },
+  loginUsernamePlaceholder: { en:'Enter username', bn:'ইউজারনেম লিখুন' },
+  cancel: { en:'Cancel', bn:'বাতিল' },
+  save: { en:'Save', bn:'সংরক্ষণ করুন' },
+  edit: { en:'Edit', bn:'সম্পাদনা' },
+  delete: { en:'Delete', bn:'মুছুন' },
+  add: { en:'Add', bn:'যোগ করুন' },
+  changePassword: { en:'🔒 Change my password', bn:'🔒 আমার পাসওয়ার্ড পরিবর্তন করুন' },
+  adminPanelLink: { en:'⚙️ Admin Panel', bn:'⚙️ অ্যাডমিন প্যানেল' },
+  createAdminLink: { en:'🛡️ Create new admin', bn:'🛡️ নতুন অ্যাডমিন তৈরি করুন' },
+  logout: { en:'🚪 Logout', bn:'🚪 লগআউট' },
+  language: { en:'Language', bn:'ভাষা' },
+  loggedInAs: { en:'Logged in as', bn:'লগইন করা আছে' },
+  role_admin: { en:'Admin', bn:'অ্যাডমিন' },
+  role_editor: { en:'Editor', bn:'এডিটর' },
+  role_viewer: { en:'Viewer', bn:'ভিউয়ার' },
+  role_individual: { en:'Individual', bn:'ইনডিভিজুয়াল' },
+};
+
+function t(key){
+  const entry = T[key];
+  if(!entry) return key;
+  return entry[appLang] || entry.bn;
+}
+
+function setLang(lang){
+  appLang = lang;
+  try{ localStorage.setItem('hisabKhataLang', lang); }catch(e){}
+  if(lock.status === 'unlocked'){ render(); } else { renderLock(); }
+}
+
 function canEdit(){
-  return !!state.currentUser && (state.currentUser.role === 'admin' || state.currentUser.role === 'editor');
+  return !!state.currentUser && (state.currentUser.role === 'admin' || state.currentUser.role === 'editor' || state.currentUser.role === 'individual');
 }
 function isAdmin(){
   return !!state.currentUser && state.currentUser.role === 'admin';
+}
+function isIndividual(){
+  return !!state.currentUser && state.currentUser.role === 'individual';
+}
+function dataPath(){
+  if(isIndividual()){
+    return 'hisabKhata/individualData/' + encodeURIComponent(state.currentUser.username);
+  }
+  return 'hisabKhata/ledgerData';
 }
 
 function requestPasswordConfirm(onSuccess){
@@ -484,26 +546,44 @@ async function fbSet(path, value){
 
 async function loadData(){
   try{
-    const parsed = await fbGet('hisabKhata/ledgerData');
+    const parsed = await fbGet(dataPath());
     if(parsed){
       data.persons = parsed.persons || [];
       data.transactions = parsed.transactions || [];
       data.income = parsed.income || [];
       data.expenses = parsed.expenses || [];
+      data.expenseCategories = parsed.expenseCategories || [];
     }else{
       data.persons = [];
       data.transactions = [];
       data.income = [];
       data.expenses = [];
+      data.expenseCategories = [];
     }
+    migrateOldExpenses();
   }catch(e){
     showToast('ইন্টারনেট সংযোগ পরীক্ষা করুন — ডেটা লোড করা যায়নি');
   }
 }
 
+function migrateOldExpenses(){
+  const needsMigration = data.expenses.some(e => e.name && !e.categoryId);
+  if(!needsMigration) return;
+  data.expenses = data.expenses.map(e=>{
+    if(e.categoryId) return e;
+    let cat = data.expenseCategories.find(c=>c.name.toLowerCase() === (e.name||'').toLowerCase());
+    if(!cat){
+      cat = { id: uid(), name: e.name || 'খরচ' };
+      data.expenseCategories.push(cat);
+    }
+    return { id: e.id, categoryId: cat.id, amount: e.amount, date: e.date, note: e.note||'', createdAt: e.createdAt || Date.now() };
+  });
+  saveData();
+}
+
 async function saveData(){
   try{
-    await fbSet('hisabKhata/ledgerData', data);
+    await fbSet(dataPath(), data);
   }catch(e){
     showToast('সংরক্ষণে সমস্যা হয়েছে — ইন্টারনেট সংযোগ পরীক্ষা করুন');
   }
@@ -533,9 +613,9 @@ function showToast(msg){
   setTimeout(()=>el.remove(), 1800);
 }
 
-function setView(v, personId){
+function setView(v, id){
   state.view = v;
-  state.personId = personId || null;
+  state.personId = id || null;
   state.txnFilter = 'all';
   render();
 }
@@ -576,13 +656,23 @@ async function savePersonModal(){
   const input = document.getElementById('person-name-input');
   const name = input.value.trim();
   if(!name){ showToast('নাম লিখুন'); return; }
-  if(state.personModal.mode === 'add'){
+  const mode = state.personModal.mode;
+  if(mode === 'add'){
     data.persons.push({ id: uid(), name });
     showToast('ব্যক্তি যোগ হয়েছে');
-  }else{
+  }else if(mode === 'edit'){
     const p = data.persons.find(x=>x.id===state.personModal.id);
     p.name = name;
     showToast('নাম পরিবর্তন হয়েছে');
+  }else if(mode === 'add-expense-cat'){
+    const dup = data.expenseCategories.find(c=>c.name.toLowerCase()===name.toLowerCase());
+    if(dup){ showToast('এই নামে খাত আগে থেকেই আছে'); return; }
+    data.expenseCategories.push({ id: uid(), name });
+    showToast('খাত যোগ হয়েছে');
+  }else if(mode === 'edit-expense-cat'){
+    const c = data.expenseCategories.find(x=>x.id===state.personModal.id);
+    c.name = name;
+    showToast('খাতের নাম পরিবর্তন হয়েছে');
   }
   await saveData();
   state.personModal = null;
@@ -611,9 +701,14 @@ function convertPersonToExpense(personId){
       title: 'খরচ (Expense)-এ রূপান্তর করবেন?',
       msg,
       onYes: async ()=>{
+        let cat = data.expenseCategories.find(c=>c.name.toLowerCase()===p.name.toLowerCase());
+        if(!cat){
+          cat = { id: uid(), name: p.name };
+          data.expenseCategories.push(cat);
+        }
         gaveTxns.forEach(t=>{
           data.expenses.push({
-            id: uid(), name: p.name, amount: t.amount, date: t.date, note: t.note || '', createdAt: t.createdAt || Date.now()
+            id: uid(), categoryId: cat.id, amount: t.amount, date: t.date, note: t.note || '', createdAt: t.createdAt || Date.now()
           });
         });
         data.persons = data.persons.filter(x=>x.id!==personId);
@@ -763,16 +858,16 @@ function setCategory(cat){
 function renderCategoryTabs(){
   return `
     <div class="cat-tabs">
-      <button class="cat-tab cat-loan ${state.category==='loan'?'active':''}" onclick="setCategory('loan')">ধার-দেনা</button>
-      <button class="cat-tab cat-income ${state.category==='income'?'active':''}" onclick="setCategory('income')">আয়</button>
-      <button class="cat-tab cat-expense ${state.category==='expense'?'active':''}" onclick="setCategory('expense')">খরচ</button>
+      <button class="cat-tab cat-loan ${state.category==='loan'?'active':''}" onclick="setCategory('loan')">${t('tabLoan')}</button>
+      <button class="cat-tab cat-income ${state.category==='income'?'active':''}" onclick="setCategory('income')">${t('tabIncome')}</button>
+      <button class="cat-tab cat-expense ${state.category==='expense'?'active':''}" onclick="setCategory('expense')">${t('tabExpense')}</button>
     </div>`;
 }
 
 function renderHome(){
   const tabs = renderCategoryTabs();
   if(state.category === 'income') return tabs + renderIEList('income');
-  if(state.category === 'expense') return tabs + renderIEList('expense');
+  if(state.category === 'expense') return tabs + renderExpenseCategoryList();
   return tabs + renderLoanList();
 }
 
@@ -833,7 +928,7 @@ function renderIEList(type){
   if(q){ items = items.filter(i=>i.name.toLowerCase().includes(q)); }
   const total = ieItems(type).reduce((s,i)=>s+i.amount, 0);
 
-  const searchHtml = (type==='income'?data.income:data.expenses).length>0 ? `
+  const searchHtml = data.income.length>0 ? `
     <div class="search-box">
       <span class="ic">🔍</span>
       <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
@@ -845,10 +940,10 @@ function renderIEList(type){
       <div class="val ${isIncome?'pos':'khoiri-txt'}">${fmtAmt(total)}</div>
     </div>`;
 
-  if((isIncome?data.income:data.expenses).length===0){
+  if(data.income.length===0){
     return totalCard + `
       <div class="empty-state">
-        <div class="big">${isIncome?'💰':'🧾'}</div>
+        <div class="big">💰</div>
         <h3 class="serif">এখনও কোনো ${catLabel} এন্ট্রি নেই</h3>
         <p>নিচের + বাটনে চেপে প্রথম ${catLabel} এন্ট্রি যোগ করুন।</p>
       </div>`;
@@ -897,11 +992,10 @@ function confirmDeleteIE(type, id){
   if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
-      title: (type==='income'?'আয়':'খরচ') + ' এন্ট্রি মুছে ফেলবেন?',
+      title: 'আয় এন্ট্রি মুছে ফেলবেন?',
       msg: 'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
       onYes: async ()=>{
-        if(type==='income'){ data.income = data.income.filter(x=>x.id!==id); }
-        else{ data.expenses = data.expenses.filter(x=>x.id!==id); }
+        data.income = data.income.filter(x=>x.id!==id);
         await saveData();
         state.confirmModal = null;
         render();
@@ -929,12 +1023,11 @@ async function saveIEModal(){
   const date = dateInput.value || todayStr();
   const note = noteInput.value.trim();
   const m = state.ieModal;
-  const list = m.type === 'income' ? data.income : data.expenses;
   if(m.mode === 'add'){
-    list.push({ id: uid(), name, amount, date, note, createdAt: Date.now() });
+    data.income.push({ id: uid(), name, amount, date, note, createdAt: Date.now() });
     showToast('এন্ট্রি যোগ হয়েছে');
   }else{
-    const item = list.find(x=>x.id===m.id);
+    const item = data.income.find(x=>x.id===m.id);
     item.name = name; item.amount = amount; item.date = date; item.note = note;
     showToast('এন্ট্রি পরিবর্তন হয়েছে');
   }
@@ -946,15 +1039,13 @@ async function saveIEModal(){
 function renderIEModal(){
   const m = state.ieModal;
   if(!m) return '';
-  const isIncome = m.type === 'income';
-  const catLabel = isIncome ? 'আয়' : 'খরচ';
   return `
     <div class="overlay" onclick="if(event.target===this) closeIEModal()">
       <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? `নতুন ${catLabel} এন্ট্রি` : `${catLabel} এন্ট্রি সম্পাদনা`}</h2>
+        <h2 class="serif">${m.mode==='add' ? 'নতুন আয় এন্ট্রি' : 'আয় এন্ট্রি সম্পাদনা'}</h2>
         <div class="field">
           <label>নাম / খাত</label>
-          <input id="ie-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${isIncome?'যেমনঃ বেতন':'যেমনঃ বাজার খরচ'}">
+          <input id="ie-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="যেমনঃ বেতন">
         </div>
         <div class="field">
           <label>পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200</label>
@@ -974,6 +1065,277 @@ function renderIEModal(){
         <div class="sheet-actions">
           <button class="btn btn-secondary" onclick="closeIEModal()">বাতিল</button>
           <button class="btn btn-primary" onclick="saveIEModal()">সংরক্ষণ করুন</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ================= Expense categories (mirrors Loan/Person structure) ================= */
+
+function categoryTotal(categoryId){
+  return data.expenses.filter(e=>e.categoryId===categoryId).reduce((s,e)=>s+e.amount, 0);
+}
+
+function categoryEntries(categoryId){
+  return data.expenses.filter(e=>e.categoryId===categoryId)
+    .sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+}
+
+function renderExpenseCategoryList(){
+  let cats = [...data.expenseCategories].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ cats = cats.filter(c=>c.name.toLowerCase().includes(q)); }
+
+  const searchHtml = data.expenseCategories.length>0 ? `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="খাতের নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>` : '';
+
+  const grandTotal = data.expenses.reduce((s,e)=>s+e.amount, 0);
+  const totalCard = data.expenseCategories.length>0 ? `
+    <div class="stat-card" style="margin-bottom:16px; text-align:center;">
+      <div class="label">মোট খরচ (সব খাত মিলিয়ে)</div>
+      <div class="val khoiri-txt">${fmtAmt(grandTotal)}</div>
+    </div>` : '';
+
+  if(data.expenseCategories.length===0){
+    return `
+      <div class="empty-state">
+        <div class="big">🧾</div>
+        <h3 class="serif">এখনও কোনো খরচের খাত নেই</h3>
+        <p>নিচের + বাটনে চেপে প্রথম খরচের খাত (যেমনঃ বাজার, বাসা ভাড়া) যোগ করুন।</p>
+      </div>`;
+  }
+  if(cats.length===0){
+    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" নামে কোনো খাত পাওয়া যায়নি।</p></div>`;
+  }
+
+  const list = cats.map(c=>{
+    const total = categoryTotal(c.id);
+    const cnt = data.expenses.filter(e=>e.categoryId===c.id).length;
+    return `
+      <div class="person-card" style="border-left-color:var(--khoiri);" onclick="setView('expenseCategory','${c.id}')">
+        <div>
+          <div class="person-name">${escapeHtml(c.name)}</div>
+          <div class="person-meta">${cnt} টি এন্ট্রি</div>
+        </div>
+        <div>
+          <div class="balance khoiri-txt">${fmtAmt(total)}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return totalCard + searchHtml + list;
+}
+
+function renderExpenseCategoryDetail(){
+  const c = data.expenseCategories.find(x=>x.id===state.personId);
+  if(!c) return `<div class="empty-state">খাত পাওয়া যায়নি</div>`;
+  const total = categoryTotal(c.id);
+  const entries = categoryEntries(c.id);
+
+  const entryHtml = entries.length===0
+    ? `<div class="empty-state"><p>এই খাতে এখনও কোনো এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।</p></div>`
+    : entries.map(e=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div class="ie-date">${fmtDate(e.date)}</div>
+          <div class="ie-amt expense">${fmtAmt(e.amount)}</div>
+        </div>
+        ${e.note ? `<div class="ie-note">${escapeHtml(e.note)}</div>` : ''}
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditExpenseEntry('${e.id}')">সম্পাদনা</span>
+          <span onclick="confirmDeleteExpenseEntry('${e.id}')">মুছুন</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="person-header-card">
+      <div class="name serif">${escapeHtml(c.name)}</div>
+      <div class="bal khoiri-txt">${fmtAmt(total)}</div>
+      <div class="baltxt">মোট খরচ এই খাতে</div>
+      <div class="person-actions">
+        ${canEdit() ? `<span onclick="openEditExpenseCategory('${c.id}')">নাম পরিবর্তন</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeleteExpenseCategory('${c.id}')">খাত মুছুন</span>` : ''}
+      </div>
+    </div>
+    <div class="section-title">খরচের এন্ট্রি</div>
+    ${entryHtml}
+  `;
+}
+
+function openAddExpenseCategory(){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.personModal = { mode:'add-expense-cat', name:'' };
+  render();
+}
+
+function openEditExpenseCategory(id){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  requestPasswordConfirm(()=>{
+    const c = data.expenseCategories.find(x=>x.id===id);
+    state.personModal = { mode:'edit-expense-cat', id, name:c.name };
+    render();
+  });
+}
+
+function confirmDeleteExpenseCategory(id){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:'খাত মুছে ফেলবেন?',
+      msg:'এই খাতের সব খরচ এন্ট্রিও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।',
+      onYes: async ()=>{
+        data.expenseCategories = data.expenseCategories.filter(x=>x.id!==id);
+        data.expenses = data.expenses.filter(e=>e.categoryId!==id);
+        await saveData();
+        state.confirmModal = null;
+        setView('home');
+        state.category = 'expense';
+        showToast('খাত মুছে ফেলা হয়েছে');
+      }
+    };
+    render();
+  });
+}
+
+function openAddExpenseEntry(categoryId){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  state.expenseEntryModal = { mode:'add', id:null, categoryId, isNewCategory:false, newCategoryName:'', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openQuickAddExpense(){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  const firstCat = data.expenseCategories[0];
+  state.expenseEntryModal = { mode:'add', id:null, categoryId: firstCat ? firstCat.id : '__new__', isNewCategory: !firstCat, newCategoryName:'', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openEditExpenseEntry(id){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  requestPasswordConfirm(()=>{
+    const e = data.expenses.find(x=>x.id===id);
+    state.expenseEntryModal = { mode:'edit', id, categoryId:e.categoryId, isNewCategory:false, newCategoryName:'', amount:String(e.amount), date:e.date, note:e.note||'' };
+    render();
+  });
+}
+
+function confirmDeleteExpenseEntry(id){
+  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:'খরচের এন্ট্রি মুছে ফেলবেন?',
+      msg:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+      onYes: async ()=>{
+        data.expenses = data.expenses.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast('মুছে ফেলা হয়েছে');
+      }
+    };
+    render();
+  });
+}
+
+function closeExpenseEntryModal(){
+  state.expenseEntryModal = null;
+  render();
+}
+
+function onExpenseCategorySelectChange(val){
+  const m = state.expenseEntryModal;
+  if(!m) return;
+  if(val === '__new__'){
+    m.isNewCategory = true;
+  }else{
+    m.isNewCategory = false;
+    m.categoryId = val;
+  }
+  render();
+}
+
+async function saveExpenseEntryModal(){
+  const m = state.expenseEntryModal;
+  const amtInput = document.getElementById('expense-amount-input');
+  const dateInput = document.getElementById('expense-date-input');
+  const noteInput = document.getElementById('expense-note-input');
+  let categoryId = m.categoryId;
+
+  if(m.isNewCategory){
+    const nameInput = document.getElementById('expense-new-cat-input');
+    const newName = nameInput.value.trim();
+    if(!newName){ showToast('খাতের নাম লিখুন'); return; }
+    const existing = data.expenseCategories.find(c=>c.name.toLowerCase()===newName.toLowerCase());
+    if(existing){
+      categoryId = existing.id;
+    }else{
+      categoryId = uid();
+      data.expenseCategories.push({ id: categoryId, name: newName });
+    }
+  }
+  if(!categoryId){ showToast('একটা খাত বেছে নিন'); return; }
+
+  const amount = evaluateExpression(amtInput.value);
+  if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
+  const date = dateInput.value || todayStr();
+  const note = noteInput.value.trim();
+
+  if(m.mode === 'add'){
+    data.expenses.push({ id: uid(), categoryId, amount, date, note, createdAt: Date.now() });
+    showToast('খরচ যোগ হয়েছে');
+  }else{
+    const e = data.expenses.find(x=>x.id===m.id);
+    e.categoryId = categoryId; e.amount = amount; e.date = date; e.note = note;
+    showToast('খরচ পরিবর্তন হয়েছে');
+  }
+  await saveData();
+  state.expenseEntryModal = null;
+  render();
+}
+
+function renderExpenseEntryModal(){
+  const m = state.expenseEntryModal;
+  if(!m) return '';
+  const cats = [...data.expenseCategories].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const options = cats.map(c=>`<option value="${c.id}" ${(!m.isNewCategory && m.categoryId===c.id)?'selected':''}>${escapeHtml(c.name)}</option>`).join('');
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeExpenseEntryModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? 'নতুন খরচ যোগ করুন' : 'খরচ সম্পাদনা'}</h2>
+        <div class="field">
+          <label>খাত</label>
+          <select id="expense-cat-select" onchange="onExpenseCategorySelectChange(this.value)" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+            ${options}
+            <option value="__new__" ${m.isNewCategory?'selected':''}>+ নতুন খাত যোগ করুন</option>
+          </select>
+        </div>
+        ${m.isNewCategory ? `
+        <div class="field">
+          <label>নতুন খাতের নাম</label>
+          <input id="expense-new-cat-input" type="text" value="${escapeHtml(m.newCategoryName)}" placeholder="যেমনঃ বাজার খরচ">
+        </div>` : ''}
+        <div class="field">
+          <label>পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200</label>
+          <div style="display:flex; gap:8px;">
+            <input id="expense-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="০" style="flex:1;">
+            <button type="button" class="calc-eq-btn" onclick="calcFieldById('expense-amount-input')">=</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>তারিখ</label>
+          <input id="expense-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>নোট (ঐচ্ছিক)</label>
+          <textarea id="expense-note-input" placeholder="বিস্তারিত লিখুন">${escapeHtml(m.note)}</textarea>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeExpenseEntryModal()">বাতিল</button>
+          <button class="btn btn-primary" onclick="saveExpenseEntryModal()">সংরক্ষণ করুন</button>
         </div>
       </div>
     </div>`;
@@ -1069,6 +1431,14 @@ function renderSummary(){
   const totalExpense = data.expenses.reduce((s,i)=>s+i.amount, 0);
   const netIE = totalIncome - totalExpense;
 
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 365);
+  const cutoffStr = cutoff.toISOString().slice(0,10);
+  const last12Income = data.income.filter(i=>i.date >= cutoffStr).reduce((s,i)=>s+i.amount, 0);
+  const last12Expense = data.expenses.filter(i=>i.date >= cutoffStr).reduce((s,i)=>s+i.amount, 0);
+  const avgIncome = last12Income / 12;
+  const avgExpense = last12Expense / 12;
+
   return `
     <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">ধার-দেনা</span></div>
     <div class="summary-cards">
@@ -1101,6 +1471,16 @@ function renderSummary(){
       <div class="label">আয় − খরচ (নিট সঞ্চয়)</div>
       <div class="val ${netIE>0?'pos':netIE<0?'khoiri-txt':'zero'}">${fmtAmt(Math.abs(netIE))} ${netIE>0?'(উদ্বৃত্ত)':netIE<0?'(ঘাটতি)':''}</div>
     </div>
+    <div class="summary-cards" style="margin-bottom:20px;">
+      <div class="stat-card">
+        <div class="label">গড় মাসিক আয় (গত ১২ মাস)</div>
+        <div class="val pos">${fmtAmt(Math.round(avgIncome))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">গড় মাসিক খরচ (গত ১২ মাস)</div>
+        <div class="val khoiri-txt">${fmtAmt(Math.round(avgExpense))}</div>
+      </div>
+    </div>
 
     <div class="section-title">
       <span>ব্যক্তিভিত্তিক হিসাব</span>
@@ -1108,24 +1488,21 @@ function renderSummary(){
     </div>
     ${searchHtml}
     ${persons.length===0 ? `<div class="empty-state"><p>${data.persons.length===0 ? 'এখনও কোনো ব্যক্তি নেই।' : 'কেউ পাওয়া যায়নি।'}</p></div>` : rows}
-    <div style="text-align:center; margin-top:26px; display:flex; flex-direction:column; gap:10px; align-items:center;">
-      <span class="link-btn" onclick="openChangeMyPassword()">🔒 আমার পাসওয়ার্ড পরিবর্তন করুন</span>
-      ${isAdmin() ? `<span class="link-btn" onclick="setView('admin')">⚙️ অ্যাডমিন প্যানেল</span>` : ''}
-      <span class="link-btn" style="color:var(--red);" onclick="logout()">🚪 লগআউট</span>
-    </div>
   `;
 }
 
 function renderPersonModal(){
   if(!state.personModal) return '';
   const m = state.personModal;
+  const titles = { 'add':'নতুন ব্যক্তি যোগ করুন', 'edit':'নাম পরিবর্তন করুন', 'add-expense-cat':'নতুন খরচের খাত যোগ করুন', 'edit-expense-cat':'খাতের নাম পরিবর্তন করুন' };
+  const placeholders = { 'add':'যেমনঃ করিম মিয়া', 'edit':'যেমনঃ করিম মিয়া', 'add-expense-cat':'যেমনঃ বাজার খরচ', 'edit-expense-cat':'যেমনঃ বাজার খরচ' };
   return `
     <div class="overlay" onclick="if(event.target===this) closePersonModal()">
       <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? 'নতুন ব্যক্তি যোগ করুন' : 'নাম পরিবর্তন করুন'}</h2>
+        <h2 class="serif">${titles[m.mode]}</h2>
         <div class="field">
           <label>নাম</label>
-          <input id="person-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="যেমনঃ করিম মিয়া">
+          <input id="person-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${placeholders[m.mode]}">
         </div>
         <div class="sheet-actions">
           <button class="btn btn-secondary" onclick="closePersonModal()">বাতিল</button>
@@ -1338,6 +1715,13 @@ function setLockUsername(val){
   if(input){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
 }
 
+function updatePinDotsDisplay(count){
+  const dotsEl = document.querySelector('.lock-screen .pin-dots');
+  if(!dotsEl) return false;
+  dotsEl.innerHTML = [0,1,2,3].map(i=>`<div class="pin-dot ${i<count?'filled':''}"></div>`).join('');
+  return true;
+}
+
 function pinPress(digit){
   const uname = lock.usernameInput.trim();
   if(!uname){
@@ -1347,6 +1731,7 @@ function pinPress(digit){
   }
   if(lock.entry.length < 4) lock.entry += digit;
   if(lock.entry.length === 4){
+    updatePinDotsDisplay(lock.entry.length);
     setTimeout(async ()=>{
       const match = lock.users.find(u=>u.username.toLowerCase()===uname.toLowerCase() && u.password===lock.entry);
       if(match){
@@ -1360,13 +1745,18 @@ function pinPress(digit){
         renderLock();
       }
     }, 150);
+  }else{
+    if(!updatePinDotsDisplay(lock.entry.length)){
+      renderLock();
+    }
   }
-  renderLock();
 }
 
 function pinBackspace(){
   lock.entry = lock.entry.slice(0,-1);
-  renderLock();
+  if(!updatePinDotsDisplay(lock.entry.length)){
+    renderLock();
+  }
 }
 
 function renderPinPad(pressFn, backFn){
@@ -1383,29 +1773,33 @@ function renderLock(){
   const dotsCount = lock.entry.length;
   const usernameField = `
     <div class="field" style="width:100%; max-width:280px; text-align:left;">
-      <label>ইউজারনেম</label>
-      <input id="lock-username-input" type="text" placeholder="ইউজারনেম লিখুন" value="${escapeHtml(lock.usernameInput)}" oninput="setLockUsername(this.value)">
+      <label>${t('loginUsernameLabel')}</label>
+      <input id="lock-username-input" type="text" placeholder="${t('loginUsernamePlaceholder')}" value="${escapeHtml(lock.usernameInput)}" oninput="setLockUsername(this.value)">
     </div>`;
 
   app.innerHTML = `
     <header class="topbar">
       <div class="back-row">
         <div>
-          <h1>হিসাব খাতা — By FaBi</h1>
-          <div class="sub">সুরক্ষিত প্রবেশ</div>
+          <h1>${t('appTitle')}</h1>
+          <div class="sub">${appLang==='en' ? 'Secure access' : 'সুরক্ষিত প্রবেশ'}</div>
         </div>
       </div>
     </header>
     <div class="lock-screen">
       <div class="icon">🔒</div>
-      <h2 class="serif">লগইন করুন</h2>
-      <p>ইউজারনেম ও পাসওয়ার্ড দিন। অ্যাডমিন আপনার অ্যাকাউন্ট তৈরি করে দেবে।</p>
+      <h2 class="serif">${t('loginTitle')}</h2>
+      <p>${t('loginDesc')}</p>
       ${usernameField}
       <div class="pin-dots">
         ${[0,1,2,3].map(i=>`<div class="pin-dot ${i<dotsCount?'filled':''}"></div>`).join('')}
       </div>
       ${renderPinPad('pinPress','pinBackspace')}
       <div class="pin-error">${lock.error}</div>
+      <div style="margin-top:20px; display:flex; gap:8px;">
+        <button class="chip ${appLang==='en'?'active':''}" onclick="setLang('en')" type="button">English</button>
+        <button class="chip ${appLang==='bn'?'active':''}" onclick="setLang('bn')" type="button">বাংলা</button>
+      </div>
     </div>
   `;
   lock.error = '';
@@ -1499,8 +1893,8 @@ function openAdminResetPassword(username){
 }
 
 /* ---------- Admin: create new user ---------- */
-function openCreateUser(){
-  state.newUserModal = { username:'', p1:'', p2:'', role:'editor', error:'' };
+function openCreateUser(forcedRole){
+  state.newUserModal = { username:'', p1:'', p2:'', role: forcedRole || 'editor', lockRole: !!forcedRole, error:'' };
   render();
 }
 
@@ -1524,16 +1918,17 @@ async function submitNewUser(){
   await saveUsers();
   state.newUserModal = null;
   render();
-  showToast('নতুন ইউজার তৈরি হয়েছে');
+  showToast(m.role==='admin' ? 'নতুন অ্যাডমিন তৈরি হয়েছে' : 'নতুন ইউজার তৈরি হয়েছে');
 }
 
 function renderNewUserModal(){
   const m = state.newUserModal;
   if(!m) return '';
+  const roleLabels = { editor:'এডিট করতে পারবে', viewer:'শুধু দেখতে পারবে', individual:'ইনডিভিজুয়াল (নিজস্ব আলাদা ডেটা)', admin:'অ্যাডমিন' };
   return `
     <div class="overlay" onclick="if(event.target===this) closeNewUserModal()">
       <div class="sheet">
-        <h2 class="serif">নতুন ইউজার তৈরি করুন</h2>
+        <h2 class="serif">${m.role==='admin' ? 'নতুন অ্যাডমিন তৈরি করুন' : 'নতুন ইউজার তৈরি করুন'}</h2>
         <div class="field">
           <label>ইউজারনেম</label>
           <input type="text" value="${escapeHtml(m.username)}" oninput="state.newUserModal.username=this.value; render();" placeholder="যেমনঃ রহিম">
@@ -1546,13 +1941,20 @@ function renderNewUserModal(){
           <label>পাসওয়ার্ড আবার লিখুন</label>
           <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p2)}" oninput="state.newUserModal.p2=this.value.replace(/\\D/g,'').slice(0,4); render();">
         </div>
+        ${m.lockRole ? `
         <div class="field">
           <label>অ্যাক্সেস</label>
-          <div class="type-toggle">
-            <button class="${m.role==='editor'?'sel-gave':''}" onclick="state.newUserModal.role='editor'; render();">এডিট করতে পারবে</button>
-            <button class="${m.role==='viewer'?'sel-got':''}" onclick="state.newUserModal.role='viewer'; render();">শুধু দেখতে পারবে</button>
+          <div style="font-size:14px; color:var(--ink-soft); padding:8px 0;">🛡️ ${roleLabels[m.role]}</div>
+        </div>` : `
+        <div class="field">
+          <label>অ্যাক্সেস</label>
+          <div class="type-toggle" style="flex-wrap:wrap; gap:8px;">
+            <button style="flex:1 1 30%;" class="${m.role==='editor'?'sel-gave':''}" onclick="state.newUserModal.role='editor'; render();">এডিট</button>
+            <button style="flex:1 1 30%;" class="${m.role==='viewer'?'sel-got':''}" onclick="state.newUserModal.role='viewer'; render();">শুধু ভিউ</button>
+            <button style="flex:1 1 30%;" class="${m.role==='individual'?'sel-gave':''}" onclick="state.newUserModal.role='individual'; render();">ইনডিভিজুয়াল</button>
           </div>
-        </div>
+          ${m.role==='individual' ? `<div style="font-size:12px; color:var(--ink-soft); margin-top:6px;">ইনডিভিজুয়াল ইউজারের ডেটা সম্পূর্ণ আলাদা ও ব্যক্তিগত থাকবে — অ্যাডমিনসহ অন্য কেউ এই ডেটা দেখতে পারবে না।</div>` : ''}
+        </div>`}
         <div class="pin-error">${m.error||''}</div>
         <div class="sheet-actions">
           <button class="btn btn-secondary" onclick="closeNewUserModal()">বাতিল</button>
@@ -1585,22 +1987,62 @@ function confirmDeleteUser(username){
   render();
 }
 
+function renderSettings(){
+  const roleKey = 'role_' + (state.currentUser ? state.currentUser.role : 'viewer');
+  return `
+    <div class="stat-card" style="margin-bottom:20px; text-align:center;">
+      <div class="label">${t('loggedInAs')}</div>
+      <div class="val" style="font-size:16px;">${escapeHtml(state.currentUser.username)} (${t(roleKey)})</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">${t('language')}</div>
+    <div class="filter-chips" style="margin-bottom:22px;">
+      <span class="chip ${appLang==='en'?'active':''}" onclick="setLang('en')">English</span>
+      <span class="chip ${appLang==='bn'?'active':''}" onclick="setLang('bn')">বাংলা</span>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="person-card" style="border-left-color:var(--maroon); cursor:pointer;" onclick="openChangeMyPassword()">
+        <div class="person-name">${t('changePassword')}</div>
+      </div>
+      ${isAdmin() ? `
+      <div class="person-card" style="border-left-color:var(--maroon); cursor:pointer;" onclick="setView('admin')">
+        <div class="person-name">${t('adminPanelLink')}</div>
+      </div>` : ''}
+      ${isIndividual() ? `
+      <div class="person-card" style="border-left-color:var(--loan-blue); cursor:pointer;" onclick="openCreateUser('admin')">
+        <div class="person-name">${t('createAdminLink')}</div>
+        <div class="person-meta">${appLang==='en' ? 'You can only create new admin accounts' : 'আপনি শুধু নতুন অ্যাডমিন অ্যাকাউন্ট তৈরি করতে পারবেন'}</div>
+      </div>` : ''}
+      <div class="person-card" style="border-left-color:var(--red); cursor:pointer;" onclick="logout()">
+        <div class="person-name" style="color:var(--red);">${t('logout')}</div>
+      </div>
+    </div>
+  `;
+}
+
 function renderAdminPanel(){
   const others = lock.users.filter(u=>u.role!=='admin');
-  const rows = others.map(u=>`
+  const rows = others.map(u=>{
+    const isInd = u.role === 'individual';
+    const tag = isInd ? 'ইনডিভিজুয়াল' : (u.role==='editor' ? 'এডিট অ্যাক্সেস' : 'শুধু ভিউ');
+    const tagClass = isInd ? 'tag-gave' : (u.role==='editor' ? 'tag-gave' : 'tag-got');
+    return `
     <div class="txn-row">
       <div class="txn-top">
         <div>
-          <span class="txn-tag ${u.role==='editor'?'tag-gave':'tag-got'}">${u.role==='editor'?'এডিট অ্যাক্সেস':'শুধু ভিউ'}</span>
+          <span class="txn-tag ${tagClass}">${tag}</span>
           <div style="font-size:15px; font-weight:600; margin-top:4px;">${escapeHtml(u.username)}</div>
+          ${isInd ? `<div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">এই ইউজারের ডেটা ব্যক্তিগত — অ্যাডমিন দেখতে পারবে না</div>` : ''}
         </div>
       </div>
       <div class="txn-actions" style="margin-top:10px;">
-        <span onclick="toggleUserRole('${escapeHtml(u.username)}')">${u.role==='editor'?'ভিউ-অনলি করুন':'এডিট দিন'}</span>
+        ${!isInd ? `<span onclick="toggleUserRole('${escapeHtml(u.username)}')">${u.role==='editor'?'ভিউ-অনলি করুন':'এডিট দিন'}</span>` : ''}
         <span onclick="openAdminResetPassword('${escapeHtml(u.username)}')">পাসওয়ার্ড পরিবর্তন</span>
         <span onclick="confirmDeleteUser('${escapeHtml(u.username)}')">মুছুন</span>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   return `
     <div class="stat-card" style="margin-bottom:18px; text-align:center;">
@@ -1626,18 +2068,19 @@ async function bootApp(){
 function startSyncPolling(){
   if(window.__syncInterval) return;
   window.__syncInterval = setInterval(async ()=>{
-    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.ieModal;
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.ieModal || state.expenseEntryModal;
     if(modalOpen) return;
     try{
-      const parsed = await fbGet('hisabKhata/ledgerData');
-      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [] };
-      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[] });
-      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses });
+      const parsed = await fbGet(dataPath());
+      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories });
       if(freshStr !== currentStr){
         data.persons = fresh.persons || [];
         data.transactions = fresh.transactions || [];
         data.income = fresh.income || [];
         data.expenses = fresh.expenses || [];
+        data.expenseCategories = fresh.expenseCategories || [];
         render();
       }
     }catch(e){}
@@ -1646,27 +2089,36 @@ function startSyncPolling(){
 
 function render(){
   const app = document.getElementById('app');
-  let headerTitle = 'হিসাব খাতা — By FaBi';
+  let headerTitle = t('appTitle');
   let headerSub = '';
   let backBtn = '';
   let mainHtml = '';
 
   if(state.view === 'home'){
-    const roleLabel = state.currentUser ? (state.currentUser.role==='admin' ? 'অ্যাডমিন' : state.currentUser.role==='editor' ? 'এডিটর' : 'ভিউয়ার') : '';
-    headerSub = 'সবার হিসাব এক জায়গায় (শেয়ার্ড)' + (state.currentUser ? ' · ' + escapeHtml(state.currentUser.username) + ' (' + roleLabel + ')' : '');
+    const roleKey = state.currentUser ? ('role_' + state.currentUser.role) : '';
+    const baseSub = isIndividual() ? t('homeSubPrivate') : t('homeSubShared');
+    headerSub = baseSub + (state.currentUser ? ' · ' + escapeHtml(state.currentUser.username) + ' (' + t(roleKey) + ')' : '');
     mainHtml = renderHome();
   }else if(state.view === 'person'){
     const p = data.persons.find(x=>x.id===state.personId);
     headerTitle = p ? p.name : 'ব্যক্তি';
     backBtn = `<button class="icon-btn" onclick="setView('home')">←</button>`;
     mainHtml = renderPerson();
+  }else if(state.view === 'expenseCategory'){
+    const c = data.expenseCategories.find(x=>x.id===state.personId);
+    headerTitle = c ? c.name : 'খাত';
+    backBtn = `<button class="icon-btn" onclick="state.category='expense'; setView('home')">←</button>`;
+    mainHtml = renderExpenseCategoryDetail();
   }else if(state.view === 'summary'){
-    headerTitle = 'সারসংক্ষেপ রিপোর্ট';
-    headerSub = 'সব ব্যক্তির মোট হিসাব';
+    headerTitle = t('summaryTitle');
+    headerSub = t('summarySub');
     mainHtml = renderSummary();
+  }else if(state.view === 'settings'){
+    headerTitle = t('settingsTitle');
+    mainHtml = renderSettings();
   }else if(state.view === 'admin'){
-    headerTitle = 'অ্যাডমিন প্যানেল';
-    backBtn = `<button class="icon-btn" onclick="setView('summary')">←</button>`;
+    headerTitle = t('adminPanelTitle');
+    backBtn = `<button class="icon-btn" onclick="setView('settings')">←</button>`;
     mainHtml = isAdmin() ? renderAdminPanel() : `<div class="empty-state"><p>আপনার এই পাতা দেখার অনুমতি নেই।</p></div>`;
   }
 
@@ -1683,19 +2135,24 @@ function render(){
     <main>${mainHtml}</main>
     ${state.view==='home' && state.category==='loan' && canEdit() ? `<button class="fab-btn" onclick="openAddPerson()">+</button>` : ''}
     ${state.view==='home' && state.category==='income' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddIE('income')">+</button>` : ''}
-    ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openAddIE('expense')">+</button>` : ''}
+    ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openQuickAddExpense()">+</button>` : ''}
     ${state.view==='person' && canEdit() ? `<button class="fab-btn" onclick="openAddTxn('${state.personId}')">+</button>` : ''}
+    ${state.view==='expenseCategory' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openAddExpenseEntry('${state.personId}')">+</button>` : ''}
     <nav class="bottomnav">
-      <button class="${state.view==='home'||state.view==='person'?'active':''}" onclick="setView('home')">
-        <span class="ic">🏠</span>হোম
+      <button class="${state.view==='home'||state.view==='person'||state.view==='expenseCategory'?'active':''}" onclick="setView('home')">
+        <span class="ic">🏠</span>${t('navHome')}
       </button>
-      <button class="${state.view==='summary'||state.view==='admin'?'active':''}" onclick="setView('summary')">
-        <span class="ic">📊</span>সারসংক্ষেপ
+      <button class="${state.view==='summary'?'active':''}" onclick="setView('summary')">
+        <span class="ic">📊</span>${t('navSummary')}
+      </button>
+      <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
+        <span class="ic">⚙️</span>${t('navSettings')}
       </button>
     </nav>
     ${renderPersonModal()}
     ${renderTxnModal()}
     ${renderIEModal()}
+    ${renderExpenseEntryModal()}
     ${renderConfirmModal()}
     ${renderPwModal()}
     ${renderNewUserModal()}
