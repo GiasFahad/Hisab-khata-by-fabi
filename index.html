@@ -393,7 +393,197 @@ const T = {
   role_editor: { en:'Editor', bn:'এডিটর' },
   role_viewer: { en:'Viewer', bn:'ভিউয়ার' },
   role_individual: { en:'Individual', bn:'ইনডিভিজুয়াল' },
-};
+
+  netIE: { en:'Income − Expense (Net Savings)', bn:'আয় − খরচ (নিট সঞ্চয়)' },
+  surplus: { en:' (surplus)', bn:' (উদ্বৃত্ত)' },
+  deficit: { en:' (deficit)', bn:' (ঘাটতি)' },
+  avgMonthlyIncome: { en:'Avg. monthly income (since 1st entry)', bn:'গড় মাসিক আয় (প্রথম এন্ট্রি থেকে)' },
+  avgMonthlyExpense: { en:'Avg. monthly expense (since 1st entry)', bn:'গড় মাসিক খরচ (প্রথম এন্ট্রি থেকে)' },
+  avgMonthly: { en:'Avg. monthly (since 1st entry)', bn:'গড় মাসিক (প্রথম এন্ট্রি থেকে)' },
+  totalExpense: { en:'Total expense', bn:'মোট খরচ' },
+  categoryNotFound: { en:'Category not found', bn:'খাত পাওয়া যায়নি' },
+  noEntriesInCategory: { en:'No entries in this category yet. Tap + to add one.', bn:'এই খাতে এখনও কোনো এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।' },
+  renameCategory: { en:'Rename category', bn:'নাম পরিবর্তন' },
+  deleteCategory: { en:'Delete category', bn:'খাত মুছুন' },
+  expenseEntries: { en:'Expense entries', bn:'খরচের এন্ট্রি' },
+
+  searchByName: { en:'Search by name...', bn:'নাম দিয়ে খুঁজুন...' },
+  searchByCategory: { en:'Search by category...', bn:'খাতের নাম দিয়ে খুঁজুন...' },
+  noPersonsYet: { en:'No one added yet', bn:'এখনও কেউ যোগ করা হয়নি' },
+  noPersonsDesc: { en:'Tap + below to add your first person and start tracking money given/taken.', bn:'নিচের + বাটনে চেপে প্রথম ব্যক্তি যোগ করুন এবং তার সাথে টাকা লেনদেনের হিসাব রাখা শুরু করুন।' },
+  noResultsFor: { en:'No results found for', bn:'নামে কেউ পাওয়া যায়নি' },
+  entries: { en:'entries', bn:'টি এন্ট্রি' },
+  willReceive: { en:'to receive', bn:'পাবেন' },
+  willGive: { en:'to give', bn:'দিবেন' },
+  settled: { en:'settled', bn:'সমান' },
+  loanEntries: { en:'Loan entries', bn:'লেনদেনের হিসাব' },
+  all: { en:'All', bn:'সব' },
+  gave: { en:'Gave', bn:'দিলাম' },
+  got: { en:'Got', bn:'পেলাম' },
+  renamePerson: { en:'Rename person', bn:'নাম পরিবর্তন' },
+  deletePerson: { en:'Delete person', bn:'ব্যক্তি মুছুন' },
+  pdfReport: { en:'PDF Report', bn:'PDF রিপোর্ট' },
+  convertToExpense: { en:'🧾 Convert to Expense', bn:'🧾 এটাকে খরচ (Expense) এ রূপান্তর করুন' },
+  youWillReceive: { en:'You will receive', bn:'আপনি পাবেন' },
+  youWillGive: { en:'You will give', bn:'আপনি দিবেন' },
+  settledUp: { en:'Settled up', bn:'হিসাব সমান' },
+
+  totalIncomeLabel: { en:'Total income', bn:'মোট আয়' },
+  noIncomeYet: { en:'No income entries yet', bn:'এখনও কোনো আয় এন্ট্রি নেই' },
+  noIncomeDesc: { en:'Tap + below to add your first income entry.', bn:'নিচের + বাটনে চেপে প্রথম আয় এন্ট্রি যোগ করুন।' },
+  noResultsForQuery: { en:'No results found for', bn:'নামে কিছু পাওয়া যায়নি' },
+  totalExpenseAllCats: { en:'Total expense (all categories)', bn:'মোট খরচ (সব খাত মিলিয়ে)' },
+  noCategoriesYet: { en:'No expense categories yet', bn:'এখনও কোনো খরচের খাত নেই' },
+  noCategoriesDesc: { en:'Tap + below to add your first expense category (e.g. groceries, rent).', bn:'নিচের + বাটনে চেপে প্রথম খরচের খাত (যেমনঃ বাজার, বাসা ভাড়া) যোগ করুন।' },
+  noCategoryResultsFor: { en:'No category found for', bn:'নামে কোনো খাত পাওয়া যায়নি' },
+
+  newPersonTitle: { en:'Add new person', bn:'নতুন ব্যক্তি যোগ করুন' },
+  editNameTitle: { en:'Rename', bn:'নাম পরিবর্তন করুন' },
+  newCategoryTitle: { en:'Add new expense category', bn:'নতুন খরচের খাত যোগ করুন' },
+  editCategoryTitle: { en:'Rename category', bn:'খাতের নাম পরিবর্তন করুন' },
+  nameLabel: { en:'Name', bn:'নাম' },
+  namePlaceholderPerson: { en:'e.g. Karim Mia', bn:'যেমনঃ করিম মিয়া' },
+  namePlaceholderCategory: { en:'e.g. Groceries', bn:'যেমনঃ বাজার খরচ' },
+
+  newLoanEntryTitle: { en:'Add new loan entry', bn:'নতুন হিসাব যোগ করুন' },
+  editLoanEntryTitle: { en:'Edit loan entry', bn:'হিসাব সম্পাদনা' },
+  entryType: { en:'Type', bn:'ধরন' },
+  gaveMoney: { en:'Gave money', bn:'টাকা দিলাম' },
+  gotMoney: { en:'Got money', bn:'টাকা পেলাম' },
+  amountLabel: { en:'Amount (৳) — you can calculate, e.g. 500+200', bn:'পরিমাণ (৳) — সরাসরি লিখুন, অথবা হিসাব করতে যেমনঃ 500+200-50' },
+  amountLabelSimple: { en:'Amount (৳) — you can calculate, e.g. 500+200', bn:'পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200' },
+  dateLabel: { en:'Date', bn:'তারিখ' },
+  noteLabel: { en:'Note (optional)', bn:'নোট (ঐচ্ছিক)' },
+  notePlaceholder: { en:'e.g. money for groceries', bn:'যেমনঃ বাজারের জন্য টাকা' },
+  noteDetailsPlaceholder: { en:'Write details', bn:'বিস্তারিত লিখুন' },
+
+  newIncomeEntry: { en:'Add new income entry', bn:'নতুন আয় এন্ট্রি' },
+  editIncomeEntry: { en:'Edit income entry', bn:'আয় এন্ট্রি সম্পাদনা' },
+  incomeNamePlaceholder: { en:'e.g. Salary', bn:'যেমনঃ বেতন' },
+
+  newExpenseTitle: { en:'Add new expense', bn:'নতুন খরচ যোগ করুন' },
+  editExpenseTitle: { en:'Edit expense', bn:'খরচ সম্পাদনা' },
+  categoryLabel: { en:'Category', bn:'খাত' },
+  addNewCategoryOption: { en:'+ Add new category', bn:'+ নতুন খাত যোগ করুন' },
+  newCategoryNameLabel: { en:'New category name', bn:'নতুন খাতের নাম' },
+
+  confirmDeletePersonTitle: { en:'Delete this person?', bn:'ব্যক্তি মুছে ফেলবেন?' },
+  confirmDeletePersonMsg: { en:'All their loan entries will also be deleted. This cannot be undone.', bn:'এই ব্যক্তির সব হিসাবও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  confirmDeleteEntryTitle: { en:'Delete this entry?', bn:'হিসাব মুছে ফেলবেন?' },
+  confirmDeleteEntryMsg: { en:'This entry will be permanently deleted.', bn:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।' },
+  confirmDeleteIncomeTitle: { en:'Delete this income entry?', bn:'আয় এন্ট্রি মুছে ফেলবেন?' },
+  confirmDeleteCategoryTitle: { en:'Delete this category?', bn:'খাত মুছে ফেলবেন?' },
+  confirmDeleteCategoryMsg: { en:'All expense entries in this category will also be deleted. This cannot be undone.', bn:'এই খাতের সব খরচ এন্ট্রিও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  confirmDeleteExpenseTitle: { en:'Delete this expense entry?', bn:'খরচের এন্ট্রি মুছে ফেলবেন?' },
+  yesDelete: { en:'Yes, delete', bn:'হ্যাঁ, মুছুন' },
+  noKeep: { en:'No, keep it', bn:'না, থাক' },
+
+  noPermission: { en:'You don\'t have permission for this', bn:'আপনার এই কাজের অনুমতি নেই' },
+  entryAdded: { en:'Entry added', bn:'হিসাব যোগ হয়েছে' },
+  entryUpdated: { en:'Entry updated', bn:'হিসাব পরিবর্তন হয়েছে' },
+  deletedToast: { en:'Deleted', bn:'মুছে ফেলা হয়েছে' },
+  personAdded: { en:'Person added', bn:'ব্যক্তি যোগ হয়েছে' },
+  nameChanged: { en:'Name updated', bn:'নাম পরিবর্তন হয়েছে' },
+  enterName: { en:'Please enter a name', bn:'নাম লিখুন' },
+  enterValidAmount: { en:'Please enter a valid amount', bn:'সঠিক পরিমাণ লিখুন' },
+  calcError: { en:'Invalid calculation — only numbers and + - * / allowed', bn:'হিসাবটি সঠিক নয় — শুধু সংখ্যা ও + - * / চিহ্ন ব্যবহার করুন' },
+  calcResultSet: { en:'Result filled in', bn:'ফলাফল বসানো হয়েছে' },
+
+  confirmLogoutTitle: { en:'Log out?', bn:'লগআউট করবেন?' },
+  confirmLogoutMsg: { en:'You will need to log in again with your username and password.', bn:'আবার ঢুকতে হলে ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করতে হবে।' },
+  confirmDeleteUserTitle: { en:'Delete this user?', bn:'ইউজার মুছে ফেলবেন?' },
+  confirmDeleteUserMsg: { en:'will be permanently deleted. This cannot be undone.', bn:'ইউজারটি মুছে ফেলা হবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+
+  individualDataPrivateNote: { en:'This user\'s data is private — admin cannot view it', bn:'এই ইউজারের ডেটা ব্যক্তিগত — অ্যাডমিন দেখতে পারবে না' },
+  makeViewOnly: { en:'Make view-only', bn:'ভিউ-অনলি করুন' },
+  makeEditor: { en:'Make editor', bn:'এডিট দিন' },
+  changeUserPassword: { en:'Change password', bn:'পাসওয়ার্ড পরিবর্তন' },
+  userList: { en:'User list', bn:'ইউজার তালিকা' },
+  newUser: { en:'New user', bn:'নতুন ইউজার' },
+  noUsersYet: { en:'No users created yet.', bn:'এখনও কোনো ইউজার তৈরি করা হয়নি।' },
+
+  oldPasswordTitle: { en:'Enter old password', bn:'পুরাতন পাসওয়ার্ড দিন' },
+  oldPasswordDesc: { en:'For security, first enter your current password.', bn:'নিরাপত্তার জন্য আগে আপনার বর্তমান পাসওয়ার্ড দিন।' },
+  adminResetDesc: { en:'For security, first enter your own (admin) password.', bn:'নিরাপত্তার জন্য আগে আপনার (অ্যাডমিনের) নিজের পাসওয়ার্ড দিন।' },
+  oldPasswordLabel: { en:'Old password (4 digits)', bn:'পুরাতন পাসওয়ার্ড (৪ ডিজিট)' },
+  yourAdminPasswordLabel: { en:'Your admin password (4 digits)', bn:'আপনার অ্যাডমিন পাসওয়ার্ড (৪ ডিজিট)' },
+  next: { en:'Next', bn:'পরবর্তী' },
+  newPasswordTitle: { en:'Enter new password', bn:'নতুন পাসওয়ার্ড দিন' },
+  newPasswordLabel: { en:'New password (4 digits)', bn:'নতুন পাসওয়ার্ড (৪ ডিজিট)' },
+  newPasswordAgainLabel: { en:'Re-enter new password', bn:'নতুন পাসওয়ার্ড আবার লিখুন' },
+  passwordChangedToast: { en:'Password changed', bn:'পাসওয়ার্ড পরিবর্তন হয়েছে' },
+  wrongPasswordErr: { en:'Password is incorrect', bn:'পাসওয়ার্ড সঠিক নয়' },
+  enter4DigitPassword: { en:'Enter a 4-digit password', bn:'৪ ডিজিটের পাসওয়ার্ড দিন' },
+  bothPasswordsMustMatch: { en:'Enter the same 4-digit password in both fields', bn:'দুই জায়গাতেই ৪ ডিজিটের পাসওয়ার্ড দিন' },
+  passwordsMustMatch: { en:'Passwords must match', bn:'নতুন পাসওয়ার্ড দুইবার একই দিন' },
+  createNewUserTitle: { en:'Create new user', bn:'নতুন ইউজার তৈরি করুন' },
+  createNewAdminTitle: { en:'Create new admin', bn:'নতুন অ্যাডমিন তৈরি করুন' },
+  usernameLabel: { en:'Username', bn:'ইউজারনেম' },
+  usernamePlaceholderExample: { en:'e.g. Rahim', bn:'যেমনঃ রহিম' },
+  accessLabel: { en:'Access', bn:'অ্যাক্সেস' },
+  accessEditor: { en:'Edit', bn:'এডিট' },
+  accessViewer: { en:'View only', bn:'শুধু ভিউ' },
+  accessIndividual: { en:'Individual', bn:'ইনডিভিজুয়াল' },
+  individualHint: { en:'An individual user\'s data is completely separate and private — no one else, including the admin, can see it.', bn:'ইনডিভিজুয়াল ইউজারের ডেটা সম্পূর্ণ আলাদা ও ব্যক্তিগত থাকবে — অ্যাডমিনসহ অন্য কেউ এই ডেটা দেখতে পারবে না।' },
+  create: { en:'Create', bn:'তৈরি করুন' },
+  usernameTaken: { en:'This username already exists', bn:'এই ইউজারনেম আগে থেকেই আছে' },
+  newAdminCreatedToast: { en:'New admin created', bn:'নতুন অ্যাডমিন তৈরি হয়েছে' },
+  newUserCreatedToast: { en:'New user created', bn:'নতুন ইউজার তৈরি হয়েছে' },
+  confirmWithPasswordTitle: { en:'Confirm with password', bn:'পাসওয়ার্ড দিয়ে নিশ্চিত করুন' },
+  confirmWithPasswordDesc: { en:'Enter your password to confirm this action.', bn:'এই কাজটি করতে আপনার পাসওয়ার্ড দিন।' },
+  enterUsername: { en:'Please enter a username', bn:'ইউজারনেম লিখুন' },
+  confirmBtn: { en:'Confirm', bn:'নিশ্চিত করুন' },
+
+  loadFailedToast: { en:'Check your internet connection — could not load data', bn:'ইন্টারনেট সংযোগ পরীক্ষা করুন — ডেটা লোড করা যায়নি' },
+  saveFailedToast: { en:'Save failed — check your internet connection', bn:'সংরক্ষণে সমস্যা হয়েছে — ইন্টারনেট সংযোগ পরীক্ষা করুন' },
+  categoryNameTaken: { en:'A category with this name already exists', bn:'এই নামে খাত আগে থেকেই আছে' },
+  categoryAdded: { en:'Category added', bn:'খাত যোগ হয়েছে' },
+  categoryRenamed: { en:'Category renamed', bn:'খাতের নাম পরিবর্তন হয়েছে' },
+  noGaveEntriesToConvert: { en:'This person has no "gave" entries — nothing to convert to expense', bn:'এই ব্যক্তির কোনো "দিলাম" এন্ট্রি নেই — খরচে রূপান্তর করার কিছু নেই' },
+  convertedToExpense: { en:'Converted to expense', bn:'খরচে রূপান্তরিত হয়েছে' },
+  categoryDeleted: { en:'Category deleted', bn:'খাত মুছে ফেলা হয়েছে' },
+  enterCategoryName: { en:'Please enter a category name', bn:'খাতের নাম লিখুন' },
+  pickACategory: { en:'Please pick a category', bn:'একটা খাত বেছে নিন' },
+  expenseAdded: { en:'Expense added', bn:'খরচ যোগ হয়েছে' },
+  expenseUpdated: { en:'Expense updated', bn:'খরচ পরিবর্তন হয়েছে' },
+  reportDownloaded: { en:'Report downloaded — open the file and use Print > Save as PDF', bn:'রিপোর্ট ডাউনলোড হয়েছে — ফাইলটি খুলে Print > Save as PDF করুন' },
+  checkInternet: { en:'Check your internet connection', bn:'ইন্টারনেট সংযোগ পরীক্ষা করুন' },
+  enterUsernameFirst: { en:'Please enter your username first', bn:'আগে ইউজারনেম লিখুন' },
+  wrongLoginErr: { en:'Username or password is incorrect, try again', bn:'ইউজারনেম অথবা পাসওয়ার্ড সঠিক নয়, আবার চেষ্টা করুন' },
+  userDeleted: { en:'User deleted', bn:'ইউজার মুছে ফেলা হয়েছে' },
+  loadingText: { en:'Loading...', bn:'লোড হচ্ছে...' },
+
+  loanSectionTitle: { en:'Loans', bn:'ধার-দেনা' },
+  incomeExpenseSectionTitle: { en:'Income & Expense', bn:'আয় ও খরচ' },
+  totalReceivable: { en:'Total to receive', bn:'মোট পাবেন' },
+  totalPayable: { en:'Total to give', bn:'মোট দিবেন' },
+  netTotalLabel: { en:'Overall net balance', bn:'সব মিলিয়ে নিট হিসাব' },
+  personBasedLabel: { en:'Per-person ledger', bn:'ব্যক্তিভিত্তিক হিসাব' },
+  noPersonsAtAll: { en:'No one added yet.', bn:'এখনও কোনো ব্যক্তি নেই।' },
+  noOneFound: { en:'No one found.', bn:'কেউ পাওয়া যায়নি।' },
+  createExpenseCatFirst: { en:'Expense', bn:'খরচ' },
+
+  pdfHintText: { en:'To make a PDF from this file, open it in a browser and press Ctrl+P (or the share/print icon on mobile), then choose "Save as PDF".', bn:'এই ফাইলটি থেকে PDF বানাতে চাইলে ব্রাউজারে এই ফাইল খুলে Ctrl+P (বা মোবাইলে শেয়ার/প্রিন্ট আইকন) চেপে "Save as PDF" বেছে নিন।' },
+  reportGeneratedOn: { en:'Report generated on', bn:'রিপোর্ট তৈরির তারিখঃ' },
+  grandTotalLoan: { en:'Grand total', bn:'সর্বমোট হিসাবঃ' },
+  reportDateCol: { en:'Date', bn:'তারিখ' },
+  reportTypeCol: { en:'Type', bn:'ধরন' },
+  reportAmountCol: { en:'Amount', bn:'পরিমাণ' },
+  reportNoteCol: { en:'Note', bn:'নোট' },
+  reportNoEntries: { en:'No entries', bn:'কোনো এন্ট্রি নেই' },
+  reportNameCol: { en:'Name', bn:'নাম' },
+  reportStatusCol: { en:'Status', bn:'অবস্থা' },
+  reportNoPersons: { en:'No persons', bn:'কোনো ব্যক্তি নেই' },
+  summaryReportTitle: { en:'Hisab Khata — Summary Report', bn:'হিসাব খাতা — সারসংক্ষেপ রিপোর্ট' },
+  personFallback: { en:'Person', bn:'ব্যক্তি' },
+  categoryFallback: { en:'Category', bn:'খাত' },
+  noPagePermission: { en:'You don\'t have permission to view this page.', bn:'আপনার এই পাতা দেখার অনুমতি নেই।' },
+
+  convertConfirmTitle: { en:'Convert to Expense?', bn:'খরচ (Expense)-এ রূপান্তর করবেন?' },
+  convertMsgPart1: { en:'{count} "gave" entries for "{name}" will be moved to the Expense list, each under the category "{name}". This person will then be removed from the Loans list.', bn:'"{name}"-এর {count} টি "দিলাম" এন্ট্রি খরচ (Expense) তালিকায় নিয়ে যাওয়া হবে, প্রতিটার নাম হবে "{name}"। এরপর এই ব্যক্তিটি ধার-দেনার তালিকা থেকে মুছে যাবে।' },
+  convertMsgPart2: { en:'⚠️ This person also has {count} "got" entries — since those aren\'t expenses, they will be discarded and deleted.', bn:'⚠️ এই ব্যক্তির {count} টি "পেলাম" এন্ট্রি আছে — সেগুলো খরচ না হওয়ায় বাদ দেওয়া হবে এবং মুছে যাবে।' },
+} ;
+
 
 function t(key){
   const entry = T[key];
@@ -436,9 +626,9 @@ function closePwConfirm(){
 function submitPwConfirm(){
   const m = state.pwConfirmModal;
   if(!m) return;
-  if(m.entry.length !== 4){ m.error = '৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
+  if(m.entry.length !== 4){ m.error = t('enter4DigitPassword'); render(); return; }
   if(m.entry !== state.currentUser.password){
-    m.error = 'পাসওয়ার্ড সঠিক নয়';
+    m.error = t('wrongPasswordErr');
     m.entry = '';
     render();
     return;
@@ -454,16 +644,16 @@ function renderPwConfirmModal(){
   return `
     <div class="overlay" onclick="if(event.target===this) closePwConfirm()">
       <div class="sheet">
-        <h2 class="serif">পাসওয়ার্ড দিয়ে নিশ্চিত করুন</h2>
-        <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">এই কাজটি করতে আপনার নিজের লগইন পাসওয়ার্ড দিন।</p>
+        <h2 class="serif">${t('confirmWithPasswordTitle')}</h2>
+        <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">${t('confirmWithPasswordDesc')}</p>
         <div class="field">
-          <label>পাসওয়ার্ড (৪ ডিজিট)</label>
+          <label>${t('newPasswordLabel')}</label>
           <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.entry)}" oninput="state.pwConfirmModal.entry=this.value.replace(/\\D/g,'').slice(0,4); render();">
         </div>
         <div class="pin-error">${m.error||''}</div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closePwConfirm()">বাতিল</button>
-          <button class="btn btn-primary" onclick="submitPwConfirm()">নিশ্চিত করুন</button>
+          <button class="btn btn-secondary" onclick="closePwConfirm()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="submitPwConfirm()">${t('confirmBtn')}</button>
         </div>
       </div>
     </div>`;
@@ -482,9 +672,11 @@ function fmtAmt(n){
   return sign + '৳' + Math.abs(n).toLocaleString('en-IN');
 }
 
-const MONTHS = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+const MONTHS_BN = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fmtDate(iso){
   const [y,m,d] = iso.split('-');
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
   return d + ' ' + MONTHS[parseInt(m,10)-1] + ' ' + y;
 }
 
@@ -562,7 +754,7 @@ async function loadData(){
     }
     migrateOldExpenses();
   }catch(e){
-    showToast('ইন্টারনেট সংযোগ পরীক্ষা করুন — ডেটা লোড করা যায়নি');
+    showToast(t('loadFailedToast'));
   }
 }
 
@@ -573,7 +765,7 @@ function migrateOldExpenses(){
     if(e.categoryId) return e;
     let cat = data.expenseCategories.find(c=>c.name.toLowerCase() === (e.name||'').toLowerCase());
     if(!cat){
-      cat = { id: uid(), name: e.name || 'খরচ' };
+      cat = { id: uid(), name: e.name || t('tabExpense') };
       data.expenseCategories.push(cat);
     }
     return { id: e.id, categoryId: cat.id, amount: e.amount, date: e.date, note: e.note||'', createdAt: e.createdAt || Date.now() };
@@ -585,7 +777,7 @@ async function saveData(){
   try{
     await fbSet(dataPath(), data);
   }catch(e){
-    showToast('সংরক্ষণে সমস্যা হয়েছে — ইন্টারনেট সংযোগ পরীক্ষা করুন');
+    showToast(t('saveFailedToast'));
   }
 }
 
@@ -633,13 +825,13 @@ function setTxnFilter(f){
 }
 
 function openAddPerson(){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   state.personModal = { mode:'add', name:'' };
   render();
 }
 
 function openEditPerson(personId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const p = data.persons.find(x=>x.id===personId);
     state.personModal = { mode:'edit', id:personId, name:p.name };
@@ -655,24 +847,24 @@ function closePersonModal(){
 async function savePersonModal(){
   const input = document.getElementById('person-name-input');
   const name = input.value.trim();
-  if(!name){ showToast('নাম লিখুন'); return; }
+  if(!name){ showToast(t('enterName')); return; }
   const mode = state.personModal.mode;
   if(mode === 'add'){
     data.persons.push({ id: uid(), name });
-    showToast('ব্যক্তি যোগ হয়েছে');
+    showToast(t('personAdded'));
   }else if(mode === 'edit'){
     const p = data.persons.find(x=>x.id===state.personModal.id);
     p.name = name;
-    showToast('নাম পরিবর্তন হয়েছে');
+    showToast(t('nameChanged'));
   }else if(mode === 'add-expense-cat'){
     const dup = data.expenseCategories.find(c=>c.name.toLowerCase()===name.toLowerCase());
-    if(dup){ showToast('এই নামে খাত আগে থেকেই আছে'); return; }
+    if(dup){ showToast(t('categoryNameTaken')); return; }
     data.expenseCategories.push({ id: uid(), name });
-    showToast('খাত যোগ হয়েছে');
+    showToast(t('categoryAdded'));
   }else if(mode === 'edit-expense-cat'){
     const c = data.expenseCategories.find(x=>x.id===state.personModal.id);
     c.name = name;
-    showToast('খাতের নাম পরিবর্তন হয়েছে');
+    showToast(t('categoryRenamed'));
   }
   await saveData();
   state.personModal = null;
@@ -680,7 +872,7 @@ async function savePersonModal(){
 }
 
 function convertPersonToExpense(personId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   const p = data.persons.find(x=>x.id===personId);
   if(!p) return;
   const txns = data.transactions.filter(t=>t.personId===personId);
@@ -688,17 +880,17 @@ function convertPersonToExpense(personId){
   const gotTxns = txns.filter(t=>t.type==='got');
 
   if(gaveTxns.length === 0){
-    showToast('এই ব্যক্তির কোনো "দিলাম" এন্ট্রি নেই — খরচে রূপান্তর করার কিছু নেই');
+    showToast(t('noGaveEntriesToConvert'));
     return;
   }
 
   requestPasswordConfirm(()=>{
-    let msg = `"${p.name}"-এর ${gaveTxns.length} টি "দিলাম" এন্ট্রি খরচ (Expense) তালিকায় নিয়ে যাওয়া হবে, প্রতিটার নাম হবে "${p.name}"। এরপর এই ব্যক্তিটি ধার-দেনার তালিকা থেকে মুছে যাবে।`;
+    let msg = t('convertMsgPart1').split('{name}').join(p.name).split('{count}').join(gaveTxns.length);
     if(gotTxns.length > 0){
-      msg += ` ⚠️ এই ব্যক্তির ${gotTxns.length} টি "পেলাম" এন্ট্রি আছে — সেগুলো খরচ না হওয়ায় বাদ দেওয়া হবে এবং মুছে যাবে।`;
+      msg += ' ' + t('convertMsgPart2').split('{count}').join(gotTxns.length);
     }
     state.confirmModal = {
-      title: 'খরচ (Expense)-এ রূপান্তর করবেন?',
+      title: t('convertConfirmTitle'),
       msg,
       onYes: async ()=>{
         let cat = data.expenseCategories.find(c=>c.name.toLowerCase()===p.name.toLowerCase());
@@ -717,7 +909,7 @@ function convertPersonToExpense(personId){
         state.confirmModal = null;
         state.category = 'expense';
         setView('home');
-        showToast('খরচে রূপান্তরিত হয়েছে');
+        showToast(t('convertedToExpense'));
       }
     };
     render();
@@ -725,18 +917,18 @@ function convertPersonToExpense(personId){
 }
 
 function confirmDeletePerson(personId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
-      title:'ব্যক্তি মুছে ফেলবেন?',
-      msg:'এই ব্যক্তির সব হিসাবও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।',
+      title:t('confirmDeletePersonTitle'),
+      msg:t('confirmDeletePersonMsg'),
       onYes: async ()=>{
         data.persons = data.persons.filter(p=>p.id!==personId);
         data.transactions = data.transactions.filter(t=>t.personId!==personId);
         await saveData();
         state.confirmModal = null;
         setView('home');
-        showToast('মুছে ফেলা হয়েছে');
+        showToast(t('deletedToast'));
       }
     };
     render();
@@ -744,13 +936,13 @@ function confirmDeletePerson(personId){
 }
 
 function openAddTxn(personId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   state.txnModal = { mode:'add', personId, type:'gave', amount:'', date: todayStr(), note:'' };
   render();
 }
 
 function openEditTxn(txnId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const t = data.transactions.find(x=>x.id===txnId);
     state.txnModal = { mode:'edit', id:txnId, personId:t.personId, type:t.type, amount:String(t.amount), date:t.date, note:t.note||'' };
@@ -786,11 +978,11 @@ function calcFieldById(id){
   if(!input) return;
   const result = evaluateExpression(input.value);
   if(result === null){
-    showToast('হিসাবটি সঠিক নয় — শুধু সংখ্যা ও + - * / চিহ্ন ব্যবহার করুন');
+    showToast(t('calcError'));
     return;
   }
   input.value = String(result);
-  showToast('ফলাফল বসানো হয়েছে');
+  showToast(t('calcResultSet'));
 }
 
 function calcAmountField(){
@@ -802,7 +994,7 @@ async function saveTxnModal(){
   const dateInput = document.getElementById('txn-date-input');
   const noteInput = document.getElementById('txn-note-input');
   const amount = evaluateExpression(amtInput.value);
-  if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
+  if(!amount || amount <= 0){ showToast(t('enterValidAmount')); return; }
   const date = dateInput.value || todayStr();
   const note = noteInput.value.trim();
   const m = state.txnModal;
@@ -811,11 +1003,11 @@ async function saveTxnModal(){
       id: uid(), personId: m.personId, type: m.type,
       amount, date, note, createdAt: Date.now()
     });
-    showToast('হিসাব যোগ হয়েছে');
+    showToast(t('entryAdded'));
   }else{
     const t = data.transactions.find(x=>x.id===m.id);
     t.type = m.type; t.amount = amount; t.date = date; t.note = note;
-    showToast('হিসাব পরিবর্তন হয়েছে');
+    showToast(t('entryUpdated'));
   }
   await saveData();
   state.txnModal = null;
@@ -823,17 +1015,17 @@ async function saveTxnModal(){
 }
 
 function confirmDeleteTxn(txnId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
-      title:'হিসাব মুছে ফেলবেন?',
-      msg:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+      title:t('confirmDeleteEntryTitle'),
+      msg:t('confirmDeleteEntryMsg'),
       onYes: async ()=>{
         data.transactions = data.transactions.filter(t=>t.id!==txnId);
         await saveData();
         state.confirmModal = null;
         render();
-        showToast('মুছে ফেলা হয়েছে');
+        showToast(t('deletedToast'));
       }
     };
     render();
@@ -879,31 +1071,31 @@ function renderLoanList(){
   const searchHtml = `
     <div class="search-box">
       <span class="ic">🔍</span>
-      <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+      <input id="search-input" type="text" placeholder="${t('searchByName')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
     </div>`;
 
   if(data.persons.length===0){
     return `
       <div class="empty-state">
         <div class="big">📒</div>
-        <h3 class="serif">এখনও কেউ যোগ করা হয়নি</h3>
-        <p>নিচের + বাটনে চেপে প্রথম ব্যক্তি যোগ করুন এবং তার সাথে টাকা লেনদেনের হিসাব রাখা শুরু করুন।</p>
+        <h3 class="serif">${t('noPersonsYet')}</h3>
+        <p>${t('noPersonsDesc')}</p>
       </div>`;
   }
   if(persons.length===0){
-    return searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" নামে কেউ পাওয়া যায়নি।</p></div>`;
+    return searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noResultsFor')}</p></div>`;
   }
   const list = persons.map(p=>{
     const bal = personBalance(p.id);
     const cnt = data.transactions.filter(t=>t.personId===p.id).length;
-    let cls='zero', label='সমান';
-    if(bal>0){cls='pos'; label='পাবেন';}
-    else if(bal<0){cls='neg'; label='দিবেন';}
+    let cls='zero', label=t('settled');
+    if(bal>0){cls='pos'; label=t('willReceive');}
+    else if(bal<0){cls='neg'; label=t('willGive');}
     return `
       <div class="person-card" style="border-left-color:var(--loan-blue);" onclick="setView('person','${p.id}')">
         <div>
           <div class="person-name">${escapeHtml(p.name)}</div>
-          <div class="person-meta">${cnt} টি এন্ট্রি</div>
+          <div class="person-meta">${cnt} ${t('entries')}</div>
         </div>
         <div>
           <div class="balance ${cls}">${fmtAmt(Math.abs(bal))}</div>
@@ -921,7 +1113,6 @@ function ieItems(type){
 
 function renderIEList(type){
   const isIncome = type === 'income';
-  const catLabel = isIncome ? 'আয়' : 'খরচ';
   const colorClass = isIncome ? 'income' : 'expense';
   let items = ieItems(type);
   const q = state.searchQuery.trim().toLowerCase();
@@ -931,12 +1122,12 @@ function renderIEList(type){
   const searchHtml = data.income.length>0 ? `
     <div class="search-box">
       <span class="ic">🔍</span>
-      <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+      <input id="search-input" type="text" placeholder="${t('searchByName')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
     </div>` : '';
 
   const totalCard = `
     <div class="stat-card" style="margin-bottom:16px; text-align:center;">
-      <div class="label">মোট ${catLabel}</div>
+      <div class="label">${t('totalIncomeLabel')}</div>
       <div class="val ${isIncome?'pos':'khoiri-txt'}">${fmtAmt(total)}</div>
     </div>`;
 
@@ -944,12 +1135,12 @@ function renderIEList(type){
     return totalCard + `
       <div class="empty-state">
         <div class="big">💰</div>
-        <h3 class="serif">এখনও কোনো ${catLabel} এন্ট্রি নেই</h3>
-        <p>নিচের + বাটনে চেপে প্রথম ${catLabel} এন্ট্রি যোগ করুন।</p>
+        <h3 class="serif">${t('noIncomeYet')}</h3>
+        <p>${t('noIncomeDesc')}</p>
       </div>`;
   }
   if(items.length===0){
-    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" নামে কিছু পাওয়া যায়নি।</p></div>`;
+    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noResultsForQuery')}</p></div>`;
   }
 
   const rows = items.map(i=>`
@@ -964,8 +1155,8 @@ function renderIEList(type){
       ${i.note ? `<div class="ie-note">${escapeHtml(i.note)}</div>` : ''}
       ${canEdit() ? `
       <div class="ie-actions">
-        <span onclick="openEditIE('${type}','${i.id}')">সম্পাদনা</span>
-        <span onclick="confirmDeleteIE('${type}','${i.id}')">মুছুন</span>
+        <span onclick="openEditIE('${type}','${i.id}')">${t('edit')}</span>
+        <span onclick="confirmDeleteIE('${type}','${i.id}')">${t('delete')}</span>
       </div>` : ''}
     </div>`).join('');
 
@@ -973,13 +1164,13 @@ function renderIEList(type){
 }
 
 function openAddIE(type){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   state.ieModal = { mode:'add', type, name:'', amount:'', date: todayStr(), note:'' };
   render();
 }
 
 function openEditIE(type, id){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const list = type === 'income' ? data.income : data.expenses;
     const item = list.find(x=>x.id===id);
@@ -989,17 +1180,17 @@ function openEditIE(type, id){
 }
 
 function confirmDeleteIE(type, id){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
-      title: 'আয় এন্ট্রি মুছে ফেলবেন?',
-      msg: 'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+      title: t('confirmDeleteIncomeTitle'),
+      msg: t('confirmDeleteEntryMsg'),
       onYes: async ()=>{
         data.income = data.income.filter(x=>x.id!==id);
         await saveData();
         state.confirmModal = null;
         render();
-        showToast('মুছে ফেলা হয়েছে');
+        showToast(t('deletedToast'));
       }
     };
     render();
@@ -1017,19 +1208,19 @@ async function saveIEModal(){
   const dateInput = document.getElementById('ie-date-input');
   const noteInput = document.getElementById('ie-note-input');
   const name = nameInput.value.trim();
-  if(!name){ showToast('নাম লিখুন'); return; }
+  if(!name){ showToast(t('enterName')); return; }
   const amount = evaluateExpression(amtInput.value);
-  if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
+  if(!amount || amount <= 0){ showToast(t('enterValidAmount')); return; }
   const date = dateInput.value || todayStr();
   const note = noteInput.value.trim();
   const m = state.ieModal;
   if(m.mode === 'add'){
     data.income.push({ id: uid(), name, amount, date, note, createdAt: Date.now() });
-    showToast('এন্ট্রি যোগ হয়েছে');
+    showToast(t('entryAdded'));
   }else{
     const item = data.income.find(x=>x.id===m.id);
     item.name = name; item.amount = amount; item.date = date; item.note = note;
-    showToast('এন্ট্রি পরিবর্তন হয়েছে');
+    showToast(t('entryUpdated'));
   }
   await saveData();
   state.ieModal = null;
@@ -1042,32 +1233,44 @@ function renderIEModal(){
   return `
     <div class="overlay" onclick="if(event.target===this) closeIEModal()">
       <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? 'নতুন আয় এন্ট্রি' : 'আয় এন্ট্রি সম্পাদনা'}</h2>
+        <h2 class="serif">${m.mode==='add' ? t('newIncomeEntry') : t('editIncomeEntry')}</h2>
         <div class="field">
-          <label>নাম / খাত</label>
-          <input id="ie-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="যেমনঃ বেতন">
+          <label>${t('nameLabel')} / ${t('categoryLabel')}</label>
+          <input id="ie-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('incomeNamePlaceholder')}">
         </div>
         <div class="field">
-          <label>পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200</label>
+          <label>${t('amountLabelSimple')}</label>
           <div style="display:flex; gap:8px;">
-            <input id="ie-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="০" style="flex:1;">
+            <input id="ie-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="0" style="flex:1;">
             <button type="button" class="calc-eq-btn" onclick="calcFieldById('ie-amount-input')">=</button>
           </div>
         </div>
         <div class="field">
-          <label>তারিখ</label>
+          <label>${t('dateLabel')}</label>
           <input id="ie-date-input" type="date" value="${m.date}">
         </div>
         <div class="field">
-          <label>নোট (ঐচ্ছিক)</label>
-          <textarea id="ie-note-input" placeholder="বিস্তারিত লিখুন">${escapeHtml(m.note)}</textarea>
+          <label>${t('noteLabel')}</label>
+          <textarea id="ie-note-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.note)}</textarea>
         </div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeIEModal()">বাতিল</button>
-          <button class="btn btn-primary" onclick="saveIEModal()">সংরক্ষণ করুন</button>
+          <button class="btn btn-secondary" onclick="closeIEModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveIEModal()">${t('save')}</button>
         </div>
       </div>
     </div>`;
+}
+
+function calcMonthlyAverage(entries){
+  if(!entries.length) return 0;
+  const total = entries.reduce((s,e)=>s+e.amount, 0);
+  const dates = entries.map(e=>e.date).sort();
+  const firstDate = new Date(dates[0] + 'T00:00:00');
+  const now = new Date();
+  let days = (now - firstDate) / 86400000;
+  if(days < 1) days = 1;
+  const months = days / 30;
+  return total / months;
 }
 
 /* ================= Expense categories (mirrors Loan/Person structure) ================= */
@@ -1089,13 +1292,13 @@ function renderExpenseCategoryList(){
   const searchHtml = data.expenseCategories.length>0 ? `
     <div class="search-box">
       <span class="ic">🔍</span>
-      <input id="search-input" type="text" placeholder="খাতের নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+      <input id="search-input" type="text" placeholder="${t('searchByCategory')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
     </div>` : '';
 
   const grandTotal = data.expenses.reduce((s,e)=>s+e.amount, 0);
   const totalCard = data.expenseCategories.length>0 ? `
     <div class="stat-card" style="margin-bottom:16px; text-align:center;">
-      <div class="label">মোট খরচ (সব খাত মিলিয়ে)</div>
+      <div class="label">${t('totalExpenseAllCats')}</div>
       <div class="val khoiri-txt">${fmtAmt(grandTotal)}</div>
     </div>` : '';
 
@@ -1103,12 +1306,12 @@ function renderExpenseCategoryList(){
     return `
       <div class="empty-state">
         <div class="big">🧾</div>
-        <h3 class="serif">এখনও কোনো খরচের খাত নেই</h3>
-        <p>নিচের + বাটনে চেপে প্রথম খরচের খাত (যেমনঃ বাজার, বাসা ভাড়া) যোগ করুন।</p>
+        <h3 class="serif">${t('noCategoriesYet')}</h3>
+        <p>${t('noCategoriesDesc')}</p>
       </div>`;
   }
   if(cats.length===0){
-    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" নামে কোনো খাত পাওয়া যায়নি।</p></div>`;
+    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noCategoryResultsFor')}</p></div>`;
   }
 
   const list = cats.map(c=>{
@@ -1118,7 +1321,7 @@ function renderExpenseCategoryList(){
       <div class="person-card" style="border-left-color:var(--khoiri);" onclick="setView('expenseCategory','${c.id}')">
         <div>
           <div class="person-name">${escapeHtml(c.name)}</div>
-          <div class="person-meta">${cnt} টি এন্ট্রি</div>
+          <div class="person-meta">${cnt} ${t('entries')}</div>
         </div>
         <div>
           <div class="balance khoiri-txt">${fmtAmt(total)}</div>
@@ -1131,12 +1334,13 @@ function renderExpenseCategoryList(){
 
 function renderExpenseCategoryDetail(){
   const c = data.expenseCategories.find(x=>x.id===state.personId);
-  if(!c) return `<div class="empty-state">খাত পাওয়া যায়নি</div>`;
+  if(!c) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
   const total = categoryTotal(c.id);
   const entries = categoryEntries(c.id);
+  const avg = calcMonthlyAverage(entries);
 
   const entryHtml = entries.length===0
-    ? `<div class="empty-state"><p>এই খাতে এখনও কোনো এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।</p></div>`
+    ? `<div class="empty-state"><p>${t('noEntriesInCategory')}</p></div>`
     : entries.map(e=>`
       <div class="ie-card">
         <div class="ie-top">
@@ -1146,34 +1350,42 @@ function renderExpenseCategoryDetail(){
         ${e.note ? `<div class="ie-note">${escapeHtml(e.note)}</div>` : ''}
         ${canEdit() ? `
         <div class="ie-actions">
-          <span onclick="openEditExpenseEntry('${e.id}')">সম্পাদনা</span>
-          <span onclick="confirmDeleteExpenseEntry('${e.id}')">মুছুন</span>
+          <span onclick="openEditExpenseEntry('${e.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteExpenseEntry('${e.id}')">${t('delete')}</span>
         </div>` : ''}
       </div>`).join('');
 
   return `
-    <div class="person-header-card">
-      <div class="name serif">${escapeHtml(c.name)}</div>
-      <div class="bal khoiri-txt">${fmtAmt(total)}</div>
-      <div class="baltxt">মোট খরচ এই খাতে</div>
-      <div class="person-actions">
-        ${canEdit() ? `<span onclick="openEditExpenseCategory('${c.id}')">নাম পরিবর্তন</span>` : ''}
-        ${canEdit() ? `<span onclick="confirmDeleteExpenseCategory('${c.id}')">খাত মুছুন</span>` : ''}
+    <div class="summary-cards" style="margin-bottom:16px;">
+      <div class="stat-card">
+        <div class="label">${t('avgMonthly')}</div>
+        <div class="val khoiri-txt">${fmtAmt(Math.round(avg))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">${t('totalExpense')}</div>
+        <div class="val khoiri-txt">${fmtAmt(total)}</div>
       </div>
     </div>
-    <div class="section-title">খরচের এন্ট্রি</div>
+    <div class="person-header-card">
+      <div class="name serif">${escapeHtml(c.name)}</div>
+      <div class="person-actions">
+        ${canEdit() ? `<span onclick="openEditExpenseCategory('${c.id}')">${t('renameCategory')}</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeleteExpenseCategory('${c.id}')">${t('deleteCategory')}</span>` : ''}
+      </div>
+    </div>
+    <div class="section-title">${t('expenseEntries')}</div>
     ${entryHtml}
   `;
 }
 
 function openAddExpenseCategory(){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   state.personModal = { mode:'add-expense-cat', name:'' };
   render();
 }
 
 function openEditExpenseCategory(id){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const c = data.expenseCategories.find(x=>x.id===id);
     state.personModal = { mode:'edit-expense-cat', id, name:c.name };
@@ -1182,11 +1394,11 @@ function openEditExpenseCategory(id){
 }
 
 function confirmDeleteExpenseCategory(id){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
-      title:'খাত মুছে ফেলবেন?',
-      msg:'এই খাতের সব খরচ এন্ট্রিও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।',
+      title:t('confirmDeleteCategoryTitle'),
+      msg:t('confirmDeleteCategoryMsg'),
       onYes: async ()=>{
         data.expenseCategories = data.expenseCategories.filter(x=>x.id!==id);
         data.expenses = data.expenses.filter(e=>e.categoryId!==id);
@@ -1194,7 +1406,7 @@ function confirmDeleteExpenseCategory(id){
         state.confirmModal = null;
         setView('home');
         state.category = 'expense';
-        showToast('খাত মুছে ফেলা হয়েছে');
+        showToast(t('categoryDeleted'));
       }
     };
     render();
@@ -1202,20 +1414,20 @@ function confirmDeleteExpenseCategory(id){
 }
 
 function openAddExpenseEntry(categoryId){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   state.expenseEntryModal = { mode:'add', id:null, categoryId, isNewCategory:false, newCategoryName:'', amount:'', date: todayStr(), note:'' };
   render();
 }
 
 function openQuickAddExpense(){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   const firstCat = data.expenseCategories[0];
   state.expenseEntryModal = { mode:'add', id:null, categoryId: firstCat ? firstCat.id : '__new__', isNewCategory: !firstCat, newCategoryName:'', amount:'', date: todayStr(), note:'' };
   render();
 }
 
 function openEditExpenseEntry(id){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const e = data.expenses.find(x=>x.id===id);
     state.expenseEntryModal = { mode:'edit', id, categoryId:e.categoryId, isNewCategory:false, newCategoryName:'', amount:String(e.amount), date:e.date, note:e.note||'' };
@@ -1224,17 +1436,17 @@ function openEditExpenseEntry(id){
 }
 
 function confirmDeleteExpenseEntry(id){
-  if(!canEdit()){ showToast('আপনার এই কাজের অনুমতি নেই'); return; }
+  if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
-      title:'খরচের এন্ট্রি মুছে ফেলবেন?',
-      msg:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।',
+      title:t('confirmDeleteExpenseTitle'),
+      msg:t('confirmDeleteEntryMsg'),
       onYes: async ()=>{
         data.expenses = data.expenses.filter(x=>x.id!==id);
         await saveData();
         state.confirmModal = null;
         render();
-        showToast('মুছে ফেলা হয়েছে');
+        showToast(t('deletedToast'));
       }
     };
     render();
@@ -1268,7 +1480,7 @@ async function saveExpenseEntryModal(){
   if(m.isNewCategory){
     const nameInput = document.getElementById('expense-new-cat-input');
     const newName = nameInput.value.trim();
-    if(!newName){ showToast('খাতের নাম লিখুন'); return; }
+    if(!newName){ showToast(t('enterCategoryName')); return; }
     const existing = data.expenseCategories.find(c=>c.name.toLowerCase()===newName.toLowerCase());
     if(existing){
       categoryId = existing.id;
@@ -1277,20 +1489,20 @@ async function saveExpenseEntryModal(){
       data.expenseCategories.push({ id: categoryId, name: newName });
     }
   }
-  if(!categoryId){ showToast('একটা খাত বেছে নিন'); return; }
+  if(!categoryId){ showToast(t('pickACategory')); return; }
 
   const amount = evaluateExpression(amtInput.value);
-  if(!amount || amount <= 0){ showToast('সঠিক পরিমাণ লিখুন'); return; }
+  if(!amount || amount <= 0){ showToast(t('enterValidAmount')); return; }
   const date = dateInput.value || todayStr();
   const note = noteInput.value.trim();
 
   if(m.mode === 'add'){
     data.expenses.push({ id: uid(), categoryId, amount, date, note, createdAt: Date.now() });
-    showToast('খরচ যোগ হয়েছে');
+    showToast(t('expenseAdded'));
   }else{
     const e = data.expenses.find(x=>x.id===m.id);
     e.categoryId = categoryId; e.amount = amount; e.date = date; e.note = note;
-    showToast('খরচ পরিবর্তন হয়েছে');
+    showToast(t('expenseUpdated'));
   }
   await saveData();
   state.expenseEntryModal = null;
@@ -1305,37 +1517,37 @@ function renderExpenseEntryModal(){
   return `
     <div class="overlay" onclick="if(event.target===this) closeExpenseEntryModal()">
       <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? 'নতুন খরচ যোগ করুন' : 'খরচ সম্পাদনা'}</h2>
+        <h2 class="serif">${m.mode==='add' ? t('newExpenseTitle') : t('editExpenseTitle')}</h2>
         <div class="field">
-          <label>খাত</label>
+          <label>${t('categoryLabel')}</label>
           <select id="expense-cat-select" onchange="onExpenseCategorySelectChange(this.value)" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
             ${options}
-            <option value="__new__" ${m.isNewCategory?'selected':''}>+ নতুন খাত যোগ করুন</option>
+            <option value="__new__" ${m.isNewCategory?'selected':''}>${t('addNewCategoryOption')}</option>
           </select>
         </div>
         ${m.isNewCategory ? `
         <div class="field">
-          <label>নতুন খাতের নাম</label>
-          <input id="expense-new-cat-input" type="text" value="${escapeHtml(m.newCategoryName)}" placeholder="যেমনঃ বাজার খরচ">
+          <label>${t('newCategoryNameLabel')}</label>
+          <input id="expense-new-cat-input" type="text" value="${escapeHtml(m.newCategoryName)}" placeholder="${t('namePlaceholderCategory')}">
         </div>` : ''}
         <div class="field">
-          <label>পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200</label>
+          <label>${t('amountLabelSimple')}</label>
           <div style="display:flex; gap:8px;">
-            <input id="expense-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="০" style="flex:1;">
+            <input id="expense-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="0" style="flex:1;">
             <button type="button" class="calc-eq-btn" onclick="calcFieldById('expense-amount-input')">=</button>
           </div>
         </div>
         <div class="field">
-          <label>তারিখ</label>
+          <label>${t('dateLabel')}</label>
           <input id="expense-date-input" type="date" value="${m.date}">
         </div>
         <div class="field">
-          <label>নোট (ঐচ্ছিক)</label>
-          <textarea id="expense-note-input" placeholder="বিস্তারিত লিখুন">${escapeHtml(m.note)}</textarea>
+          <label>${t('noteLabel')}</label>
+          <textarea id="expense-note-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.note)}</textarea>
         </div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeExpenseEntryModal()">বাতিল</button>
-          <button class="btn btn-primary" onclick="saveExpenseEntryModal()">সংরক্ষণ করুন</button>
+          <button class="btn btn-secondary" onclick="closeExpenseEntryModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveExpenseEntryModal()">${t('save')}</button>
         </div>
       </div>
     </div>`;
@@ -1343,11 +1555,11 @@ function renderExpenseEntryModal(){
 
 function renderPerson(){
   const p = data.persons.find(x=>x.id===state.personId);
-  if(!p) return `<div class="empty-state">ব্যক্তি পাওয়া যায়নি</div>`;
+  if(!p) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
   const bal = personBalance(p.id);
-  let cls='zero', label='হিসাব সমান';
-  if(bal>0){cls='pos'; label='আপনি পাবেন';}
-  else if(bal<0){cls='neg'; label='আপনি দিবেন';}
+  let cls='zero', label=t('settledUp');
+  if(bal>0){cls='pos'; label=t('youWillReceive');}
+  else if(bal<0){cls='neg'; label=t('youWillGive');}
 
   let txns = personTxns(p.id);
   if(state.txnFilter==='gave') txns = txns.filter(t=>t.type==='gave');
@@ -1355,27 +1567,27 @@ function renderPerson(){
 
   const filterHtml = `
     <div class="filter-chips">
-      <span class="chip ${state.txnFilter==='all'?'active':''}" onclick="setTxnFilter('all')">সব</span>
-      <span class="chip ${state.txnFilter==='gave'?'active':''}" onclick="setTxnFilter('gave')">দিলাম</span>
-      <span class="chip ${state.txnFilter==='got'?'active':''}" onclick="setTxnFilter('got')">পেলাম</span>
+      <span class="chip ${state.txnFilter==='all'?'active':''}" onclick="setTxnFilter('all')">${t('all')}</span>
+      <span class="chip ${state.txnFilter==='gave'?'active':''}" onclick="setTxnFilter('gave')">${t('gave')}</span>
+      <span class="chip ${state.txnFilter==='got'?'active':''}" onclick="setTxnFilter('got')">${t('got')}</span>
     </div>`;
 
   const txnHtml = txns.length===0
-    ? `<div class="empty-state"><p>এই তালিকায় কোনো এন্ট্রি নেই।</p></div>`
-    : txns.map(t=>`
+    ? `<div class="empty-state"><p>${t('noEntriesInCategory')}</p></div>`
+    : txns.map(tx=>`
       <div class="txn-row">
         <div class="txn-top">
           <div>
-            <span class="txn-tag ${t.type==='gave'?'tag-gave':'tag-got'}">${t.type==='gave'?'দিলাম':'পেলাম'}</span>
-            <div class="txn-date">${fmtDate(t.date)}</div>
+            <span class="txn-tag ${tx.type==='gave'?'tag-gave':'tag-got'}">${tx.type==='gave'?t('gave'):t('got')}</span>
+            <div class="txn-date">${fmtDate(tx.date)}</div>
           </div>
-          <div class="txn-amt ${t.type==='gave'?'pos':'neg'}">${fmtAmt(t.amount)}</div>
+          <div class="txn-amt ${tx.type==='gave'?'pos':'neg'}">${fmtAmt(tx.amount)}</div>
         </div>
-        ${t.note ? `<div class="txn-note">${escapeHtml(t.note)}</div>` : ''}
+        ${tx.note ? `<div class="txn-note">${escapeHtml(tx.note)}</div>` : ''}
         ${canEdit() ? `
         <div class="txn-actions">
-          <span onclick="openEditTxn('${t.id}')">সম্পাদনা</span>
-          <span onclick="confirmDeleteTxn('${t.id}')">মুছুন</span>
+          <span onclick="openEditTxn('${tx.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteTxn('${tx.id}')">${t('delete')}</span>
         </div>` : ''}
       </div>`).join('');
 
@@ -1385,13 +1597,13 @@ function renderPerson(){
       <div class="bal ${cls}">${fmtAmt(Math.abs(bal))}</div>
       <div class="baltxt">${label}</div>
       <div class="person-actions">
-        ${canEdit() ? `<span onclick="openEditPerson('${p.id}')">নাম পরিবর্তন</span>` : ''}
-        ${canEdit() ? `<span onclick="confirmDeletePerson('${p.id}')">ব্যক্তি মুছুন</span>` : ''}
-        <span onclick="exportPersonPDF('${p.id}')">PDF রিপোর্ট</span>
+        ${canEdit() ? `<span onclick="openEditPerson('${p.id}')">${t('renamePerson')}</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeletePerson('${p.id}')">${t('deletePerson')}</span>` : ''}
+        <span onclick="exportPersonPDF('${p.id}')">${t('pdfReport')}</span>
       </div>
-      ${canEdit() ? `<div style="text-align:center; margin-top:12px;"><span class="link-btn" style="color:var(--khoiri);" onclick="convertPersonToExpense('${p.id}')">🧾 এটাকে খরচ (Expense) এ রূপান্তর করুন</span></div>` : ''}
+      ${canEdit() ? `<div style="text-align:center; margin-top:12px;"><span class="link-btn" style="color:var(--khoiri);" onclick="convertPersonToExpense('${p.id}')">${t('convertToExpense')}</span></div>` : ''}
     </div>
-    <div class="section-title">লেনদেনের হিসাব</div>
+    <div class="section-title">${t('loanEntries')}</div>
     ${filterHtml}
     ${txnHtml}
   `;
@@ -1413,14 +1625,14 @@ function renderSummary(){
   const searchHtml = data.persons.length>0 ? `
     <div class="search-box">
       <span class="ic">🔍</span>
-      <input id="search-input" type="text" placeholder="নাম দিয়ে খুঁজুন..." value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+      <input id="search-input" type="text" placeholder="${t('searchByName')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
     </div>` : '';
 
   const rows = persons.map(p=>{
     const bal = personBalance(p.id);
-    let cls='zero', label='সমান';
-    if(bal>0){cls='pos'; label='পাবেন';}
-    else if(bal<0){cls='neg'; label='দিবেন';}
+    let cls='zero', label=t('settled');
+    if(bal>0){cls='pos'; label=t('willReceive');}
+    else if(bal<0){cls='neg'; label=t('willGive');}
     return `<div class="summary-list-row" onclick="setView('person','${p.id}')" style="cursor:pointer;">
       <span>${escapeHtml(p.name)}</span>
       <span class="${cls}" style="font-weight:600;">${fmtAmt(Math.abs(bal))} <span style="font-weight:400; font-size:12px;">(${label})</span></span>
@@ -1431,82 +1643,77 @@ function renderSummary(){
   const totalExpense = data.expenses.reduce((s,i)=>s+i.amount, 0);
   const netIE = totalIncome - totalExpense;
 
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 365);
-  const cutoffStr = cutoff.toISOString().slice(0,10);
-  const last12Income = data.income.filter(i=>i.date >= cutoffStr).reduce((s,i)=>s+i.amount, 0);
-  const last12Expense = data.expenses.filter(i=>i.date >= cutoffStr).reduce((s,i)=>s+i.amount, 0);
-  const avgIncome = last12Income / 12;
-  const avgExpense = last12Expense / 12;
+  const avgIncome = calcMonthlyAverage(data.income);
+  const avgExpense = calcMonthlyAverage(data.expenses);
 
   return `
-    <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">ধার-দেনা</span></div>
+    <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">${t('loanSectionTitle')}</span></div>
     <div class="summary-cards">
       <div class="stat-card">
-        <div class="label">মোট পাবেন</div>
+        <div class="label">${t('totalReceivable')}</div>
         <div class="val pos">${fmtAmt(totalGave)}</div>
       </div>
       <div class="stat-card">
-        <div class="label">মোট দিবেন</div>
+        <div class="label">${t('totalPayable')}</div>
         <div class="val neg">${fmtAmt(totalGot)}</div>
       </div>
     </div>
     <div class="stat-card" style="margin-bottom:20px;">
-      <div class="label">সব মিলিয়ে নিট হিসাব</div>
-      <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?'(পাবেন)':net<0?'(দিবেন)':''}</div>
+      <div class="label">${t('netTotalLabel')}</div>
+      <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?t('willReceive'):net<0?t('willGive'):''}</div>
     </div>
 
-    <div class="section-title" style="margin-top:0;"><span style="font-weight:700; color:var(--green);">আয় ও খরচ</span></div>
+    <div class="section-title" style="margin-top:0;"><span style="font-weight:700; color:var(--green);">${t('incomeExpenseSectionTitle')}</span></div>
     <div class="summary-cards">
       <div class="stat-card">
-        <div class="label">মোট আয়</div>
+        <div class="label">${t('totalIncomeLabel')}</div>
         <div class="val pos">${fmtAmt(totalIncome)}</div>
       </div>
       <div class="stat-card">
-        <div class="label">মোট খরচ</div>
+        <div class="label">${t('totalExpense')}</div>
         <div class="val khoiri-txt">${fmtAmt(totalExpense)}</div>
       </div>
     </div>
     <div class="stat-card" style="margin-bottom:16px;">
-      <div class="label">আয় − খরচ (নিট সঞ্চয়)</div>
-      <div class="val ${netIE>0?'pos':netIE<0?'khoiri-txt':'zero'}">${fmtAmt(Math.abs(netIE))} ${netIE>0?'(উদ্বৃত্ত)':netIE<0?'(ঘাটতি)':''}</div>
+      <div class="label">${t('netIE')}</div>
+      <div class="val ${netIE>0?'pos':netIE<0?'khoiri-txt':'zero'}">${fmtAmt(Math.abs(netIE))} ${netIE>0?t('surplus'):netIE<0?t('deficit'):''}</div>
     </div>
     <div class="summary-cards" style="margin-bottom:20px;">
       <div class="stat-card">
-        <div class="label">গড় মাসিক আয় (গত ১২ মাস)</div>
+        <div class="label">${t('avgMonthlyIncome')}</div>
         <div class="val pos">${fmtAmt(Math.round(avgIncome))}</div>
       </div>
       <div class="stat-card">
-        <div class="label">গড় মাসিক খরচ (গত ১২ মাস)</div>
+        <div class="label">${t('avgMonthlyExpense')}</div>
         <div class="val khoiri-txt">${fmtAmt(Math.round(avgExpense))}</div>
       </div>
     </div>
 
     <div class="section-title">
-      <span>ব্যক্তিভিত্তিক হিসাব</span>
-      ${data.persons.length>0 ? `<span class="link-btn" onclick="exportSummaryPDF()">PDF রিপোর্ট</span>` : ''}
+      <span>${t('personBasedLabel')}</span>
+      ${data.persons.length>0 ? `<span class="link-btn" onclick="exportSummaryPDF()">${t('pdfReport')}</span>` : ''}
     </div>
     ${searchHtml}
-    ${persons.length===0 ? `<div class="empty-state"><p>${data.persons.length===0 ? 'এখনও কোনো ব্যক্তি নেই।' : 'কেউ পাওয়া যায়নি।'}</p></div>` : rows}
+    ${persons.length===0 ? `<div class="empty-state"><p>${data.persons.length===0 ? t('noPersonsAtAll') : t('noOneFound')}</p></div>` : rows}
   `;
 }
 
 function renderPersonModal(){
   if(!state.personModal) return '';
   const m = state.personModal;
-  const titles = { 'add':'নতুন ব্যক্তি যোগ করুন', 'edit':'নাম পরিবর্তন করুন', 'add-expense-cat':'নতুন খরচের খাত যোগ করুন', 'edit-expense-cat':'খাতের নাম পরিবর্তন করুন' };
-  const placeholders = { 'add':'যেমনঃ করিম মিয়া', 'edit':'যেমনঃ করিম মিয়া', 'add-expense-cat':'যেমনঃ বাজার খরচ', 'edit-expense-cat':'যেমনঃ বাজার খরচ' };
+  const titles = { 'add':t('newPersonTitle'), 'edit':t('editNameTitle'), 'add-expense-cat':t('newCategoryTitle'), 'edit-expense-cat':t('editCategoryTitle') };
+  const placeholders = { 'add':t('namePlaceholderPerson'), 'edit':t('namePlaceholderPerson'), 'add-expense-cat':t('namePlaceholderCategory'), 'edit-expense-cat':t('namePlaceholderCategory') };
   return `
     <div class="overlay" onclick="if(event.target===this) closePersonModal()">
       <div class="sheet">
         <h2 class="serif">${titles[m.mode]}</h2>
         <div class="field">
-          <label>নাম</label>
+          <label>${t('nameLabel')}</label>
           <input id="person-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${placeholders[m.mode]}">
         </div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closePersonModal()">বাতিল</button>
-          <button class="btn btn-primary" onclick="savePersonModal()">সংরক্ষণ করুন</button>
+          <button class="btn btn-secondary" onclick="closePersonModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="savePersonModal()">${t('save')}</button>
         </div>
       </div>
     </div>`;
@@ -1518,32 +1725,32 @@ function renderTxnModal(){
   return `
     <div class="overlay" onclick="if(event.target===this) closeTxnModal()">
       <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? 'নতুন হিসাব যোগ করুন' : 'হিসাব সম্পাদনা'}</h2>
+        <h2 class="serif">${m.mode==='add' ? t('newLoanEntryTitle') : t('editLoanEntryTitle')}</h2>
         <div class="field">
-          <label>ধরন</label>
+          <label>${t('entryType')}</label>
           <div class="type-toggle">
-            <button class="${m.type==='gave'?'sel-gave':''}" onclick="setTxnType('gave')">টাকা দিলাম</button>
-            <button class="${m.type==='got'?'sel-got':''}" onclick="setTxnType('got')">টাকা পেলাম</button>
+            <button class="${m.type==='gave'?'sel-gave':''}" onclick="setTxnType('gave')">${t('gaveMoney')}</button>
+            <button class="${m.type==='got'?'sel-got':''}" onclick="setTxnType('got')">${t('gotMoney')}</button>
           </div>
         </div>
         <div class="field">
-          <label>পরিমাণ (৳) — সরাসরি লিখুন, অথবা হিসাব করতে যেমনঃ 500+200-50</label>
+          <label>${t('amountLabel')}</label>
           <div style="display:flex; gap:8px;">
-            <input id="txn-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="যেমনঃ ১২০০ অথবা ৫০০+২০০" style="flex:1;">
+            <input id="txn-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="${appLang==='en'?'e.g. 1200 or 500+200':'যেমনঃ ১২০০ অথবা ৫০০+২০০'}" style="flex:1;">
             <button type="button" class="calc-eq-btn" onclick="calcAmountField()">=</button>
           </div>
         </div>
         <div class="field">
-          <label>তারিখ</label>
+          <label>${t('dateLabel')}</label>
           <input id="txn-date-input" type="date" value="${m.date}">
         </div>
         <div class="field">
-          <label>নোট (ঐচ্ছিক)</label>
-          <textarea id="txn-note-input" placeholder="যেমনঃ বাজারের জন্য টাকা">${escapeHtml(m.note)}</textarea>
+          <label>${t('noteLabel')}</label>
+          <textarea id="txn-note-input" placeholder="${t('notePlaceholder')}">${escapeHtml(m.note)}</textarea>
         </div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeTxnModal()">বাতিল</button>
-          <button class="btn btn-primary" onclick="saveTxnModal()">সংরক্ষণ করুন</button>
+          <button class="btn btn-secondary" onclick="closeTxnModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveTxnModal()">${t('save')}</button>
         </div>
       </div>
     </div>`;
@@ -1564,8 +1771,8 @@ function renderConfirmModal(){
         <h2 class="serif">${escapeHtml(c.title)}</h2>
         <p style="font-size:14px; color:var(--ink-soft); margin:0 0 8px 0;">${escapeHtml(c.msg)}</p>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeConfirm()">না, থাক</button>
-          <button class="btn btn-danger" onclick="runConfirmYes()">হ্যাঁ, মুছুন</button>
+          <button class="btn btn-secondary" onclick="closeConfirm()">${t('noKeep')}</button>
+          <button class="btn btn-danger" onclick="runConfirmYes()">${t('yesDelete')}</button>
         </div>
       </div>
     </div>`;
@@ -1600,8 +1807,8 @@ function downloadReport(filename, bodyHtml){
 </head>
 <body>
 ${bodyHtml}
-<div class="hint">এই ফাইলটি থেকে PDF বানাতে চাইলে ব্রাউজারে এই ফাইল খুলে Ctrl+P (বা মোবাইলে শেয়ার/প্রিন্ট আইকন) চেপে "Save as PDF" বেছে নিন।</div>
-<div class="brand">হিসাব খাতা — By FaBi</div>
+<div class="hint">${t('pdfHintText')}</div>
+<div class="brand">${t('appTitle')}</div>
 </body>
 </html>`;
   const blob = new Blob([fullHtml], {type:'text/html'});
@@ -1613,28 +1820,28 @@ ${bodyHtml}
   a.click();
   document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url), 2000);
-  showToast('রিপোর্ট ডাউনলোড হয়েছে — ফাইলটি খুলে Print > Save as PDF করুন');
+  showToast(t('reportDownloaded'));
 }
 
 function exportPersonPDF(personId){
   const p = data.persons.find(x=>x.id===personId);
   const bal = personBalance(personId);
-  const label = bal>0 ? 'আপনি পাবেন' : bal<0 ? 'আপনি দিবেন' : 'হিসাব সমান';
+  const label = bal>0 ? t('youWillReceive') : bal<0 ? t('youWillGive') : t('settledUp');
   const txns = personTxns(personId);
-  const rows = txns.map(t=>`
+  const rows = txns.map(tx=>`
     <tr>
-      <td>${fmtDate(t.date)}</td>
-      <td>${t.type==='gave'?'দিলাম':'পেলাম'}</td>
-      <td>${fmtAmt(t.amount)}</td>
-      <td>${escapeHtml(t.note||'-')}</td>
+      <td>${fmtDate(tx.date)}</td>
+      <td>${tx.type==='gave'?t('gave'):t('got')}</td>
+      <td>${fmtAmt(tx.amount)}</td>
+      <td>${escapeHtml(tx.note||'-')}</td>
     </tr>`).join('');
   const html = `
-    <h1>হিসাব খাতা — ${escapeHtml(p.name)}</h1>
-    <div class="pmeta">রিপোর্ট তৈরির তারিখঃ ${genDateStr()}</div>
-    <div class="rtot">সর্বমোট হিসাবঃ ${fmtAmt(Math.abs(bal))} — ${label}</div>
+    <h1>${t('appTitle').split(' — ')[0]} — ${escapeHtml(p.name)}</h1>
+    <div class="pmeta">${t('reportGeneratedOn')} ${genDateStr()}</div>
+    <div class="rtot">${t('grandTotalLoan')} ${fmtAmt(Math.abs(bal))} — ${label}</div>
     <table>
-      <thead><tr><th>তারিখ</th><th>ধরন</th><th>পরিমাণ</th><th>নোট</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="4">কোনো এন্ট্রি নেই</td></tr>'}</tbody>
+      <thead><tr><th>${t('reportDateCol')}</th><th>${t('reportTypeCol')}</th><th>${t('reportAmountCol')}</th><th>${t('reportNoteCol')}</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="4">${t('reportNoEntries')}</td></tr>`}</tbody>
     </table>`;
   downloadReport(`report-${p.name}.html`, html);
 }
@@ -1650,24 +1857,25 @@ function exportSummaryPDF(){
   const persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
   const rows = persons.map(p=>{
     const bal = personBalance(p.id);
-    const label = bal>0 ? 'পাবেন' : bal<0 ? 'দিবেন' : 'সমান';
+    const label = bal>0 ? t('willReceive') : bal<0 ? t('willGive') : t('settled');
     return `<tr><td>${escapeHtml(p.name)}</td><td>${fmtAmt(Math.abs(bal))}</td><td>${label}</td></tr>`;
   }).join('');
+  const netLabel = net>0?t('willReceive'):net<0?t('willGive'):'';
   const html = `
-    <h1>হিসাব খাতা — সারসংক্ষেপ রিপোর্ট</h1>
-    <div class="pmeta">রিপোর্ট তৈরির তারিখঃ ${genDateStr()}</div>
-    <div class="rtot">মোট পাবেনঃ ${fmtAmt(totalGave)} &nbsp; | &nbsp; মোট দিবেনঃ ${fmtAmt(totalGot)} &nbsp; | &nbsp; নিট হিসাবঃ ${fmtAmt(Math.abs(net))} ${net>0?'(পাবেন)':net<0?'(দিবেন)':''}</div>
+    <h1>${t('summaryReportTitle')}</h1>
+    <div class="pmeta">${t('reportGeneratedOn')} ${genDateStr()}</div>
+    <div class="rtot">${t('totalReceivable')}: ${fmtAmt(totalGave)} &nbsp; | &nbsp; ${t('totalPayable')}: ${fmtAmt(totalGot)} &nbsp; | &nbsp; ${t('netTotalLabel')}: ${fmtAmt(Math.abs(net))} ${netLabel}</div>
     <table>
-      <thead><tr><th>নাম</th><th>পরিমাণ</th><th>অবস্থা</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="3">কোনো ব্যক্তি নেই</td></tr>'}</tbody>
+      <thead><tr><th>${t('reportNameCol')}</th><th>${t('reportAmountCol')}</th><th>${t('reportStatusCol')}</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="3">${t('reportNoPersons')}</td></tr>`}</tbody>
     </table>`;
   downloadReport('report-summary.html', html);
 }
 
 function logout(){
   state.confirmModal = {
-    title: 'লগআউট করবেন?',
-    msg: 'আবার ঢুকতে হলে ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করতে হবে।',
+    title: t('confirmLogoutTitle'),
+    msg: t('confirmLogoutMsg'),
     onYes: ()=>{
       if(window.__syncInterval){ clearInterval(window.__syncInterval); window.__syncInterval = null; }
       state.currentUser = null;
@@ -1694,7 +1902,7 @@ async function loadUsers(){
     lock.users = users;
   }catch(e){
     lock.users = [];
-    lock.error = 'ইন্টারনেট সংযোগ পরীক্ষা করুন';
+    lock.error = t('checkInternet');
   }
   lock.status = 'auth';
   try{
@@ -1725,7 +1933,7 @@ function updatePinDotsDisplay(count){
 function pinPress(digit){
   const uname = lock.usernameInput.trim();
   if(!uname){
-    lock.error = 'আগে ইউজারনেম লিখুন';
+    lock.error = t('enterUsernameFirst');
     renderLock();
     return;
   }
@@ -1740,7 +1948,7 @@ function pinPress(digit){
         try{ localStorage.setItem('hisabKhataLastUsername', match.username); }catch(e){}
         await bootApp();
       }else{
-        lock.error = 'ইউজারনেম অথবা পাসওয়ার্ড সঠিক নয়, আবার চেষ্টা করুন';
+        lock.error = t('wrongLoginErr');
         lock.entry = '';
         renderLock();
       }
@@ -1820,15 +2028,15 @@ async function submitPwModal(){
   const m = state.pwModal;
   if(!m) return;
   if(m.step === 'old'){
-    if(m.old.length !== 4){ m.error = '৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
-    if(m.old !== state.currentUser.password){ m.error = 'পাসওয়ার্ড সঠিক নয়'; render(); return; }
+    if(m.old.length !== 4){ m.error = t('enter4DigitPassword'); render(); return; }
+    if(m.old !== state.currentUser.password){ m.error = t('wrongPasswordErr'); render(); return; }
     m.step = 'new';
     m.error = '';
     render();
     return;
   }
-  if(m.n1.length !== 4 || m.n2.length !== 4){ m.error = 'দুই জায়গাতেই ৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
-  if(m.n1 !== m.n2){ m.error = 'নতুন পাসওয়ার্ড দুইবার একই দিন'; render(); return; }
+  if(m.n1.length !== 4 || m.n2.length !== 4){ m.error = t('bothPasswordsMustMatch'); render(); return; }
+  if(m.n1 !== m.n2){ m.error = t('passwordsMustMatch'); render(); return; }
   if(m.type === 'self'){
     const target = lock.users.find(u=>u.username===state.currentUser.username);
     target.password = m.n1;
@@ -1840,7 +2048,7 @@ async function submitPwModal(){
   await saveUsers();
   state.pwModal = null;
   render();
-  showToast('পাসওয়ার্ড পরিবর্তন হয়েছে');
+  showToast(t('passwordChangedToast'));
 }
 
 function renderPwModal(){
@@ -1851,16 +2059,16 @@ function renderPwModal(){
     return `
       <div class="overlay" onclick="if(event.target===this) closePwModal()">
         <div class="sheet">
-          <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}"-এর পাসওয়ার্ড পরিবর্তন` : 'পুরাতন পাসওয়ার্ড দিন'}</h2>
-          <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">${isAdminReset ? 'নিরাপত্তার জন্য আগে আপনার (অ্যাডমিনের) নিজের পাসওয়ার্ড দিন।' : 'নিরাপত্তার জন্য আগে আপনার বর্তমান পাসওয়ার্ড দিন।'}</p>
+          <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}" — ${t('changeUserPassword')}` : t('oldPasswordTitle')}</h2>
+          <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">${isAdminReset ? t('adminResetDesc') : t('oldPasswordDesc')}</p>
           <div class="field">
-            <label>${isAdminReset ? 'আপনার অ্যাডমিন পাসওয়ার্ড (৪ ডিজিট)' : 'পুরাতন পাসওয়ার্ড (৪ ডিজিট)'}</label>
+            <label>${isAdminReset ? t('yourAdminPasswordLabel') : t('oldPasswordLabel')}</label>
             <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.old)}" oninput="state.pwModal.old=this.value.replace(/\\D/g,'').slice(0,4); render();">
           </div>
           <div class="pin-error">${m.error||''}</div>
           <div class="sheet-actions">
-            <button class="btn btn-secondary" onclick="closePwModal()">বাতিল</button>
-            <button class="btn btn-primary" onclick="submitPwModal()">পরবর্তী</button>
+            <button class="btn btn-secondary" onclick="closePwModal()">${t('cancel')}</button>
+            <button class="btn btn-primary" onclick="submitPwModal()">${t('next')}</button>
           </div>
         </div>
       </div>`;
@@ -1868,19 +2076,19 @@ function renderPwModal(){
   return `
     <div class="overlay" onclick="if(event.target===this) closePwModal()">
       <div class="sheet">
-        <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}"-এর নতুন পাসওয়ার্ড` : 'নতুন পাসওয়ার্ড দিন'}</h2>
+        <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}" — ${t('newPasswordTitle')}` : t('newPasswordTitle')}</h2>
         <div class="field">
-          <label>নতুন পাসওয়ার্ড (৪ ডিজিট)</label>
+          <label>${t('newPasswordLabel')}</label>
           <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.n1)}" oninput="state.pwModal.n1=this.value.replace(/\\D/g,'').slice(0,4); render();">
         </div>
         <div class="field">
-          <label>নতুন পাসওয়ার্ড আবার লিখুন</label>
+          <label>${t('newPasswordAgainLabel')}</label>
           <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.n2)}" oninput="state.pwModal.n2=this.value.replace(/\\D/g,'').slice(0,4); render();">
         </div>
         <div class="pin-error">${m.error||''}</div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closePwModal()">বাতিল</button>
-          <button class="btn btn-primary" onclick="submitPwModal()">সংরক্ষণ করুন</button>
+          <button class="btn btn-secondary" onclick="closePwModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="submitPwModal()">${t('save')}</button>
         </div>
       </div>
     </div>`;
@@ -1906,59 +2114,59 @@ function closeNewUserModal(){
 async function submitNewUser(){
   const m = state.newUserModal;
   const uname = m.username.trim();
-  if(!uname){ m.error = 'ইউজারনেম লিখুন'; render(); return; }
+  if(!uname){ m.error = t('enterUsername'); render(); return; }
   if(lock.users.some(u=>u.username.toLowerCase()===uname.toLowerCase())){
-    m.error = 'এই ইউজারনেম আগে থেকেই আছে';
+    m.error = t('usernameTaken');
     render();
     return;
   }
-  if(m.p1.length !== 4 || m.p2.length !== 4){ m.error = 'দুই জায়গাতেই ৪ ডিজিটের পাসওয়ার্ড দিন'; render(); return; }
-  if(m.p1 !== m.p2){ m.error = 'পাসওয়ার্ড দুইবার একই দিন'; render(); return; }
+  if(m.p1.length !== 4 || m.p2.length !== 4){ m.error = t('bothPasswordsMustMatch'); render(); return; }
+  if(m.p1 !== m.p2){ m.error = t('passwordsMustMatch'); render(); return; }
   lock.users.push({ username: uname, password: m.p1, role: m.role });
   await saveUsers();
   state.newUserModal = null;
   render();
-  showToast(m.role==='admin' ? 'নতুন অ্যাডমিন তৈরি হয়েছে' : 'নতুন ইউজার তৈরি হয়েছে');
+  showToast(m.role==='admin' ? t('newAdminCreatedToast') : t('newUserCreatedToast'));
 }
 
 function renderNewUserModal(){
   const m = state.newUserModal;
   if(!m) return '';
-  const roleLabels = { editor:'এডিট করতে পারবে', viewer:'শুধু দেখতে পারবে', individual:'ইনডিভিজুয়াল (নিজস্ব আলাদা ডেটা)', admin:'অ্যাডমিন' };
+  const roleLabels = { editor:t('accessEditor'), viewer:t('accessViewer'), individual:t('role_individual')+' ('+(appLang==='en'?'own separate data':'নিজস্ব আলাদা ডেটা')+')', admin:t('role_admin') };
   return `
     <div class="overlay" onclick="if(event.target===this) closeNewUserModal()">
       <div class="sheet">
-        <h2 class="serif">${m.role==='admin' ? 'নতুন অ্যাডমিন তৈরি করুন' : 'নতুন ইউজার তৈরি করুন'}</h2>
+        <h2 class="serif">${m.role==='admin' ? t('createNewAdminTitle') : t('createNewUserTitle')}</h2>
         <div class="field">
-          <label>ইউজারনেম</label>
-          <input type="text" value="${escapeHtml(m.username)}" oninput="state.newUserModal.username=this.value; render();" placeholder="যেমনঃ রহিম">
+          <label>${t('usernameLabel')}</label>
+          <input type="text" value="${escapeHtml(m.username)}" oninput="state.newUserModal.username=this.value; render();" placeholder="${t('usernamePlaceholderExample')}">
         </div>
         <div class="field">
-          <label>পাসওয়ার্ড (৪ ডিজিট)</label>
+          <label>${t('newPasswordLabel')}</label>
           <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p1)}" oninput="state.newUserModal.p1=this.value.replace(/\\D/g,'').slice(0,4); render();">
         </div>
         <div class="field">
-          <label>পাসওয়ার্ড আবার লিখুন</label>
+          <label>${t('newPasswordAgainLabel')}</label>
           <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p2)}" oninput="state.newUserModal.p2=this.value.replace(/\\D/g,'').slice(0,4); render();">
         </div>
         ${m.lockRole ? `
         <div class="field">
-          <label>অ্যাক্সেস</label>
+          <label>${t('accessLabel')}</label>
           <div style="font-size:14px; color:var(--ink-soft); padding:8px 0;">🛡️ ${roleLabels[m.role]}</div>
         </div>` : `
         <div class="field">
-          <label>অ্যাক্সেস</label>
+          <label>${t('accessLabel')}</label>
           <div class="type-toggle" style="flex-wrap:wrap; gap:8px;">
-            <button style="flex:1 1 30%;" class="${m.role==='editor'?'sel-gave':''}" onclick="state.newUserModal.role='editor'; render();">এডিট</button>
-            <button style="flex:1 1 30%;" class="${m.role==='viewer'?'sel-got':''}" onclick="state.newUserModal.role='viewer'; render();">শুধু ভিউ</button>
-            <button style="flex:1 1 30%;" class="${m.role==='individual'?'sel-gave':''}" onclick="state.newUserModal.role='individual'; render();">ইনডিভিজুয়াল</button>
+            <button style="flex:1 1 30%;" class="${m.role==='editor'?'sel-gave':''}" onclick="state.newUserModal.role='editor'; render();">${t('accessEditor')}</button>
+            <button style="flex:1 1 30%;" class="${m.role==='viewer'?'sel-got':''}" onclick="state.newUserModal.role='viewer'; render();">${t('accessViewer')}</button>
+            <button style="flex:1 1 30%;" class="${m.role==='individual'?'sel-gave':''}" onclick="state.newUserModal.role='individual'; render();">${t('accessIndividual')}</button>
           </div>
-          ${m.role==='individual' ? `<div style="font-size:12px; color:var(--ink-soft); margin-top:6px;">ইনডিভিজুয়াল ইউজারের ডেটা সম্পূর্ণ আলাদা ও ব্যক্তিগত থাকবে — অ্যাডমিনসহ অন্য কেউ এই ডেটা দেখতে পারবে না।</div>` : ''}
+          ${m.role==='individual' ? `<div style="font-size:12px; color:var(--ink-soft); margin-top:6px;">${t('individualHint')}</div>` : ''}
         </div>`}
         <div class="pin-error">${m.error||''}</div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeNewUserModal()">বাতিল</button>
-          <button class="btn btn-primary" onclick="submitNewUser()">তৈরি করুন</button>
+          <button class="btn btn-secondary" onclick="closeNewUserModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="submitNewUser()">${t('create')}</button>
         </div>
       </div>
     </div>`;
@@ -1974,14 +2182,14 @@ function toggleUserRole(username){
 
 function confirmDeleteUser(username){
   state.confirmModal = {
-    title:'ইউজার মুছে ফেলবেন?',
-    msg:`"${username}" ইউজারটি মুছে ফেলা হবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।`,
+    title:t('confirmDeleteUserTitle'),
+    msg:`"${username}" ${t('confirmDeleteUserMsg')}`,
     onYes: async ()=>{
       lock.users = lock.users.filter(u=>u.username!==username);
       await saveUsers();
       state.confirmModal = null;
       render();
-      showToast('ইউজার মুছে ফেলা হয়েছে');
+      showToast(t('userDeleted'));
     }
   };
   render();
@@ -2025,7 +2233,7 @@ function renderAdminPanel(){
   const others = lock.users.filter(u=>u.role!=='admin');
   const rows = others.map(u=>{
     const isInd = u.role === 'individual';
-    const tag = isInd ? 'ইনডিভিজুয়াল' : (u.role==='editor' ? 'এডিট অ্যাক্সেস' : 'শুধু ভিউ');
+    const tag = isInd ? t('role_individual') : (u.role==='editor' ? t('role_editor') : t('role_viewer'));
     const tagClass = isInd ? 'tag-gave' : (u.role==='editor' ? 'tag-gave' : 'tag-got');
     return `
     <div class="txn-row">
@@ -2033,33 +2241,33 @@ function renderAdminPanel(){
         <div>
           <span class="txn-tag ${tagClass}">${tag}</span>
           <div style="font-size:15px; font-weight:600; margin-top:4px;">${escapeHtml(u.username)}</div>
-          ${isInd ? `<div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">এই ইউজারের ডেটা ব্যক্তিগত — অ্যাডমিন দেখতে পারবে না</div>` : ''}
+          ${isInd ? `<div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">${t('individualDataPrivateNote')}</div>` : ''}
         </div>
       </div>
       <div class="txn-actions" style="margin-top:10px;">
-        ${!isInd ? `<span onclick="toggleUserRole('${escapeHtml(u.username)}')">${u.role==='editor'?'ভিউ-অনলি করুন':'এডিট দিন'}</span>` : ''}
-        <span onclick="openAdminResetPassword('${escapeHtml(u.username)}')">পাসওয়ার্ড পরিবর্তন</span>
-        <span onclick="confirmDeleteUser('${escapeHtml(u.username)}')">মুছুন</span>
+        ${!isInd ? `<span onclick="toggleUserRole('${escapeHtml(u.username)}')">${u.role==='editor'?t('makeViewOnly'):t('makeEditor')}</span>` : ''}
+        <span onclick="openAdminResetPassword('${escapeHtml(u.username)}')">${t('changeUserPassword')}</span>
+        <span onclick="confirmDeleteUser('${escapeHtml(u.username)}')">${t('delete')}</span>
       </div>
     </div>`;
   }).join('');
 
   return `
     <div class="stat-card" style="margin-bottom:18px; text-align:center;">
-      <div class="label">লগইন করা আছেঃ</div>
-      <div class="val" style="font-size:16px;">${escapeHtml(state.currentUser.username)} (অ্যাডমিন)</div>
+      <div class="label">${t('loggedInAs')}:</div>
+      <div class="val" style="font-size:16px;">${escapeHtml(state.currentUser.username)} (${t('role_admin')})</div>
     </div>
     <div class="section-title">
-      <span>ইউজার তালিকা</span>
-      <span class="link-btn" onclick="openCreateUser()">+ নতুন ইউজার</span>
+      <span>${t('userList')}</span>
+      <span class="link-btn" onclick="openCreateUser()">+ ${t('newUser')}</span>
     </div>
-    ${others.length===0 ? `<div class="empty-state"><p>এখনও কোনো ইউজার তৈরি করা হয়নি।</p></div>` : rows}
+    ${others.length===0 ? `<div class="empty-state"><p>${t('noUsersYet')}</p></div>` : rows}
   `;
 }
 
 async function bootApp(){
 
-  document.getElementById('app').innerHTML = `<div class="empty-state"><p>লোড হচ্ছে...</p></div>`;
+  document.getElementById('app').innerHTML = `<div class="empty-state"><p>${t('loadingText')}</p></div>`;
   await loadData();
   render();
   startSyncPolling();
@@ -2101,12 +2309,12 @@ function render(){
     mainHtml = renderHome();
   }else if(state.view === 'person'){
     const p = data.persons.find(x=>x.id===state.personId);
-    headerTitle = p ? p.name : 'ব্যক্তি';
+    headerTitle = p ? p.name : t('personFallback');
     backBtn = `<button class="icon-btn" onclick="setView('home')">←</button>`;
     mainHtml = renderPerson();
   }else if(state.view === 'expenseCategory'){
     const c = data.expenseCategories.find(x=>x.id===state.personId);
-    headerTitle = c ? c.name : 'খাত';
+    headerTitle = c ? c.name : t('categoryFallback');
     backBtn = `<button class="icon-btn" onclick="state.category='expense'; setView('home')">←</button>`;
     mainHtml = renderExpenseCategoryDetail();
   }else if(state.view === 'summary'){
@@ -2119,7 +2327,7 @@ function render(){
   }else if(state.view === 'admin'){
     headerTitle = t('adminPanelTitle');
     backBtn = `<button class="icon-btn" onclick="setView('settings')">←</button>`;
-    mainHtml = isAdmin() ? renderAdminPanel() : `<div class="empty-state"><p>আপনার এই পাতা দেখার অনুমতি নেই।</p></div>`;
+    mainHtml = isAdmin() ? renderAdminPanel() : `<div class="empty-state"><p>${t('noPagePermission')}</p></div>`;
   }
 
   app.innerHTML = `
@@ -2161,7 +2369,7 @@ function render(){
 }
 
 (async function init(){
-  document.getElementById('app').innerHTML = `<div class="empty-state"><p>লোড হচ্ছে...</p></div>`;
+  document.getElementById('app').innerHTML = `<div class="empty-state"><p>${t('loadingText')}</p></div>`;
   await loadUsers();
   if(lock.status === 'unlocked'){
     await loadData();
