@@ -350,8 +350,8 @@
 <div id="app"></div>
 
 <script>
-let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', ieModal: null, expenseEntryModal: null };
+let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
 let appLang = 'en';
@@ -579,6 +579,21 @@ const T = {
   categoryFallback: { en:'Category', bn:'খাত' },
   noPagePermission: { en:'You don\'t have permission to view this page.', bn:'আপনার এই পাতা দেখার অনুমতি নেই।' },
 
+  navAge: { en:'Age', bn:'বয়স' },
+  ageCalcTitle: { en:'Age / Date Calculator', bn:'বয়স / তারিখ ক্যালকুলেটর' },
+  ageCalcSub: { en:'Age from a given date to today', bn:'একটা তারিখ থেকে আজ পর্যন্ত বয়স' },
+  noAgeEntriesYet: { en:'No entries yet', bn:'এখনও কোনো এন্ট্রি নেই' },
+  noAgeEntriesDesc: { en:'Tap + below to add a name and date to track its age.', bn:'নিচের + বাটনে চেপে একটা নাম ও তারিখ যোগ করুন, তার বয়স দেখতে।' },
+  confirmDeleteAgeTitle: { en:'Delete this entry?', bn:'এন্ট্রি মুছে ফেলবেন?' },
+  pickADate: { en:'Please pick a date', bn:'একটা তারিখ বেছে নিন' },
+  newAgeEntryTitle: { en:'Add new entry', bn:'নতুন এন্ট্রি যোগ করুন' },
+  editAgeEntryTitle: { en:'Edit entry', bn:'এন্ট্রি সম্পাদনা' },
+
+  totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
+  noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
+  noIncomeCategoriesDesc: { en:'Tap + below to add your first income category (e.g. salary, business).', bn:'নিচের + বাটনে চেপে প্রথম আয়ের খাত (যেমনঃ বেতন, ব্যবসা) যোগ করুন।' },
+  incomeEntries: { en:'Income entries', bn:'আয়ের এন্ট্রি' },
+
   convertConfirmTitle: { en:'Convert to Expense?', bn:'খরচ (Expense)-এ রূপান্তর করবেন?' },
   convertMsgPart1: { en:'{count} "gave" entries for "{name}" will be moved to the Expense list, each under the category "{name}". This person will then be removed from the Loans list.', bn:'"{name}"-এর {count} টি "দিলাম" এন্ট্রি খরচ (Expense) তালিকায় নিয়ে যাওয়া হবে, প্রতিটার নাম হবে "{name}"। এরপর এই ব্যক্তিটি ধার-দেনার তালিকা থেকে মুছে যাবে।' },
   convertMsgPart2: { en:'⚠️ This person also has {count} "got" entries — since those aren\'t expenses, they will be discarded and deleted.', bn:'⚠️ এই ব্যক্তির {count} টি "পেলাম" এন্ট্রি আছে — সেগুলো খরচ না হওয়ায় বাদ দেওয়া হবে এবং মুছে যাবে।' },
@@ -745,31 +760,40 @@ async function loadData(){
       data.income = parsed.income || [];
       data.expenses = parsed.expenses || [];
       data.expenseCategories = parsed.expenseCategories || [];
+      data.incomeCategories = parsed.incomeCategories || [];
+      data.ageEntries = parsed.ageEntries || [];
     }else{
       data.persons = [];
       data.transactions = [];
       data.income = [];
       data.expenses = [];
       data.expenseCategories = [];
+      data.incomeCategories = [];
+      data.ageEntries = [];
     }
-    migrateOldExpenses();
+    migrateOldFlatEntries('expense');
+    migrateOldFlatEntries('income');
   }catch(e){
     showToast(t('loadFailedToast'));
   }
 }
 
-function migrateOldExpenses(){
-  const needsMigration = data.expenses.some(e => e.name && !e.categoryId);
+function migrateOldFlatEntries(kind){
+  const entries = kind==='income' ? data.income : data.expenses;
+  const needsMigration = entries.some(e => e.name && !e.categoryId);
   if(!needsMigration) return;
-  data.expenses = data.expenses.map(e=>{
+  const cats = kind==='income' ? data.incomeCategories : data.expenseCategories;
+  const fallbackName = kind==='income' ? t('tabIncome') : t('tabExpense');
+  const migrated = entries.map(e=>{
     if(e.categoryId) return e;
-    let cat = data.expenseCategories.find(c=>c.name.toLowerCase() === (e.name||'').toLowerCase());
+    let cat = cats.find(c=>c.name.toLowerCase() === (e.name||'').toLowerCase());
     if(!cat){
-      cat = { id: uid(), name: e.name || t('tabExpense') };
-      data.expenseCategories.push(cat);
+      cat = { id: uid(), name: e.name || fallbackName };
+      cats.push(cat);
     }
     return { id: e.id, categoryId: cat.id, amount: e.amount, date: e.date, note: e.note||'', createdAt: e.createdAt || Date.now() };
   });
+  if(kind==='income'){ data.income = migrated; } else { data.expenses = migrated; }
   saveData();
 }
 
@@ -848,21 +872,23 @@ async function savePersonModal(){
   const input = document.getElementById('person-name-input');
   const name = input.value.trim();
   if(!name){ showToast(t('enterName')); return; }
-  const mode = state.personModal.mode;
+  const m = state.personModal;
+  const mode = m.mode;
   if(mode === 'add'){
     data.persons.push({ id: uid(), name });
     showToast(t('personAdded'));
   }else if(mode === 'edit'){
-    const p = data.persons.find(x=>x.id===state.personModal.id);
+    const p = data.persons.find(x=>x.id===m.id);
     p.name = name;
     showToast(t('nameChanged'));
-  }else if(mode === 'add-expense-cat'){
-    const dup = data.expenseCategories.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  }else if(mode === 'add-cat'){
+    const cats = catsFor(m.kind);
+    const dup = cats.find(c=>c.name.toLowerCase()===name.toLowerCase());
     if(dup){ showToast(t('categoryNameTaken')); return; }
-    data.expenseCategories.push({ id: uid(), name });
+    cats.push({ id: uid(), name });
     showToast(t('categoryAdded'));
-  }else if(mode === 'edit-expense-cat'){
-    const c = data.expenseCategories.find(x=>x.id===state.personModal.id);
+  }else if(mode === 'edit-cat'){
+    const c = catsFor(m.kind).find(x=>x.id===m.id);
     c.name = name;
     showToast(t('categoryRenamed'));
   }
@@ -1058,8 +1084,8 @@ function renderCategoryTabs(){
 
 function renderHome(){
   const tabs = renderCategoryTabs();
-  if(state.category === 'income') return tabs + renderIEList('income');
-  if(state.category === 'expense') return tabs + renderExpenseCategoryList();
+  if(state.category === 'income') return tabs + renderCategoryList('income');
+  if(state.category === 'expense') return tabs + renderCategoryList('expense');
   return tabs + renderLoanList();
 }
 
@@ -1106,161 +1132,6 @@ function renderLoanList(){
   return searchHtml + list;
 }
 
-function ieItems(type){
-  const list = type === 'income' ? data.income : data.expenses;
-  return [...list].sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
-}
-
-function renderIEList(type){
-  const isIncome = type === 'income';
-  const colorClass = isIncome ? 'income' : 'expense';
-  let items = ieItems(type);
-  const q = state.searchQuery.trim().toLowerCase();
-  if(q){ items = items.filter(i=>i.name.toLowerCase().includes(q)); }
-  const total = ieItems(type).reduce((s,i)=>s+i.amount, 0);
-
-  const searchHtml = data.income.length>0 ? `
-    <div class="search-box">
-      <span class="ic">🔍</span>
-      <input id="search-input" type="text" placeholder="${t('searchByName')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
-    </div>` : '';
-
-  const totalCard = `
-    <div class="stat-card" style="margin-bottom:16px; text-align:center;">
-      <div class="label">${t('totalIncomeLabel')}</div>
-      <div class="val ${isIncome?'pos':'khoiri-txt'}">${fmtAmt(total)}</div>
-    </div>`;
-
-  if(data.income.length===0){
-    return totalCard + `
-      <div class="empty-state">
-        <div class="big">💰</div>
-        <h3 class="serif">${t('noIncomeYet')}</h3>
-        <p>${t('noIncomeDesc')}</p>
-      </div>`;
-  }
-  if(items.length===0){
-    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noResultsForQuery')}</p></div>`;
-  }
-
-  const rows = items.map(i=>`
-    <div class="ie-card">
-      <div class="ie-top">
-        <div>
-          <div class="ie-name">${escapeHtml(i.name)}</div>
-          <div class="ie-date">${fmtDate(i.date)}</div>
-        </div>
-        <div class="ie-amt ${colorClass}">${fmtAmt(i.amount)}</div>
-      </div>
-      ${i.note ? `<div class="ie-note">${escapeHtml(i.note)}</div>` : ''}
-      ${canEdit() ? `
-      <div class="ie-actions">
-        <span onclick="openEditIE('${type}','${i.id}')">${t('edit')}</span>
-        <span onclick="confirmDeleteIE('${type}','${i.id}')">${t('delete')}</span>
-      </div>` : ''}
-    </div>`).join('');
-
-  return totalCard + searchHtml + rows;
-}
-
-function openAddIE(type){
-  if(!canEdit()){ showToast(t('noPermission')); return; }
-  state.ieModal = { mode:'add', type, name:'', amount:'', date: todayStr(), note:'' };
-  render();
-}
-
-function openEditIE(type, id){
-  if(!canEdit()){ showToast(t('noPermission')); return; }
-  requestPasswordConfirm(()=>{
-    const list = type === 'income' ? data.income : data.expenses;
-    const item = list.find(x=>x.id===id);
-    state.ieModal = { mode:'edit', type, id, name:item.name, amount:String(item.amount), date:item.date, note:item.note||'' };
-    render();
-  });
-}
-
-function confirmDeleteIE(type, id){
-  if(!canEdit()){ showToast(t('noPermission')); return; }
-  requestPasswordConfirm(()=>{
-    state.confirmModal = {
-      title: t('confirmDeleteIncomeTitle'),
-      msg: t('confirmDeleteEntryMsg'),
-      onYes: async ()=>{
-        data.income = data.income.filter(x=>x.id!==id);
-        await saveData();
-        state.confirmModal = null;
-        render();
-        showToast(t('deletedToast'));
-      }
-    };
-    render();
-  });
-}
-
-function closeIEModal(){
-  state.ieModal = null;
-  render();
-}
-
-async function saveIEModal(){
-  const nameInput = document.getElementById('ie-name-input');
-  const amtInput = document.getElementById('ie-amount-input');
-  const dateInput = document.getElementById('ie-date-input');
-  const noteInput = document.getElementById('ie-note-input');
-  const name = nameInput.value.trim();
-  if(!name){ showToast(t('enterName')); return; }
-  const amount = evaluateExpression(amtInput.value);
-  if(!amount || amount <= 0){ showToast(t('enterValidAmount')); return; }
-  const date = dateInput.value || todayStr();
-  const note = noteInput.value.trim();
-  const m = state.ieModal;
-  if(m.mode === 'add'){
-    data.income.push({ id: uid(), name, amount, date, note, createdAt: Date.now() });
-    showToast(t('entryAdded'));
-  }else{
-    const item = data.income.find(x=>x.id===m.id);
-    item.name = name; item.amount = amount; item.date = date; item.note = note;
-    showToast(t('entryUpdated'));
-  }
-  await saveData();
-  state.ieModal = null;
-  render();
-}
-
-function renderIEModal(){
-  const m = state.ieModal;
-  if(!m) return '';
-  return `
-    <div class="overlay" onclick="if(event.target===this) closeIEModal()">
-      <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? t('newIncomeEntry') : t('editIncomeEntry')}</h2>
-        <div class="field">
-          <label>${t('nameLabel')} / ${t('categoryLabel')}</label>
-          <input id="ie-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('incomeNamePlaceholder')}">
-        </div>
-        <div class="field">
-          <label>${t('amountLabelSimple')}</label>
-          <div style="display:flex; gap:8px;">
-            <input id="ie-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="0" style="flex:1;">
-            <button type="button" class="calc-eq-btn" onclick="calcFieldById('ie-amount-input')">=</button>
-          </div>
-        </div>
-        <div class="field">
-          <label>${t('dateLabel')}</label>
-          <input id="ie-date-input" type="date" value="${m.date}">
-        </div>
-        <div class="field">
-          <label>${t('noteLabel')}</label>
-          <textarea id="ie-note-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.note)}</textarea>
-        </div>
-        <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeIEModal()">${t('cancel')}</button>
-          <button class="btn btn-primary" onclick="saveIEModal()">${t('save')}</button>
-        </div>
-      </div>
-    </div>`;
-}
-
 function calcMonthlyAverage(entries){
   if(!entries.length) return 0;
   const total = entries.reduce((s,e)=>s+e.amount, 0);
@@ -1269,45 +1140,63 @@ function calcMonthlyAverage(entries){
   const now = new Date();
   let days = (now - firstDate) / 86400000;
   if(days < 1) days = 1;
-  const months = days / 30;
+  const months = Math.max(1, days / 30);
   return total / months;
 }
 
-/* ================= Expense categories (mirrors Loan/Person structure) ================= */
-
-function categoryTotal(categoryId){
-  return data.expenses.filter(e=>e.categoryId===categoryId).reduce((s,e)=>s+e.amount, 0);
+function catsFor(kind){
+  return kind === 'income' ? data.incomeCategories : data.expenseCategories;
+}
+function entriesFor(kind){
+  return kind === 'income' ? data.income : data.expenses;
+}
+function kindColorClass(kind){
+  return kind === 'income' ? 'pos' : 'khoiri-txt';
+}
+function kindCssVar(kind){
+  return kind === 'income' ? 'var(--green)' : 'var(--khoiri)';
 }
 
-function categoryEntries(categoryId){
-  return data.expenses.filter(e=>e.categoryId===categoryId)
+function categoryTotal(kind, categoryId){
+  return entriesFor(kind).filter(e=>e.categoryId===categoryId).reduce((s,e)=>s+e.amount, 0);
+}
+
+function categoryEntries(kind, categoryId){
+  return entriesFor(kind).filter(e=>e.categoryId===categoryId)
     .sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
 }
 
-function renderExpenseCategoryList(){
-  let cats = [...data.expenseCategories].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+function renderCategoryList(kind){
+  const cats0 = catsFor(kind);
+  const entries0 = entriesFor(kind);
+  const colorClass = kindColorClass(kind);
+  const cssVar = kindCssVar(kind);
+  let cats = [...cats0].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
   const q = state.searchQuery.trim().toLowerCase();
   if(q){ cats = cats.filter(c=>c.name.toLowerCase().includes(q)); }
 
-  const searchHtml = data.expenseCategories.length>0 ? `
+  const searchHtml = cats0.length>0 ? `
     <div class="search-box">
       <span class="ic">🔍</span>
       <input id="search-input" type="text" placeholder="${t('searchByCategory')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
     </div>` : '';
 
-  const grandTotal = data.expenses.reduce((s,e)=>s+e.amount, 0);
-  const totalCard = data.expenseCategories.length>0 ? `
+  const grandTotal = entries0.reduce((s,e)=>s+e.amount, 0);
+  const totalLabel = kind==='income' ? t('totalIncomeAllCats') : t('totalExpenseAllCats');
+  const totalCard = cats0.length>0 ? `
     <div class="stat-card" style="margin-bottom:16px; text-align:center;">
-      <div class="label">${t('totalExpenseAllCats')}</div>
-      <div class="val khoiri-txt">${fmtAmt(grandTotal)}</div>
+      <div class="label">${totalLabel}</div>
+      <div class="val ${colorClass}">${fmtAmt(grandTotal)}</div>
     </div>` : '';
 
-  if(data.expenseCategories.length===0){
+  if(cats0.length===0){
+    const emptyTitle = kind==='income' ? t('noIncomeCategoriesYet') : t('noCategoriesYet');
+    const emptyDesc = kind==='income' ? t('noIncomeCategoriesDesc') : t('noCategoriesDesc');
     return `
       <div class="empty-state">
-        <div class="big">🧾</div>
-        <h3 class="serif">${t('noCategoriesYet')}</h3>
-        <p>${t('noCategoriesDesc')}</p>
+        <div class="big">${kind==='income'?'💰':'🧾'}</div>
+        <h3 class="serif">${emptyTitle}</h3>
+        <p>${emptyDesc}</p>
       </div>`;
   }
   if(cats.length===0){
@@ -1315,16 +1204,16 @@ function renderExpenseCategoryList(){
   }
 
   const list = cats.map(c=>{
-    const total = categoryTotal(c.id);
-    const cnt = data.expenses.filter(e=>e.categoryId===c.id).length;
+    const total = categoryTotal(kind, c.id);
+    const cnt = entries0.filter(e=>e.categoryId===c.id).length;
     return `
-      <div class="person-card" style="border-left-color:var(--khoiri);" onclick="setView('expenseCategory','${c.id}')">
+      <div class="person-card" style="border-left-color:${cssVar};" onclick="setView('category','${c.id}'); state.category='${kind}';">
         <div>
           <div class="person-name">${escapeHtml(c.name)}</div>
           <div class="person-meta">${cnt} ${t('entries')}</div>
         </div>
         <div>
-          <div class="balance khoiri-txt">${fmtAmt(total)}</div>
+          <div class="balance ${colorClass}">${fmtAmt(total)}</div>
         </div>
       </div>`;
   }).join('');
@@ -1332,12 +1221,15 @@ function renderExpenseCategoryList(){
   return totalCard + searchHtml + list;
 }
 
-function renderExpenseCategoryDetail(){
-  const c = data.expenseCategories.find(x=>x.id===state.personId);
+function renderCategoryDetail(){
+  const kind = state.category;
+  const c = catsFor(kind).find(x=>x.id===state.personId);
   if(!c) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
-  const total = categoryTotal(c.id);
-  const entries = categoryEntries(c.id);
+  const total = categoryTotal(kind, c.id);
+  const entries = categoryEntries(kind, c.id);
   const avg = calcMonthlyAverage(entries);
+  const colorClass = kindColorClass(kind);
+  const amtClass = kind==='income' ? 'income' : 'expense';
 
   const entryHtml = entries.length===0
     ? `<div class="empty-state"><p>${t('noEntriesInCategory')}</p></div>`
@@ -1345,13 +1237,13 @@ function renderExpenseCategoryDetail(){
       <div class="ie-card">
         <div class="ie-top">
           <div class="ie-date">${fmtDate(e.date)}</div>
-          <div class="ie-amt expense">${fmtAmt(e.amount)}</div>
+          <div class="ie-amt ${amtClass}">${fmtAmt(e.amount)}</div>
         </div>
         ${e.note ? `<div class="ie-note">${escapeHtml(e.note)}</div>` : ''}
         ${canEdit() ? `
         <div class="ie-actions">
-          <span onclick="openEditExpenseEntry('${e.id}')">${t('edit')}</span>
-          <span onclick="confirmDeleteExpenseEntry('${e.id}')">${t('delete')}</span>
+          <span onclick="openEditCategoryEntry('${e.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteCategoryEntry('${e.id}')">${t('delete')}</span>
         </div>` : ''}
       </div>`).join('');
 
@@ -1359,53 +1251,58 @@ function renderExpenseCategoryDetail(){
     <div class="summary-cards" style="margin-bottom:16px;">
       <div class="stat-card">
         <div class="label">${t('avgMonthly')}</div>
-        <div class="val khoiri-txt">${fmtAmt(Math.round(avg))}</div>
+        <div class="val ${colorClass}">${fmtAmt(Math.round(avg))}</div>
       </div>
       <div class="stat-card">
-        <div class="label">${t('totalExpense')}</div>
-        <div class="val khoiri-txt">${fmtAmt(total)}</div>
+        <div class="label">${kind==='income' ? t('totalIncomeLabel') : t('totalExpense')}</div>
+        <div class="val ${colorClass}">${fmtAmt(total)}</div>
       </div>
     </div>
     <div class="person-header-card">
       <div class="name serif">${escapeHtml(c.name)}</div>
       <div class="person-actions">
-        ${canEdit() ? `<span onclick="openEditExpenseCategory('${c.id}')">${t('renameCategory')}</span>` : ''}
-        ${canEdit() ? `<span onclick="confirmDeleteExpenseCategory('${c.id}')">${t('deleteCategory')}</span>` : ''}
+        ${canEdit() ? `<span onclick="openEditCategory('${kind}','${c.id}')">${t('renameCategory')}</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeleteCategory('${kind}','${c.id}')">${t('deleteCategory')}</span>` : ''}
       </div>
     </div>
-    <div class="section-title">${t('expenseEntries')}</div>
+    <div class="section-title">${kind==='income' ? t('incomeEntries') : t('expenseEntries')}</div>
     ${entryHtml}
   `;
 }
 
-function openAddExpenseCategory(){
+function openAddCategory(kind){
   if(!canEdit()){ showToast(t('noPermission')); return; }
-  state.personModal = { mode:'add-expense-cat', name:'' };
+  state.personModal = { mode:'add-cat', kind, name:'' };
   render();
 }
 
-function openEditExpenseCategory(id){
+function openEditCategory(kind, id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
-    const c = data.expenseCategories.find(x=>x.id===id);
-    state.personModal = { mode:'edit-expense-cat', id, name:c.name };
+    const c = catsFor(kind).find(x=>x.id===id);
+    state.personModal = { mode:'edit-cat', kind, id, name:c.name };
     render();
   });
 }
 
-function confirmDeleteExpenseCategory(id){
+function confirmDeleteCategory(kind, id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     state.confirmModal = {
       title:t('confirmDeleteCategoryTitle'),
       msg:t('confirmDeleteCategoryMsg'),
       onYes: async ()=>{
-        data.expenseCategories = data.expenseCategories.filter(x=>x.id!==id);
-        data.expenses = data.expenses.filter(e=>e.categoryId!==id);
+        if(kind==='income'){
+          data.incomeCategories = data.incomeCategories.filter(x=>x.id!==id);
+          data.income = data.income.filter(e=>e.categoryId!==id);
+        }else{
+          data.expenseCategories = data.expenseCategories.filter(x=>x.id!==id);
+          data.expenses = data.expenses.filter(e=>e.categoryId!==id);
+        }
         await saveData();
         state.confirmModal = null;
         setView('home');
-        state.category = 'expense';
+        state.category = kind;
         showToast(t('categoryDeleted'));
       }
     };
@@ -1413,36 +1310,39 @@ function confirmDeleteExpenseCategory(id){
   });
 }
 
-function openAddExpenseEntry(categoryId){
+function openAddCategoryEntry(categoryId){
   if(!canEdit()){ showToast(t('noPermission')); return; }
-  state.expenseEntryModal = { mode:'add', id:null, categoryId, isNewCategory:false, newCategoryName:'', amount:'', date: todayStr(), note:'' };
+  state.entryModal = { mode:'add', id:null, kind: state.category, categoryId, isNewCategory:false, newCategoryName:'', amount:'', date: todayStr(), note:'' };
   render();
 }
 
-function openQuickAddExpense(){
+function openQuickAddEntry(kind){
   if(!canEdit()){ showToast(t('noPermission')); return; }
-  const firstCat = data.expenseCategories[0];
-  state.expenseEntryModal = { mode:'add', id:null, categoryId: firstCat ? firstCat.id : '__new__', isNewCategory: !firstCat, newCategoryName:'', amount:'', date: todayStr(), note:'' };
+  const firstCat = catsFor(kind)[0];
+  state.entryModal = { mode:'add', id:null, kind, categoryId: firstCat ? firstCat.id : '__new__', isNewCategory: !firstCat, newCategoryName:'', amount:'', date: todayStr(), note:'' };
   render();
 }
 
-function openEditExpenseEntry(id){
+function openEditCategoryEntry(id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
-    const e = data.expenses.find(x=>x.id===id);
-    state.expenseEntryModal = { mode:'edit', id, categoryId:e.categoryId, isNewCategory:false, newCategoryName:'', amount:String(e.amount), date:e.date, note:e.note||'' };
+    const kind = state.category;
+    const e = entriesFor(kind).find(x=>x.id===id);
+    state.entryModal = { mode:'edit', id, kind, categoryId:e.categoryId, isNewCategory:false, newCategoryName:'', amount:String(e.amount), date:e.date, note:e.note||'' };
     render();
   });
 }
 
-function confirmDeleteExpenseEntry(id){
+function confirmDeleteCategoryEntry(id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
+    const kind = state.category;
     state.confirmModal = {
-      title:t('confirmDeleteExpenseTitle'),
+      title: kind==='income' ? t('confirmDeleteIncomeTitle') : t('confirmDeleteExpenseTitle'),
       msg:t('confirmDeleteEntryMsg'),
       onYes: async ()=>{
-        data.expenses = data.expenses.filter(x=>x.id!==id);
+        if(kind==='income'){ data.income = data.income.filter(x=>x.id!==id); }
+        else{ data.expenses = data.expenses.filter(x=>x.id!==id); }
         await saveData();
         state.confirmModal = null;
         render();
@@ -1453,13 +1353,13 @@ function confirmDeleteExpenseEntry(id){
   });
 }
 
-function closeExpenseEntryModal(){
-  state.expenseEntryModal = null;
+function closeEntryModal(){
+  state.entryModal = null;
   render();
 }
 
-function onExpenseCategorySelectChange(val){
-  const m = state.expenseEntryModal;
+function onEntryCategorySelectChange(val){
+  const m = state.entryModal;
   if(!m) return;
   if(val === '__new__'){
     m.isNewCategory = true;
@@ -1470,23 +1370,26 @@ function onExpenseCategorySelectChange(val){
   render();
 }
 
-async function saveExpenseEntryModal(){
-  const m = state.expenseEntryModal;
-  const amtInput = document.getElementById('expense-amount-input');
-  const dateInput = document.getElementById('expense-date-input');
-  const noteInput = document.getElementById('expense-note-input');
+async function saveEntryModal(){
+  const m = state.entryModal;
+  const kind = m.kind;
+  const amtInput = document.getElementById('entry-amount-input');
+  const dateInput = document.getElementById('entry-date-input');
+  const noteInput = document.getElementById('entry-note-input');
   let categoryId = m.categoryId;
+  const cats = catsFor(kind);
+  const entries = entriesFor(kind);
 
   if(m.isNewCategory){
-    const nameInput = document.getElementById('expense-new-cat-input');
+    const nameInput = document.getElementById('entry-new-cat-input');
     const newName = nameInput.value.trim();
     if(!newName){ showToast(t('enterCategoryName')); return; }
-    const existing = data.expenseCategories.find(c=>c.name.toLowerCase()===newName.toLowerCase());
+    const existing = cats.find(c=>c.name.toLowerCase()===newName.toLowerCase());
     if(existing){
       categoryId = existing.id;
     }else{
       categoryId = uid();
-      data.expenseCategories.push({ id: categoryId, name: newName });
+      cats.push({ id: categoryId, name: newName });
     }
   }
   if(!categoryId){ showToast(t('pickACategory')); return; }
@@ -1497,30 +1400,33 @@ async function saveExpenseEntryModal(){
   const note = noteInput.value.trim();
 
   if(m.mode === 'add'){
-    data.expenses.push({ id: uid(), categoryId, amount, date, note, createdAt: Date.now() });
-    showToast(t('expenseAdded'));
+    entries.push({ id: uid(), categoryId, amount, date, note, createdAt: Date.now() });
+    showToast(kind==='income' ? t('entryAdded') : t('expenseAdded'));
   }else{
-    const e = data.expenses.find(x=>x.id===m.id);
+    const e = entries.find(x=>x.id===m.id);
     e.categoryId = categoryId; e.amount = amount; e.date = date; e.note = note;
-    showToast(t('expenseUpdated'));
+    showToast(kind==='income' ? t('entryUpdated') : t('expenseUpdated'));
   }
   await saveData();
-  state.expenseEntryModal = null;
+  state.entryModal = null;
   render();
 }
 
-function renderExpenseEntryModal(){
-  const m = state.expenseEntryModal;
+function renderEntryModal(){
+  const m = state.entryModal;
   if(!m) return '';
-  const cats = [...data.expenseCategories].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const kind = m.kind;
+  const cats = [...catsFor(kind)].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
   const options = cats.map(c=>`<option value="${c.id}" ${(!m.isNewCategory && m.categoryId===c.id)?'selected':''}>${escapeHtml(c.name)}</option>`).join('');
+  const titleAdd = kind==='income' ? t('newIncomeEntry') : t('newExpenseTitle');
+  const titleEdit = kind==='income' ? t('editIncomeEntry') : t('editExpenseTitle');
   return `
-    <div class="overlay" onclick="if(event.target===this) closeExpenseEntryModal()">
+    <div class="overlay" onclick="if(event.target===this) closeEntryModal()">
       <div class="sheet">
-        <h2 class="serif">${m.mode==='add' ? t('newExpenseTitle') : t('editExpenseTitle')}</h2>
+        <h2 class="serif">${m.mode==='add' ? titleAdd : titleEdit}</h2>
         <div class="field">
           <label>${t('categoryLabel')}</label>
-          <select id="expense-cat-select" onchange="onExpenseCategorySelectChange(this.value)" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+          <select id="entry-cat-select" onchange="onEntryCategorySelectChange(this.value)" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
             ${options}
             <option value="__new__" ${m.isNewCategory?'selected':''}>${t('addNewCategoryOption')}</option>
           </select>
@@ -1528,30 +1434,31 @@ function renderExpenseEntryModal(){
         ${m.isNewCategory ? `
         <div class="field">
           <label>${t('newCategoryNameLabel')}</label>
-          <input id="expense-new-cat-input" type="text" value="${escapeHtml(m.newCategoryName)}" placeholder="${t('namePlaceholderCategory')}">
+          <input id="entry-new-cat-input" type="text" value="${escapeHtml(m.newCategoryName)}" placeholder="${t('namePlaceholderCategory')}">
         </div>` : ''}
         <div class="field">
           <label>${t('amountLabelSimple')}</label>
           <div style="display:flex; gap:8px;">
-            <input id="expense-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="0" style="flex:1;">
-            <button type="button" class="calc-eq-btn" onclick="calcFieldById('expense-amount-input')">=</button>
+            <input id="entry-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="0" style="flex:1;">
+            <button type="button" class="calc-eq-btn" onclick="calcFieldById('entry-amount-input')">=</button>
           </div>
         </div>
         <div class="field">
           <label>${t('dateLabel')}</label>
-          <input id="expense-date-input" type="date" value="${m.date}">
+          <input id="entry-date-input" type="date" value="${m.date}">
         </div>
         <div class="field">
           <label>${t('noteLabel')}</label>
-          <textarea id="expense-note-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.note)}</textarea>
+          <textarea id="entry-note-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.note)}</textarea>
         </div>
         <div class="sheet-actions">
-          <button class="btn btn-secondary" onclick="closeExpenseEntryModal()">${t('cancel')}</button>
-          <button class="btn btn-primary" onclick="saveExpenseEntryModal()">${t('save')}</button>
+          <button class="btn btn-secondary" onclick="closeEntryModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveEntryModal()">${t('save')}</button>
         </div>
       </div>
     </div>`;
 }
+
 
 function renderPerson(){
   const p = data.persons.find(x=>x.id===state.personId);
@@ -1701,8 +1608,8 @@ function renderSummary(){
 function renderPersonModal(){
   if(!state.personModal) return '';
   const m = state.personModal;
-  const titles = { 'add':t('newPersonTitle'), 'edit':t('editNameTitle'), 'add-expense-cat':t('newCategoryTitle'), 'edit-expense-cat':t('editCategoryTitle') };
-  const placeholders = { 'add':t('namePlaceholderPerson'), 'edit':t('namePlaceholderPerson'), 'add-expense-cat':t('namePlaceholderCategory'), 'edit-expense-cat':t('namePlaceholderCategory') };
+  const titles = { 'add':t('newPersonTitle'), 'edit':t('editNameTitle'), 'add-cat':t('newCategoryTitle'), 'edit-cat':t('editCategoryTitle') };
+  const placeholders = { 'add':t('namePlaceholderPerson'), 'edit':t('namePlaceholderPerson'), 'add-cat':t('namePlaceholderCategory'), 'edit-cat':t('namePlaceholderCategory') };
   return `
     <div class="overlay" onclick="if(event.target===this) closePersonModal()">
       <div class="sheet">
@@ -2195,6 +2102,142 @@ function confirmDeleteUser(username){
   render();
 }
 
+/* ================= Age / Date Calculator ================= */
+
+function calcAgeYMD(startDateStr){
+  const start = new Date(startDateStr + 'T00:00:00');
+  const now = new Date();
+  let years = now.getFullYear() - start.getFullYear();
+  let months = now.getMonth() - start.getMonth();
+  let days = now.getDate() - start.getDate();
+  if(days < 0){
+    months--;
+    const prevMonthLastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    days += prevMonthLastDay;
+  }
+  if(months < 0){
+    years--;
+    months += 12;
+  }
+  if(years < 0){ years=0; months=0; days=0; }
+  return { years, months, days };
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function fmtAge(startDateStr){
+  const a = calcAgeYMD(startDateStr);
+  return `${pad2(a.years)}Y : ${pad2(a.months)}M : ${pad2(a.days)}D`;
+}
+
+function renderAgeCalc(){
+  const entries = [...data.ageEntries].sort((a,b)=> a.name.localeCompare(b.name,'bn'));
+  const list = entries.length===0
+    ? `<div class="empty-state">
+        <div class="big">🎂</div>
+        <h3 class="serif">${t('noAgeEntriesYet')}</h3>
+        <p>${t('noAgeEntriesDesc')}</p>
+      </div>`
+    : entries.map(e=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div>
+            <div class="ie-name">${escapeHtml(e.name)}</div>
+            <div class="ie-date">${fmtDate(e.date)}</div>
+          </div>
+          <div class="ie-amt" style="color:var(--loan-blue); font-size:16px;">${fmtAge(e.date)}</div>
+        </div>
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditAgeEntry('${e.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteAgeEntry('${e.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+  return list;
+}
+
+function openAddAgeEntry(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.ageModal = { mode:'add', id:null, name:'', date: todayStr() };
+  render();
+}
+
+function openEditAgeEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const e = data.ageEntries.find(x=>x.id===id);
+    state.ageModal = { mode:'edit', id, name:e.name, date:e.date };
+    render();
+  });
+}
+
+function confirmDeleteAgeEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteAgeTitle'),
+      msg: t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        data.ageEntries = data.ageEntries.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeAgeModal(){
+  state.ageModal = null;
+  render();
+}
+
+async function saveAgeModal(){
+  const nameInput = document.getElementById('age-name-input');
+  const dateInput = document.getElementById('age-date-input');
+  const name = nameInput.value.trim();
+  if(!name){ showToast(t('enterName')); return; }
+  const date = dateInput.value;
+  if(!date){ showToast(t('pickADate')); return; }
+  const m = state.ageModal;
+  if(m.mode === 'add'){
+    data.ageEntries.push({ id: uid(), name, date, createdAt: Date.now() });
+    showToast(t('entryAdded'));
+  }else{
+    const e = data.ageEntries.find(x=>x.id===m.id);
+    e.name = name; e.date = date;
+    showToast(t('entryUpdated'));
+  }
+  await saveData();
+  state.ageModal = null;
+  render();
+}
+
+function renderAgeModal(){
+  const m = state.ageModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeAgeModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newAgeEntryTitle') : t('editAgeEntryTitle')}</h2>
+        <div class="field">
+          <label>${t('nameLabel')}</label>
+          <input id="age-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('namePlaceholderPerson')}">
+        </div>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="age-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeAgeModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveAgeModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderSettings(){
   const roleKey = 'role_' + (state.currentUser ? state.currentUser.role : 'viewer');
   return `
@@ -2276,19 +2319,21 @@ async function bootApp(){
 function startSyncPolling(){
   if(window.__syncInterval) return;
   window.__syncInterval = setInterval(async ()=>{
-    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.ieModal || state.expenseEntryModal;
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.entryModal || state.ageModal;
     if(modalOpen) return;
     try{
       const parsed = await fbGet(dataPath());
-      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [] };
-      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[] });
-      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories });
+      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[], incomeCategories: fresh.incomeCategories||[], ageEntries: fresh.ageEntries||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories, incomeCategories: data.incomeCategories, ageEntries: data.ageEntries });
       if(freshStr !== currentStr){
         data.persons = fresh.persons || [];
         data.transactions = fresh.transactions || [];
         data.income = fresh.income || [];
         data.expenses = fresh.expenses || [];
         data.expenseCategories = fresh.expenseCategories || [];
+        data.incomeCategories = fresh.incomeCategories || [];
+        data.ageEntries = fresh.ageEntries || [];
         render();
       }
     }catch(e){}
@@ -2312,15 +2357,20 @@ function render(){
     headerTitle = p ? p.name : t('personFallback');
     backBtn = `<button class="icon-btn" onclick="setView('home')">←</button>`;
     mainHtml = renderPerson();
-  }else if(state.view === 'expenseCategory'){
-    const c = data.expenseCategories.find(x=>x.id===state.personId);
+  }else if(state.view === 'category'){
+    const c = catsFor(state.category).find(x=>x.id===state.personId);
     headerTitle = c ? c.name : t('categoryFallback');
-    backBtn = `<button class="icon-btn" onclick="state.category='expense'; setView('home')">←</button>`;
-    mainHtml = renderExpenseCategoryDetail();
+    const backCat = state.category;
+    backBtn = `<button class="icon-btn" onclick="state.category='${backCat}'; setView('home')">←</button>`;
+    mainHtml = renderCategoryDetail();
   }else if(state.view === 'summary'){
     headerTitle = t('summaryTitle');
     headerSub = t('summarySub');
     mainHtml = renderSummary();
+  }else if(state.view === 'agecalc'){
+    headerTitle = t('ageCalcTitle');
+    headerSub = t('ageCalcSub');
+    mainHtml = renderAgeCalc();
   }else if(state.view === 'settings'){
     headerTitle = t('settingsTitle');
     mainHtml = renderSettings();
@@ -2342,16 +2392,20 @@ function render(){
     </header>
     <main>${mainHtml}</main>
     ${state.view==='home' && state.category==='loan' && canEdit() ? `<button class="fab-btn" onclick="openAddPerson()">+</button>` : ''}
-    ${state.view==='home' && state.category==='income' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddIE('income')">+</button>` : ''}
-    ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openQuickAddExpense()">+</button>` : ''}
+    ${state.view==='home' && state.category==='income' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openQuickAddEntry('income')">+</button>` : ''}
+    ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openQuickAddEntry('expense')">+</button>` : ''}
     ${state.view==='person' && canEdit() ? `<button class="fab-btn" onclick="openAddTxn('${state.personId}')">+</button>` : ''}
-    ${state.view==='expenseCategory' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openAddExpenseEntry('${state.personId}')">+</button>` : ''}
+    ${state.view==='category' && canEdit() ? `<button class="fab-btn" style="background:${state.category==='income'?'var(--green)':'var(--khoiri)'};" onclick="openAddCategoryEntry('${state.personId}')">+</button>` : ''}
+    ${state.view==='agecalc' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddAgeEntry()">+</button>` : ''}
     <nav class="bottomnav">
-      <button class="${state.view==='home'||state.view==='person'||state.view==='expenseCategory'?'active':''}" onclick="setView('home')">
+      <button class="${state.view==='home'||state.view==='person'||state.view==='category'?'active':''}" onclick="setView('home')">
         <span class="ic">🏠</span>${t('navHome')}
       </button>
       <button class="${state.view==='summary'?'active':''}" onclick="setView('summary')">
         <span class="ic">📊</span>${t('navSummary')}
+      </button>
+      <button class="${state.view==='agecalc'?'active':''}" onclick="setView('agecalc')">
+        <span class="ic">🎂</span>${t('navAge')}
       </button>
       <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
         <span class="ic">⚙️</span>${t('navSettings')}
@@ -2359,8 +2413,8 @@ function render(){
     </nav>
     ${renderPersonModal()}
     ${renderTxnModal()}
-    ${renderIEModal()}
-    ${renderExpenseEntryModal()}
+    ${renderEntryModal()}
+    ${renderAgeModal()}
     ${renderConfirmModal()}
     ${renderPwModal()}
     ${renderNewUserModal()}
