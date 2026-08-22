@@ -199,6 +199,23 @@
   .stat-card .label{font-size:12px; color:var(--ink-soft);}
   .stat-card .val{font-size:18px; font-weight:700; margin-top:4px;}
 
+  .stat-row-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .stat-row{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--paper-card); border:1px solid var(--line); border-radius:8px;
+    padding:10px 14px; box-shadow:var(--shadow);
+  }
+  .stat-row-label{ font-size:13px; color:var(--ink-soft); }
+  .stat-row-value{ font-size:15px; font-weight:700; }
+
+  .cat-subtabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .cat-subtab{
+    flex:1; padding:9px 0; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; font-family:'Hind Siliguri', sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer; text-align:center;
+  }
+  .cat-subtab.active{background:var(--loan-blue); color:#fff; border-color:var(--loan-blue);}
+
   .section-title{
     font-size:14px; color:var(--ink-soft); margin:18px 0 8px 2px; font-weight:600;
     display:flex; justify-content:space-between; align-items:center;
@@ -351,7 +368,7 @@
 
 <script>
 let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null, ageCategory: 'age' };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
 let appLang = 'en';
@@ -400,6 +417,9 @@ const T = {
   avgMonthlyIncome: { en:'Avg. monthly income (since 1st entry)', bn:'গড় মাসিক আয় (প্রথম এন্ট্রি থেকে)' },
   avgMonthlyExpense: { en:'Avg. monthly expense (since 1st entry)', bn:'গড় মাসিক খরচ (প্রথম এন্ট্রি থেকে)' },
   avgMonthly: { en:'Avg. monthly (since 1st entry)', bn:'গড় মাসিক (প্রথম এন্ট্রি থেকে)' },
+  avgDaily: { en:'Avg. Daily', bn:'দৈনিক গড়' },
+  avgMonthlyUpTo: { en:'Avg. Monthly (Up to)', bn:'মাসিক গড় (Up to)' },
+  avgMonthlyOnlyEntry: { en:'Avg. Monthly (Only Entry)', bn:'মাসিক গড় (শুধু এন্ট্রি আছে এমন মাস)' },
   totalExpense: { en:'Total expense', bn:'মোট খরচ' },
   categoryNotFound: { en:'Category not found', bn:'খাত পাওয়া যায়নি' },
   noEntriesInCategory: { en:'No entries in this category yet. Tap + to add one.', bn:'এই খাতে এখনও কোনো এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।' },
@@ -588,6 +608,9 @@ const T = {
   pickADate: { en:'Please pick a date', bn:'একটা তারিখ বেছে নিন' },
   newAgeEntryTitle: { en:'Add new entry', bn:'নতুন এন্ট্রি যোগ করুন' },
   editAgeEntryTitle: { en:'Edit entry', bn:'এন্ট্রি সম্পাদনা' },
+  taskTab: { en:'Task', bn:'টাস্ক' },
+  ageTab: { en:'Age', bn:'বয়স' },
+  sectionLabel: { en:'Section', bn:'সেকশন' },
 
   totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
   noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
@@ -1132,16 +1155,50 @@ function renderLoanList(){
   return searchHtml + list;
 }
 
-function calcMonthlyAverage(entries){
+function monthKey(dateStr){
+  return dateStr.slice(0,7);
+}
+
+function countMonthsUpTo(entries){
+  if(!entries.length) return 1;
+  const dates = entries.map(e=>e.date).sort();
+  const first = new Date(dates[0] + 'T00:00:00');
+  const now = new Date();
+  let months = (now.getFullYear()-first.getFullYear())*12 + (now.getMonth()-first.getMonth()) + 1;
+  if(months < 1) months = 1;
+  if(months > 12) months = 12;
+  return months;
+}
+
+function countMonthsWithEntries(entries){
+  if(!entries.length) return 1;
+  const keys = new Set(entries.map(e=>monthKey(e.date)));
+  let count = keys.size;
+  if(count < 1) count = 1;
+  if(count > 12) count = 12;
+  return count;
+}
+
+function avgMonthlyUpTo(entries){
   if(!entries.length) return 0;
   const total = entries.reduce((s,e)=>s+e.amount, 0);
-  const dates = entries.map(e=>e.date).sort();
-  const firstDate = new Date(dates[0] + 'T00:00:00');
-  const now = new Date();
-  let days = (now - firstDate) / 86400000;
-  if(days < 1) days = 1;
-  const months = Math.max(1, days / 30);
-  return total / months;
+  return total / countMonthsUpTo(entries);
+}
+
+function avgMonthlyOnlyEntry(entries){
+  if(!entries.length) return 0;
+  const total = entries.reduce((s,e)=>s+e.amount, 0);
+  return total / countMonthsWithEntries(entries);
+}
+
+function avgDaily(entries){
+  if(!entries.length) return 0;
+  const total = entries.reduce((s,e)=>s+e.amount, 0);
+  return total / (countMonthsUpTo(entries) * 30);
+}
+
+function calcMonthlyAverage(entries){
+  return avgMonthlyUpTo(entries);
 }
 
 function catsFor(kind){
@@ -1227,9 +1284,12 @@ function renderCategoryDetail(){
   if(!c) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
   const total = categoryTotal(kind, c.id);
   const entries = categoryEntries(kind, c.id);
-  const avg = calcMonthlyAverage(entries);
+  const aDaily = avgDaily(entries);
+  const aUpTo = avgMonthlyUpTo(entries);
+  const aOnlyEntry = avgMonthlyOnlyEntry(entries);
   const colorClass = kindColorClass(kind);
   const amtClass = kind==='income' ? 'income' : 'expense';
+  const totalLabel = kind==='income' ? t('totalIncomeLabel') : t('totalExpense');
 
   const entryHtml = entries.length===0
     ? `<div class="empty-state"><p>${t('noEntriesInCategory')}</p></div>`
@@ -1248,14 +1308,22 @@ function renderCategoryDetail(){
       </div>`).join('');
 
   return `
-    <div class="summary-cards" style="margin-bottom:16px;">
-      <div class="stat-card">
-        <div class="label">${t('avgMonthly')}</div>
-        <div class="val ${colorClass}">${fmtAmt(Math.round(avg))}</div>
+    <div class="stat-row-list">
+      <div class="stat-row">
+        <span class="stat-row-label">${totalLabel}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(total)}</span>
       </div>
-      <div class="stat-card">
-        <div class="label">${kind==='income' ? t('totalIncomeLabel') : t('totalExpense')}</div>
-        <div class="val ${colorClass}">${fmtAmt(total)}</div>
+      <div class="stat-row">
+        <span class="stat-row-label">${t('avgDaily')}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(Math.round(aDaily))}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">${t('avgMonthlyUpTo')}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(Math.round(aUpTo))}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">${t('avgMonthlyOnlyEntry')}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(Math.round(aOnlyEntry))}</span>
       </div>
     </div>
     <div class="person-header-card">
@@ -2130,11 +2198,26 @@ function fmtAge(startDateStr){
   return `${pad2(a.years)}Y : ${pad2(a.months)}M : ${pad2(a.days)}D`;
 }
 
+function setAgeCategory(kind){
+  state.ageCategory = kind;
+  render();
+}
+
+function renderAgeSubTabs(){
+  return `
+    <div class="cat-subtabs">
+      <button class="cat-subtab ${state.ageCategory==='task'?'active':''}" onclick="setAgeCategory('task')">${t('taskTab')}</button>
+      <button class="cat-subtab ${state.ageCategory==='age'?'active':''}" onclick="setAgeCategory('age')">${t('ageTab')}</button>
+    </div>`;
+}
+
 function renderAgeCalc(){
-  const entries = [...data.ageEntries].sort((a,b)=> a.name.localeCompare(b.name,'bn'));
+  const tabs = renderAgeSubTabs();
+  const entries = data.ageEntries.filter(e=>(e.kind||'age')===state.ageCategory)
+    .sort((a,b)=> a.name.localeCompare(b.name,'bn'));
   const list = entries.length===0
     ? `<div class="empty-state">
-        <div class="big">🎂</div>
+        <div class="big">${state.ageCategory==='task' ? '📋' : '🎂'}</div>
         <h3 class="serif">${t('noAgeEntriesYet')}</h3>
         <p>${t('noAgeEntriesDesc')}</p>
       </div>`
@@ -2153,12 +2236,12 @@ function renderAgeCalc(){
           <span onclick="confirmDeleteAgeEntry('${e.id}')">${t('delete')}</span>
         </div>` : ''}
       </div>`).join('');
-  return list;
+  return tabs + list;
 }
 
 function openAddAgeEntry(){
   if(!canEdit()){ showToast(t('noPermission')); return; }
-  state.ageModal = { mode:'add', id:null, name:'', date: todayStr() };
+  state.ageModal = { mode:'add', id:null, name:'', date: todayStr(), kind: state.ageCategory };
   render();
 }
 
@@ -2166,7 +2249,7 @@ function openEditAgeEntry(id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const e = data.ageEntries.find(x=>x.id===id);
-    state.ageModal = { mode:'edit', id, name:e.name, date:e.date };
+    state.ageModal = { mode:'edit', id, name:e.name, date:e.date, kind: e.kind || 'age' };
     render();
   });
 }
@@ -2194,6 +2277,12 @@ function closeAgeModal(){
   render();
 }
 
+function setAgeModalKind(kind){
+  if(!state.ageModal) return;
+  state.ageModal.kind = kind;
+  render();
+}
+
 async function saveAgeModal(){
   const nameInput = document.getElementById('age-name-input');
   const dateInput = document.getElementById('age-date-input');
@@ -2203,11 +2292,11 @@ async function saveAgeModal(){
   if(!date){ showToast(t('pickADate')); return; }
   const m = state.ageModal;
   if(m.mode === 'add'){
-    data.ageEntries.push({ id: uid(), name, date, createdAt: Date.now() });
+    data.ageEntries.push({ id: uid(), name, date, kind: m.kind, createdAt: Date.now() });
     showToast(t('entryAdded'));
   }else{
     const e = data.ageEntries.find(x=>x.id===m.id);
-    e.name = name; e.date = date;
+    e.name = name; e.date = date; e.kind = m.kind;
     showToast(t('entryUpdated'));
   }
   await saveData();
@@ -2222,6 +2311,13 @@ function renderAgeModal(){
     <div class="overlay" onclick="if(event.target===this) closeAgeModal()">
       <div class="sheet">
         <h2 class="serif">${m.mode==='add' ? t('newAgeEntryTitle') : t('editAgeEntryTitle')}</h2>
+        <div class="field">
+          <label>${t('sectionLabel')}</label>
+          <div class="type-toggle">
+            <button class="${m.kind==='task'?'sel-gave':''}" onclick="setAgeModalKind('task')">${t('taskTab')}</button>
+            <button class="${m.kind==='age'?'sel-got':''}" onclick="setAgeModalKind('age')">${t('ageTab')}</button>
+          </div>
+        </div>
         <div class="field">
           <label>${t('nameLabel')}</label>
           <input id="age-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('namePlaceholderPerson')}">
