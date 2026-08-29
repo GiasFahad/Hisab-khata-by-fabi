@@ -216,6 +216,25 @@
   }
   .cat-subtab.active{background:var(--loan-blue); color:#fff; border-color:var(--loan-blue);}
 
+  .hp-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:10px;
+    padding:16px; margin-bottom:16px; box-shadow:var(--shadow);
+  }
+  .hp-name{ font-family:'Tiro Bangla', serif; font-size:19px; font-weight:600; margin-bottom:10px; }
+  .hp-age-row{ display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--line); }
+  .hp-age-row:last-of-type{ border-bottom:none; }
+  .hp-age-label{
+    width:24px; height:24px; border-radius:50%; background:var(--loan-blue); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;
+  }
+  .hp-age-date{ flex:1; font-size:13px; color:var(--ink-soft); }
+  .hp-age-value{ font-size:14px; font-weight:700; color:var(--loan-blue); }
+  .hp-info-row{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; color:var(--ink); }
+  .chart-box{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:10px;
+    padding:12px 8px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+
   .section-title{
     font-size:14px; color:var(--ink-soft); margin:18px 0 8px 2px; font-weight:600;
     display:flex; justify-content:space-between; align-items:center;
@@ -367,8 +386,8 @@
 <div id="app"></div>
 
 <script>
-let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null, ageCategory: 'age' };
+let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null, ageCategory: 'task', hpInfoModal: null, weightModal: null };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
 let appLang = 'en';
@@ -599,7 +618,8 @@ const T = {
   categoryFallback: { en:'Category', bn:'খাত' },
   noPagePermission: { en:'You don\'t have permission to view this page.', bn:'আপনার এই পাতা দেখার অনুমতি নেই।' },
 
-  navAge: { en:'Age', bn:'বয়স' },
+  navAge: { en:'HP', bn:'HP' },
+  healthProfileTab: { en:'Health Profile', bn:'হেলথ প্রোফাইল' },
   ageCalcTitle: { en:'Age / Date Calculator', bn:'বয়স / তারিখ ক্যালকুলেটর' },
   ageCalcSub: { en:'Age from a given date to today', bn:'একটা তারিখ থেকে আজ পর্যন্ত বয়স' },
   noAgeEntriesYet: { en:'No entries yet', bn:'এখনও কোনো এন্ট্রি নেই' },
@@ -611,6 +631,40 @@ const T = {
   taskTab: { en:'Task', bn:'টাস্ক' },
   ageTab: { en:'Age', bn:'বয়স' },
   sectionLabel: { en:'Section', bn:'সেকশন' },
+
+  noProfilesYet: { en:'No health profiles yet', bn:'এখনও কোনো হেলথ প্রোফাইল নেই' },
+  noProfilesDesc: { en:'Tap + below to create your first health profile.', bn:'নিচের + বাটনে চেপে প্রথম হেলথ প্রোফাইল তৈরি করুন।' },
+  newProfileTitle: { en:'Create new profile', bn:'নতুন প্রোফাইল তৈরি করুন' },
+  editProfileTitle: { en:'Edit profile', bn:'প্রোফাইল সম্পাদনা' },
+  dateOLabel: { en:'Date O', bn:'তারিখ O' },
+  dateCLabel: { en:'Date C', bn:'তারিখ C' },
+  genderLabel: { en:'Gender', bn:'লিঙ্গ' },
+  genderMale: { en:'Male', bn:'পুরুষ' },
+  genderFemale: { en:'Female', bn:'মহিলা' },
+  genderOther: { en:'Other', bn:'অন্যান্য' },
+  bloodGroupLabel: { en:'Blood Group', bn:'রক্তের গ্রুপ' },
+  heightLabel: { en:'Height', bn:'উচ্চতা' },
+  weightLabel: { en:'Weight', bn:'ওজন' },
+  editProfile: { en:'Edit profile', bn:'প্রোফাইল সম্পাদনা' },
+  deleteProfile: { en:'Delete profile', bn:'প্রোফাইল মুছুন' },
+  confirmDeleteProfileTitle: { en:'Delete this profile?', bn:'প্রোফাইল মুছে ফেলবেন?' },
+  confirmDeleteProfileMsg: { en:'All weight records under this profile will also be deleted. This cannot be undone.', bn:'এই প্রোফাইলের সব ওজনের রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  weightChartTitle: { en:'Weight (KG)', bn:'ওজন (কেজি)' },
+  bmiChartTitle: { en:'BMI', bn:'BMI' },
+  weightEntriesTitle: { en:'Weight entries', bn:'ওজনের এন্ট্রি' },
+  noWeightEntriesYet: { en:'No weight entries yet. Tap + to add one.', bn:'এখনও কোনো ওজনের এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।' },
+  noChartData: { en:'Not enough data for a chart yet', bn:'চার্ট দেখানোর জন্য যথেষ্ট ডেটা নেই' },
+  currentBmiLabel: { en:'Current BMI', bn:'বর্তমান BMI' },
+  noWeightForBmi: { en:'Add a weight entry to see BMI', bn:'BMI দেখতে একটা ওজনের এন্ট্রি যোগ করুন' },
+  bmi_underweight: { en:'UNDERWEIGHT', bn:'কম ওজন' },
+  bmi_healthy: { en:'HEALTHY', bn:'স্বাস্থ্যকর' },
+  bmi_overweight: { en:'OVERWEIGHT', bn:'অতিরিক্ত ওজন' },
+  bmi_obese: { en:'OBESE', bn:'স্থূল' },
+  bmi_extremelyObese: { en:'EXTREMELY OBESE', bn:'অতিমাত্রায় স্থূল' },
+  newWeightTitle: { en:'Add weight entry', bn:'নতুন ওজন এন্ট্রি' },
+  editWeightTitle: { en:'Edit weight entry', bn:'ওজন এন্ট্রি সম্পাদনা' },
+  weightKgLabel: { en:'Weight (kg)', bn:'ওজন (কেজি)' },
+  confirmDeleteWeightTitle: { en:'Delete this weight entry?', bn:'ওজনের এন্ট্রি মুছে ফেলবেন?' },
 
   totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
   noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
@@ -785,6 +839,7 @@ async function loadData(){
       data.expenseCategories = parsed.expenseCategories || [];
       data.incomeCategories = parsed.incomeCategories || [];
       data.ageEntries = parsed.ageEntries || [];
+      data.healthProfiles = parsed.healthProfiles || [];
     }else{
       data.persons = [];
       data.transactions = [];
@@ -793,6 +848,7 @@ async function loadData(){
       data.expenseCategories = [];
       data.incomeCategories = [];
       data.ageEntries = [];
+      data.healthProfiles = [];
     }
     migrateOldFlatEntries('expense');
     migrateOldFlatEntries('income');
@@ -2175,12 +2231,15 @@ function confirmDeleteUser(username){
 function calcAgeYMD(startDateStr){
   const start = new Date(startDateStr + 'T00:00:00');
   const now = new Date();
-  let years = now.getFullYear() - start.getFullYear();
-  let months = now.getMonth() - start.getMonth();
-  let days = now.getDate() - start.getDate();
+  const isFuture = start > now;
+  const a = isFuture ? start : now;
+  const b = isFuture ? now : start;
+  let years = a.getFullYear() - b.getFullYear();
+  let months = a.getMonth() - b.getMonth();
+  let days = a.getDate() - b.getDate();
   if(days < 0){
     months--;
-    const prevMonthLastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    const prevMonthLastDay = new Date(a.getFullYear(), a.getMonth(), 0).getDate();
     days += prevMonthLastDay;
   }
   if(months < 0){
@@ -2188,14 +2247,19 @@ function calcAgeYMD(startDateStr){
     months += 12;
   }
   if(years < 0){ years=0; months=0; days=0; }
-  return { years, months, days };
+  return { years, months, days, isFuture };
 }
 
 function pad2(n){ return String(n).padStart(2,'0'); }
 
 function fmtAge(startDateStr){
   const a = calcAgeYMD(startDateStr);
-  return `${pad2(a.years)}Y : ${pad2(a.months)}M : ${pad2(a.days)}D`;
+  const sign = a.isFuture ? '- ' : '';
+  return `${sign}${pad2(a.years)}Y : ${pad2(a.months)}M : ${pad2(a.days)}D`;
+}
+
+function ageColorClass(startDateStr){
+  return calcAgeYMD(startDateStr).isFuture ? 'khoiri-txt' : '';
 }
 
 function setAgeCategory(kind){
@@ -2207,17 +2271,17 @@ function renderAgeSubTabs(){
   return `
     <div class="cat-subtabs">
       <button class="cat-subtab ${state.ageCategory==='task'?'active':''}" onclick="setAgeCategory('task')">${t('taskTab')}</button>
-      <button class="cat-subtab ${state.ageCategory==='age'?'active':''}" onclick="setAgeCategory('age')">${t('ageTab')}</button>
+      <button class="cat-subtab ${state.ageCategory==='health'?'active':''}" onclick="setAgeCategory('health')">${t('healthProfileTab')}</button>
     </div>`;
 }
 
 function renderAgeCalc(){
   const tabs = renderAgeSubTabs();
-  const entries = data.ageEntries.filter(e=>(e.kind||'age')===state.ageCategory)
-    .sort((a,b)=> a.name.localeCompare(b.name,'bn'));
+  if(state.ageCategory === 'health') return tabs + renderHealthProfileList();
+  const entries = [...data.ageEntries].sort((a,b)=> a.name.localeCompare(b.name,'bn'));
   const list = entries.length===0
     ? `<div class="empty-state">
-        <div class="big">${state.ageCategory==='task' ? '📋' : '🎂'}</div>
+        <div class="big">📋</div>
         <h3 class="serif">${t('noAgeEntriesYet')}</h3>
         <p>${t('noAgeEntriesDesc')}</p>
       </div>`
@@ -2228,7 +2292,7 @@ function renderAgeCalc(){
             <div class="ie-name">${escapeHtml(e.name)}</div>
             <div class="ie-date">${fmtDate(e.date)}</div>
           </div>
-          <div class="ie-amt" style="color:var(--loan-blue); font-size:16px;">${fmtAge(e.date)}</div>
+          <div class="ie-amt ${ageColorClass(e.date)}" style="${ageColorClass(e.date)?'':'color:var(--loan-blue);'} font-size:16px;">${fmtAge(e.date)}</div>
         </div>
         ${canEdit() ? `
         <div class="ie-actions">
@@ -2241,7 +2305,7 @@ function renderAgeCalc(){
 
 function openAddAgeEntry(){
   if(!canEdit()){ showToast(t('noPermission')); return; }
-  state.ageModal = { mode:'add', id:null, name:'', date: todayStr(), kind: state.ageCategory };
+  state.ageModal = { mode:'add', id:null, name:'', date: todayStr() };
   render();
 }
 
@@ -2249,7 +2313,7 @@ function openEditAgeEntry(id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const e = data.ageEntries.find(x=>x.id===id);
-    state.ageModal = { mode:'edit', id, name:e.name, date:e.date, kind: e.kind || 'age' };
+    state.ageModal = { mode:'edit', id, name:e.name, date:e.date };
     render();
   });
 }
@@ -2277,12 +2341,6 @@ function closeAgeModal(){
   render();
 }
 
-function setAgeModalKind(kind){
-  if(!state.ageModal) return;
-  state.ageModal.kind = kind;
-  render();
-}
-
 async function saveAgeModal(){
   const nameInput = document.getElementById('age-name-input');
   const dateInput = document.getElementById('age-date-input');
@@ -2292,11 +2350,11 @@ async function saveAgeModal(){
   if(!date){ showToast(t('pickADate')); return; }
   const m = state.ageModal;
   if(m.mode === 'add'){
-    data.ageEntries.push({ id: uid(), name, date, kind: m.kind, createdAt: Date.now() });
+    data.ageEntries.push({ id: uid(), name, date, createdAt: Date.now() });
     showToast(t('entryAdded'));
   }else{
     const e = data.ageEntries.find(x=>x.id===m.id);
-    e.name = name; e.date = date; e.kind = m.kind;
+    e.name = name; e.date = date;
     showToast(t('entryUpdated'));
   }
   await saveData();
@@ -2312,13 +2370,6 @@ function renderAgeModal(){
       <div class="sheet">
         <h2 class="serif">${m.mode==='add' ? t('newAgeEntryTitle') : t('editAgeEntryTitle')}</h2>
         <div class="field">
-          <label>${t('sectionLabel')}</label>
-          <div class="type-toggle">
-            <button class="${m.kind==='task'?'sel-gave':''}" onclick="setAgeModalKind('task')">${t('taskTab')}</button>
-            <button class="${m.kind==='age'?'sel-got':''}" onclick="setAgeModalKind('age')">${t('ageTab')}</button>
-          </div>
-        </div>
-        <div class="field">
           <label>${t('nameLabel')}</label>
           <input id="age-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('namePlaceholderPerson')}">
         </div>
@@ -2333,6 +2384,377 @@ function renderAgeModal(){
       </div>
     </div>`;
 }
+
+/* ================= Health Profile ================= */
+
+const BMI_CATEGORIES = [
+  { max: 18.4, key:'underweight', range:'<18.4', color:'#E0B930' },
+  { max: 24.9, key:'healthy', range:'18.5-24.9', color:'#5FAE4A' },
+  { max: 29.9, key:'overweight', range:'25-29.9', color:'#F0973B' },
+  { max: 34.9, key:'obese', range:'30-34.9', color:'#E9542E' },
+  { max: Infinity, key:'extremelyObese', range:'>35', color:'#B8241D' },
+];
+
+function bmiCategoryIndex(bmi){
+  for(let i=0;i<BMI_CATEGORIES.length;i++){ if(bmi <= BMI_CATEGORIES[i].max) return i; }
+  return BMI_CATEGORIES.length-1;
+}
+
+function calcBmi(kg, heightCm){
+  if(!kg || !heightCm) return null;
+  const m = heightCm / 100;
+  return kg / (m*m);
+}
+
+function fmtShortDate(iso){
+  const [y,m,d] = iso.split('-');
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  return d + ' ' + MONTHS[parseInt(m,10)-1];
+}
+
+function genderLabel(g){
+  if(g==='M') return t('genderMale');
+  if(g==='F') return t('genderFemale');
+  if(g==='O') return t('genderOther');
+  return '-';
+}
+
+function renderBmiLegend(currentBmi){
+  const idx = currentBmi!=null ? bmiCategoryIndex(currentBmi) : -1;
+  const markerRow = `<div style="display:flex;">${BMI_CATEGORIES.map((c,i)=>`<div style="flex:1; text-align:center; font-size:14px; line-height:1; color:${i===idx?c.color:'transparent'};">▼</div>`).join('')}</div>`;
+  const barRow = `<div style="display:flex; border-radius:8px; overflow:hidden; margin-bottom:4px;">
+    ${BMI_CATEGORIES.map((c,i)=>`
+      <div style="flex:1; background:${c.color}; color:#fff; text-align:center; padding:8px 2px; ${i===idx?'box-shadow:inset 0 0 0 2px #2B2420;':''}">
+        <div style="font-size:10px; font-weight:700;">${c.range}</div>
+        <div style="font-size:7px; letter-spacing:0.3px;">${t('bmi_'+c.key)}</div>
+      </div>`).join('')}
+  </div>`;
+  const currentText = currentBmi!=null ? `<div style="text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;">${t('currentBmiLabel')}: <strong>${currentBmi.toFixed(1)}</strong></div>` : `<div style="text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;">${t('noWeightForBmi')}</div>`;
+  return markerRow + barRow + currentText;
+}
+
+function renderLineChart(points, opts){
+  opts = opts || {};
+  const color = opts.color || 'var(--loan-blue)';
+  if(!points || points.length===0){
+    return `<div class="empty-state" style="padding:24px 10px;"><p>${t('noChartData')}</p></div>`;
+  }
+  const width = 400, height = 160, padL = 34, padR = 12, padT = 14, padB = 26;
+  const ys = points.map(p=>p.y);
+  let minY = Math.min(...ys), maxY = Math.max(...ys);
+  if(minY===maxY){ minY -= 1; maxY += 1; }
+  const rangeY = maxY - minY;
+  const stepX = points.length>1 ? (width-padL-padR)/(points.length-1) : 0;
+  const coords = points.map((p,i)=>{
+    const x = points.length>1 ? padL + stepX*i : (padL + (width-padL-padR)/2);
+    const y = padT + (height-padT-padB) * (1 - (p.y-minY)/rangeY);
+    return {x,y,label:p.x,val:p.y};
+  });
+  const pathD = coords.map((c,i)=> (i===0?'M':'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ');
+  const circles = coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3" fill="${color}" />`).join('');
+  const labelIdxs = coords.length<=4 ? coords.map((_,i)=>i) : [0, Math.floor((coords.length-1)/2), coords.length-1];
+  const xLabels = labelIdxs.map(i=>{
+    const c=coords[i];
+    return `<text x="${c.x.toFixed(1)}" y="${height-8}" font-size="9" fill="#6B6055" text-anchor="middle">${escapeHtml(c.label)}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; display:block;">
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height-padB}" stroke="#DED0AC" stroke-width="1"/>
+    <line x1="${padL}" y1="${height-padB}" x2="${width-padR}" y2="${height-padB}" stroke="#DED0AC" stroke-width="1"/>
+    <text x="4" y="${padT+4}" font-size="9" fill="#6B6055">${maxY.toFixed(1)}</text>
+    <text x="4" y="${height-padB}" font-size="9" fill="#6B6055">${minY.toFixed(1)}</text>
+    <path d="${pathD}" fill="none" stroke="${color}" stroke-width="2"/>
+    ${circles}
+    ${xLabels}
+  </svg>`;
+}
+
+function renderHealthProfileList(){
+  let profiles = [...data.healthProfiles].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  if(profiles.length===0){
+    return `<div class="empty-state">
+      <div class="big">🩺</div>
+      <h3 class="serif">${t('noProfilesYet')}</h3>
+      <p>${t('noProfilesDesc')}</p>
+    </div>`;
+  }
+  return profiles.map(p=>`
+    <div class="person-card" style="border-left-color:var(--loan-blue);" onclick="setView('healthProfile','${p.id}')">
+      <div>
+        <div class="person-name">${escapeHtml(p.name)}</div>
+        <div class="person-meta">O: ${p.dateO ? fmtAge(p.dateO) : '-'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function openAddHealthProfile(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.hpInfoModal = { mode:'add', id:null, name:'', dateO:'', dateC:'', gender:'M', bloodGroup:'A+', heightValue:'', heightUnit:'cm' };
+  render();
+}
+
+function openEditHealthProfileInfo(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const p = data.healthProfiles.find(x=>x.id===id);
+    state.hpInfoModal = { mode:'edit', id, name:p.name, dateO:p.dateO||'', dateC:p.dateC||'', gender:p.gender||'M', bloodGroup:p.bloodGroup||'A+', heightValue: p.heightCm ? String(p.heightCm) : '', heightUnit:'cm' };
+    render();
+  });
+}
+
+function confirmDeleteHealthProfile(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteProfileTitle'),
+      msg: t('confirmDeleteProfileMsg'),
+      onYes: async ()=>{
+        data.healthProfiles = data.healthProfiles.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        state.ageCategory = 'health';
+        setView('agecalc');
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeHpInfoModal(){
+  state.hpInfoModal = null;
+  render();
+}
+
+async function saveHpInfoModal(){
+  const m = state.hpInfoModal;
+  const nameInput = document.getElementById('hp-name-input');
+  const dateOInput = document.getElementById('hp-dateO-input');
+  const dateCInput = document.getElementById('hp-dateC-input');
+  const heightInput = document.getElementById('hp-height-input');
+  const name = nameInput.value.trim();
+  if(!name){ showToast(t('enterName')); return; }
+  const dateO = dateOInput.value;
+  const dateC = dateCInput.value;
+  let heightCm = null;
+  const heightVal = parseFloat(heightInput.value);
+  if(heightVal){
+    heightCm = m.heightUnit === 'inch' ? Math.round(heightVal * 2.54 * 10) / 10 : heightVal;
+  }
+  if(m.mode === 'add'){
+    data.healthProfiles.push({ id: uid(), name, dateO, dateC, gender: m.gender, bloodGroup: m.bloodGroup, heightCm, weights: [], createdAt: Date.now() });
+    showToast(t('entryAdded'));
+  }else{
+    const p = data.healthProfiles.find(x=>x.id===m.id);
+    p.name = name; p.dateO = dateO; p.dateC = dateC; p.gender = m.gender; p.bloodGroup = m.bloodGroup;
+    if(heightCm !== null) p.heightCm = heightCm;
+    showToast(t('entryUpdated'));
+  }
+  await saveData();
+  state.hpInfoModal = null;
+  render();
+}
+
+function renderHpInfoModal(){
+  const m = state.hpInfoModal;
+  if(!m) return '';
+  const genders = [['M',t('genderMale')],['F',t('genderFemale')],['O',t('genderOther')]];
+  const bloodGroups = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeHpInfoModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newProfileTitle') : t('editProfileTitle')}</h2>
+        <div class="field">
+          <label>${t('nameLabel')}</label>
+          <input id="hp-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('namePlaceholderPerson')}">
+        </div>
+        <div class="field">
+          <label>${t('dateOLabel')}</label>
+          <input id="hp-dateO-input" type="date" value="${m.dateO}">
+        </div>
+        <div class="field">
+          <label>${t('dateCLabel')}</label>
+          <input id="hp-dateC-input" type="date" value="${m.dateC}">
+        </div>
+        <div class="field">
+          <label>${t('genderLabel')}</label>
+          <select id="hp-gender-select" onchange="state.hpInfoModal.gender=this.value;" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+            ${genders.map(g=>`<option value="${g[0]}" ${m.gender===g[0]?'selected':''}>${g[1]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>${t('bloodGroupLabel')}</label>
+          <select id="hp-bg-select" onchange="state.hpInfoModal.bloodGroup=this.value;" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+            ${bloodGroups.map(b=>`<option value="${b}" ${m.bloodGroup===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>${t('heightLabel')}</label>
+          <div style="display:flex; gap:8px;">
+            <input id="hp-height-input" type="number" inputmode="decimal" value="${escapeHtml(m.heightValue)}" placeholder="${m.heightUnit==='cm'?'170':'67'}" style="flex:1;">
+            <select onchange="state.hpInfoModal.heightUnit=this.value; render();" style="width:90px; font-family:'Hind Siliguri', sans-serif; font-size:14px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+              <option value="cm" ${m.heightUnit==='cm'?'selected':''}>cm</option>
+              <option value="inch" ${m.heightUnit==='inch'?'selected':''}>inch</option>
+            </select>
+          </div>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeHpInfoModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveHpInfoModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderHealthProfileDetail(){
+  const p = data.healthProfiles.find(x=>x.id===state.personId);
+  if(!p) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
+  const weights = [...(p.weights||[])].sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
+  const latestWeight = weights.length ? weights[weights.length-1] : null;
+  const currentBmi = latestWeight ? calcBmi(latestWeight.kg, p.heightCm) : null;
+
+  const weightPoints = weights.map(w=>({x: fmtShortDate(w.date), y: w.kg}));
+  const bmiPoints = p.heightCm ? weights.map(w=>({x: fmtShortDate(w.date), y: calcBmi(w.kg, p.heightCm)})) : [];
+
+  const entriesHtml = weights.length===0
+    ? `<div class="empty-state"><p>${t('noWeightEntriesYet')}</p></div>`
+    : [...weights].reverse().map(w=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div class="ie-date">${fmtDate(w.date)}</div>
+          <div class="ie-amt" style="color:var(--loan-blue);">${w.kg} kg</div>
+        </div>
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditWeightEntry('${w.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteWeightEntry('${w.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="hp-card">
+      <div class="hp-name">${escapeHtml(p.name)}</div>
+      <div class="hp-age-row">
+        <span class="hp-age-label">O</span>
+        <span class="hp-age-date">${p.dateO ? fmtDate(p.dateO) : '-'}</span>
+        <span class="hp-age-value ${p.dateO?ageColorClass(p.dateO):''}">${p.dateO ? fmtAge(p.dateO) : ''}</span>
+      </div>
+      <div class="hp-age-row">
+        <span class="hp-age-label" style="background:var(--khoiri);">C</span>
+        <span class="hp-age-date">${p.dateC ? fmtDate(p.dateC) : '-'}</span>
+        <span class="hp-age-value ${p.dateC?ageColorClass(p.dateC):''}">${p.dateC ? fmtAge(p.dateC) : ''}</span>
+      </div>
+      <div class="hp-info-row">
+        <span>${t('genderLabel')}: ${genderLabel(p.gender)}</span>
+        <span>${t('bloodGroupLabel')}: ${p.bloodGroup || '-'}</span>
+      </div>
+      <div class="hp-info-row">
+        <span>${t('heightLabel')}: ${p.heightCm ? p.heightCm + ' cm' : '-'}</span>
+        <span>${t('weightLabel')}: ${latestWeight ? latestWeight.kg + ' kg' : '-'}</span>
+      </div>
+      ${canEdit() ? `
+      <div class="person-actions" style="margin-top:10px;">
+        <span onclick="openEditHealthProfileInfo('${p.id}')">${t('editProfile')}</span>
+        <span onclick="confirmDeleteHealthProfile('${p.id}')">${t('deleteProfile')}</span>
+      </div>` : ''}
+    </div>
+
+    ${renderBmiLegend(currentBmi)}
+
+    <div class="section-title">${t('weightChartTitle')}</div>
+    <div class="chart-box">${renderLineChart(weightPoints, {color:'var(--loan-blue)'})}</div>
+
+    <div class="section-title">${t('bmiChartTitle')}</div>
+    <div class="chart-box">${renderLineChart(bmiPoints, {color:'var(--khoiri)'})}</div>
+
+    <div class="section-title">${t('weightEntriesTitle')}</div>
+    ${entriesHtml}
+  `;
+}
+
+function openAddWeightEntry(profileId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.weightModal = { mode:'add', id:null, profileId, date: todayStr(), kg:'' };
+  render();
+}
+
+function openEditWeightEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const p = data.healthProfiles.find(x=>x.id===state.personId);
+    const w = p.weights.find(x=>x.id===id);
+    state.weightModal = { mode:'edit', id, profileId: p.id, date:w.date, kg:String(w.kg) };
+    render();
+  });
+}
+
+function confirmDeleteWeightEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteWeightTitle'),
+      msg: t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        const p = data.healthProfiles.find(x=>x.id===state.personId);
+        p.weights = p.weights.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeWeightModal(){
+  state.weightModal = null;
+  render();
+}
+
+async function saveWeightModal(){
+  const m = state.weightModal;
+  const dateInput = document.getElementById('weight-date-input');
+  const kgInput = document.getElementById('weight-kg-input');
+  const date = dateInput.value || todayStr();
+  const kg = parseFloat(kgInput.value);
+  if(!kg || kg <= 0){ showToast(t('enterValidAmount')); return; }
+  const p = data.healthProfiles.find(x=>x.id===m.profileId);
+  if(m.mode === 'add'){
+    p.weights.push({ id: uid(), date, kg, createdAt: Date.now() });
+    showToast(t('entryAdded'));
+  }else{
+    const w = p.weights.find(x=>x.id===m.id);
+    w.date = date; w.kg = kg;
+    showToast(t('entryUpdated'));
+  }
+  await saveData();
+  state.weightModal = null;
+  render();
+}
+
+function renderWeightModal(){
+  const m = state.weightModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeWeightModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newWeightTitle') : t('editWeightTitle')}</h2>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="weight-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>${t('weightKgLabel')}</label>
+          <input id="weight-kg-input" type="number" inputmode="decimal" value="${escapeHtml(m.kg)}" placeholder="70">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeWeightModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveWeightModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 
 function renderSettings(){
   const roleKey = 'role_' + (state.currentUser ? state.currentUser.role : 'viewer');
@@ -2415,13 +2837,13 @@ async function bootApp(){
 function startSyncPolling(){
   if(window.__syncInterval) return;
   window.__syncInterval = setInterval(async ()=>{
-    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.entryModal || state.ageModal;
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.entryModal || state.ageModal || state.hpInfoModal || state.weightModal;
     if(modalOpen) return;
     try{
       const parsed = await fbGet(dataPath());
-      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [] };
-      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[], incomeCategories: fresh.incomeCategories||[], ageEntries: fresh.ageEntries||[] });
-      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories, incomeCategories: data.incomeCategories, ageEntries: data.ageEntries });
+      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[], incomeCategories: fresh.incomeCategories||[], ageEntries: fresh.ageEntries||[], healthProfiles: fresh.healthProfiles||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories, incomeCategories: data.incomeCategories, ageEntries: data.ageEntries, healthProfiles: data.healthProfiles });
       if(freshStr !== currentStr){
         data.persons = fresh.persons || [];
         data.transactions = fresh.transactions || [];
@@ -2430,6 +2852,7 @@ function startSyncPolling(){
         data.expenseCategories = fresh.expenseCategories || [];
         data.incomeCategories = fresh.incomeCategories || [];
         data.ageEntries = fresh.ageEntries || [];
+        data.healthProfiles = fresh.healthProfiles || [];
         render();
       }
     }catch(e){}
@@ -2467,6 +2890,11 @@ function render(){
     headerTitle = t('ageCalcTitle');
     headerSub = t('ageCalcSub');
     mainHtml = renderAgeCalc();
+  }else if(state.view === 'healthProfile'){
+    const p = data.healthProfiles.find(x=>x.id===state.personId);
+    headerTitle = p ? p.name : t('categoryFallback');
+    backBtn = `<button class="icon-btn" onclick="state.ageCategory='health'; setView('agecalc')">←</button>`;
+    mainHtml = renderHealthProfileDetail();
   }else if(state.view === 'settings'){
     headerTitle = t('settingsTitle');
     mainHtml = renderSettings();
@@ -2492,7 +2920,9 @@ function render(){
     ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openQuickAddEntry('expense')">+</button>` : ''}
     ${state.view==='person' && canEdit() ? `<button class="fab-btn" onclick="openAddTxn('${state.personId}')">+</button>` : ''}
     ${state.view==='category' && canEdit() ? `<button class="fab-btn" style="background:${state.category==='income'?'var(--green)':'var(--khoiri)'};" onclick="openAddCategoryEntry('${state.personId}')">+</button>` : ''}
-    ${state.view==='agecalc' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddAgeEntry()">+</button>` : ''}
+    ${state.view==='agecalc' && state.ageCategory==='task' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddAgeEntry()">+</button>` : ''}
+    ${state.view==='agecalc' && state.ageCategory==='health' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddHealthProfile()">+</button>` : ''}
+    ${state.view==='healthProfile' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddWeightEntry('${state.personId}')">+</button>` : ''}
     <nav class="bottomnav">
       <button class="${state.view==='home'||state.view==='person'||state.view==='category'?'active':''}" onclick="setView('home')">
         <span class="ic">🏠</span>${t('navHome')}
@@ -2500,7 +2930,7 @@ function render(){
       <button class="${state.view==='summary'?'active':''}" onclick="setView('summary')">
         <span class="ic">📊</span>${t('navSummary')}
       </button>
-      <button class="${state.view==='agecalc'?'active':''}" onclick="setView('agecalc')">
+      <button class="${state.view==='agecalc'||state.view==='healthProfile'?'active':''}" onclick="setView('agecalc')">
         <span class="ic">🎂</span>${t('navAge')}
       </button>
       <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
@@ -2511,6 +2941,8 @@ function render(){
     ${renderTxnModal()}
     ${renderEntryModal()}
     ${renderAgeModal()}
+    ${renderHpInfoModal()}
+    ${renderWeightModal()}
     ${renderConfirmModal()}
     ${renderPwModal()}
     ${renderNewUserModal()}
