@@ -620,8 +620,8 @@ const T = {
 
   navAge: { en:'HP', bn:'HP' },
   healthProfileTab: { en:'Health Profile', bn:'হেলথ প্রোফাইল' },
-  ageCalcTitle: { en:'Age / Date Calculator', bn:'বয়স / তারিখ ক্যালকুলেটর' },
-  ageCalcSub: { en:'Age from a given date to today', bn:'একটা তারিখ থেকে আজ পর্যন্ত বয়স' },
+  ageCalcTitle: { en:'Tasks / Health Profile', bn:'Tasks / Health Profile' },
+  ageCalcSub: { en:'', bn:'' },
   noAgeEntriesYet: { en:'No entries yet', bn:'এখনও কোনো এন্ট্রি নেই' },
   noAgeEntriesDesc: { en:'Tap + below to add a name and date to track its age.', bn:'নিচের + বাটনে চেপে একটা নাম ও তারিখ যোগ করুন, তার বয়স দেখতে।' },
   confirmDeleteAgeTitle: { en:'Delete this entry?', bn:'এন্ট্রি মুছে ফেলবেন?' },
@@ -665,6 +665,8 @@ const T = {
   editWeightTitle: { en:'Edit weight entry', bn:'ওজন এন্ট্রি সম্পাদনা' },
   weightKgLabel: { en:'Weight (kg)', bn:'ওজন (কেজি)' },
   confirmDeleteWeightTitle: { en:'Delete this weight entry?', bn:'ওজনের এন্ট্রি মুছে ফেলবেন?' },
+  profileNotFoundErr: { en:'Profile not found — please go back and try again', bn:'প্রোফাইল খুঁজে পাওয়া যায়নি — ফিরে গিয়ে আবার চেষ্টা করুন' },
+  unexpectedErr: { en:'Something went wrong', bn:'একটা সমস্যা হয়েছে' },
 
   totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
   noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
@@ -2477,13 +2479,22 @@ function renderHealthProfileList(){
       <p>${t('noProfilesDesc')}</p>
     </div>`;
   }
-  return profiles.map(p=>`
+  return profiles.map(p=>{
+    const weights = [...(p.weights||[])].sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
+    const latest = weights.length ? weights[weights.length-1] : null;
+    const bmi = latest ? calcBmi(latest.kg, p.heightCm) : null;
+    const bmiHtml = bmi!=null ? `
+        <div class="balance" style="color:${BMI_CATEGORIES[bmiCategoryIndex(bmi)].color};">${bmi.toFixed(1)}</div>
+        <div class="balance-label" style="color:${BMI_CATEGORIES[bmiCategoryIndex(bmi)].color};">${t('bmi_'+BMI_CATEGORIES[bmiCategoryIndex(bmi)].key)}</div>` : '';
+    return `
     <div class="person-card" style="border-left-color:var(--loan-blue);" onclick="setView('healthProfile','${p.id}')">
       <div>
         <div class="person-name">${escapeHtml(p.name)}</div>
         <div class="person-meta">O: ${p.dateO ? fmtAge(p.dateO) : '-'}</div>
       </div>
-    </div>`).join('');
+      <div>${bmiHtml}</div>
+    </div>`;
+  }).join('');
 }
 
 function openAddHealthProfile(){
@@ -2526,32 +2537,37 @@ function closeHpInfoModal(){
 }
 
 async function saveHpInfoModal(){
-  const m = state.hpInfoModal;
-  const nameInput = document.getElementById('hp-name-input');
-  const dateOInput = document.getElementById('hp-dateO-input');
-  const dateCInput = document.getElementById('hp-dateC-input');
-  const heightInput = document.getElementById('hp-height-input');
-  const name = nameInput.value.trim();
-  if(!name){ showToast(t('enterName')); return; }
-  const dateO = dateOInput.value;
-  const dateC = dateCInput.value;
-  let heightCm = null;
-  const heightVal = parseFloat(heightInput.value);
-  if(heightVal){
-    heightCm = m.heightUnit === 'inch' ? Math.round(heightVal * 2.54 * 10) / 10 : heightVal;
+  try{
+    const m = state.hpInfoModal;
+    const nameInput = document.getElementById('hp-name-input');
+    const dateOInput = document.getElementById('hp-dateO-input');
+    const dateCInput = document.getElementById('hp-dateC-input');
+    const heightInput = document.getElementById('hp-height-input');
+    const name = nameInput.value.trim();
+    if(!name){ showToast(t('enterName')); return; }
+    const dateO = dateOInput.value;
+    const dateC = dateCInput.value;
+    let heightCm = null;
+    const heightVal = parseFloat(normalizeDigits(heightInput.value));
+    if(heightVal){
+      heightCm = m.heightUnit === 'inch' ? Math.round(heightVal * 2.54 * 10) / 10 : heightVal;
+    }
+    if(m.mode === 'add'){
+      data.healthProfiles.push({ id: uid(), name, dateO, dateC, gender: m.gender, bloodGroup: m.bloodGroup, heightCm, weights: [], createdAt: Date.now() });
+      showToast(t('entryAdded'));
+    }else{
+      const p = data.healthProfiles.find(x=>x.id===m.id);
+      if(!p){ showToast(t('profileNotFoundErr')); return; }
+      p.name = name; p.dateO = dateO; p.dateC = dateC; p.gender = m.gender; p.bloodGroup = m.bloodGroup;
+      if(heightCm !== null) p.heightCm = heightCm;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.hpInfoModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
   }
-  if(m.mode === 'add'){
-    data.healthProfiles.push({ id: uid(), name, dateO, dateC, gender: m.gender, bloodGroup: m.bloodGroup, heightCm, weights: [], createdAt: Date.now() });
-    showToast(t('entryAdded'));
-  }else{
-    const p = data.healthProfiles.find(x=>x.id===m.id);
-    p.name = name; p.dateO = dateO; p.dateC = dateC; p.gender = m.gender; p.bloodGroup = m.bloodGroup;
-    if(heightCm !== null) p.heightCm = heightCm;
-    showToast(t('entryUpdated'));
-  }
-  await saveData();
-  state.hpInfoModal = null;
-  render();
 }
 
 function renderHpInfoModal(){
@@ -2711,25 +2727,37 @@ function closeWeightModal(){
   render();
 }
 
+function normalizeDigits(str){
+  const bn = '০১২৩৪৫৬৭৮৯';
+  return String(str).replace(/[০-৯]/g, d => bn.indexOf(d)).trim();
+}
+
 async function saveWeightModal(){
-  const m = state.weightModal;
-  const dateInput = document.getElementById('weight-date-input');
-  const kgInput = document.getElementById('weight-kg-input');
-  const date = dateInput.value || todayStr();
-  const kg = parseFloat(kgInput.value);
-  if(!kg || kg <= 0){ showToast(t('enterValidAmount')); return; }
-  const p = data.healthProfiles.find(x=>x.id===m.profileId);
-  if(m.mode === 'add'){
-    p.weights.push({ id: uid(), date, kg, createdAt: Date.now() });
-    showToast(t('entryAdded'));
-  }else{
-    const w = p.weights.find(x=>x.id===m.id);
-    w.date = date; w.kg = kg;
-    showToast(t('entryUpdated'));
+  try{
+    const m = state.weightModal;
+    const dateInput = document.getElementById('weight-date-input');
+    const kgInput = document.getElementById('weight-kg-input');
+    const date = dateInput.value || todayStr();
+    const kg = parseFloat(normalizeDigits(kgInput.value));
+    if(!kg || kg <= 0){ showToast(t('enterValidAmount')); return; }
+    const p = data.healthProfiles.find(x=>x.id===m.profileId);
+    if(!p){ showToast(t('profileNotFoundErr')); return; }
+    if(!p.weights) p.weights = [];
+    if(m.mode === 'add'){
+      p.weights.push({ id: uid(), date, kg, createdAt: Date.now() });
+      showToast(t('entryAdded'));
+    }else{
+      const w = p.weights.find(x=>x.id===m.id);
+      if(!w){ showToast(t('profileNotFoundErr')); return; }
+      w.date = date; w.kg = kg;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.weightModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
   }
-  await saveData();
-  state.weightModal = null;
-  render();
 }
 
 function renderWeightModal(){
@@ -2931,7 +2959,7 @@ function render(){
         <span class="ic">📊</span>${t('navSummary')}
       </button>
       <button class="${state.view==='agecalc'||state.view==='healthProfile'?'active':''}" onclick="setView('agecalc')">
-        <span class="ic">🎂</span>${t('navAge')}
+        <span class="ic">💓</span>${t('navAge')}
       </button>
       <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
         <span class="ic">⚙️</span>${t('navSettings')}
