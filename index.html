@@ -667,6 +667,10 @@ const T = {
   confirmDeleteWeightTitle: { en:'Delete this weight entry?', bn:'ওজনের এন্ট্রি মুছে ফেলবেন?' },
   profileNotFoundErr: { en:'Profile not found — please go back and try again', bn:'প্রোফাইল খুঁজে পাওয়া যায়নি — ফিরে গিয়ে আবার চেষ্টা করুন' },
   unexpectedErr: { en:'Something went wrong', bn:'একটা সমস্যা হয়েছে' },
+  healthyWeightRangeLabel: { en:'Healthy Weight Range', bn:'স্বাস্থ্যকর ওজনের সীমা' },
+  needToLose: { en:'Need to lose', bn:'কমাতে হবে' },
+  needToGain: { en:'Need to gain', bn:'বাড়াতে হবে' },
+  alreadyHealthy: { en:'You are within a healthy weight range', bn:'আপনার ওজন স্বাস্থ্যকর সীমার মধ্যে আছে' },
 
   totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
   noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
@@ -2408,6 +2412,12 @@ function calcBmi(kg, heightCm){
   return kg / (m*m);
 }
 
+function healthyWeightRange(heightCm){
+  if(!heightCm) return null;
+  const m = heightCm / 100;
+  return { min: 18.5 * m * m, max: 24.9 * m * m };
+}
+
 function fmtShortDate(iso){
   const [y,m,d] = iso.split('-');
   const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
@@ -2627,6 +2637,31 @@ function renderHealthProfileDetail(){
   const weights = [...(p.weights||[])].sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
   const latestWeight = weights.length ? weights[weights.length-1] : null;
   const currentBmi = latestWeight ? calcBmi(latestWeight.kg, p.heightCm) : null;
+  const hRange = healthyWeightRange(p.heightCm);
+
+  let weightGuideHtml = '';
+  if(hRange){
+    let guideLine = '';
+    if(latestWeight){
+      if(latestWeight.kg > hRange.max){
+        const diff = latestWeight.kg - hRange.max;
+        guideLine = `<div class="stat-row-label" style="color:var(--khoiri); margin-top:4px;">${t('needToLose')}: <strong>${diff.toFixed(1)} kg</strong></div>`;
+      }else if(latestWeight.kg < hRange.min){
+        const diff = hRange.min - latestWeight.kg;
+        guideLine = `<div class="stat-row-label" style="color:var(--loan-blue); margin-top:4px;">${t('needToGain')}: <strong>${diff.toFixed(1)} kg</strong></div>`;
+      }else{
+        guideLine = `<div class="stat-row-label" style="color:var(--green); margin-top:4px;">✓ ${t('alreadyHealthy')}</div>`;
+      }
+    }
+    weightGuideHtml = `
+      <div class="stat-row" style="flex-direction:column; align-items:flex-start;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <span class="stat-row-label">${t('healthyWeightRangeLabel')}</span>
+          <span class="stat-row-value pos">${hRange.min.toFixed(1)} - ${hRange.max.toFixed(1)} kg</span>
+        </div>
+        ${guideLine}
+      </div>`;
+  }
 
   const weightPoints = weights.map(w=>({x: fmtShortDate(w.date), y: w.kg}));
   const bmiPoints = p.heightCm ? weights.map(w=>({x: fmtShortDate(w.date), y: calcBmi(w.kg, p.heightCm)})) : [];
@@ -2675,6 +2710,8 @@ function renderHealthProfileDetail(){
     </div>
 
     ${renderBmiLegend(currentBmi)}
+
+    ${weightGuideHtml ? `<div class="stat-row-list">${weightGuideHtml}</div>` : ''}
 
     <div class="section-title">${t('weightChartTitle')}</div>
     <div class="chart-box">${renderLineChart(weightPoints, {color:'var(--loan-blue)'})}</div>
@@ -2959,7 +2996,7 @@ function render(){
         <span class="ic">📊</span>${t('navSummary')}
       </button>
       <button class="${state.view==='agecalc'||state.view==='healthProfile'?'active':''}" onclick="setView('agecalc')">
-        <span class="ic">💓</span>${t('navAge')}
+        <span class="ic">💪</span>${t('navAge')}
       </button>
       <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
         <span class="ic">⚙️</span>${t('navSettings')}
