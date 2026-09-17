@@ -688,6 +688,7 @@ const T = {
   pricePerPcsLabel: { en:'Per pcs price', bn:'প্রতি পিস দাম' },
   intervalDaysLabel: { en:'Consumption Interval (days)', bn:'সেবনের বিরতি (দিন)' },
   consumptionPcsLabel: { en:'Consumption (pcs)', bn:'সেবনের পরিমাণ (পিস)' },
+  consumptionAmountLabel: { en:'Consumption Amount', bn:'সেবনের খরচ' },
   confirmDeleteMedicineTitle: { en:'Delete this medicine?', bn:'ঔষধ মুছে ফেলবেন?' },
   confirmDeleteMedicineMsg: { en:'All stock records under this medicine will also be deleted. This cannot be undone.', bn:'এই ঔষধের সব স্টক রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
   activatedToast: { en:'Activated', bn:'একটিভ করা হয়েছে' },
@@ -1684,29 +1685,53 @@ function renderPerson(){
   `;
 }
 
+function cumulativeAvgLine(vals){
+  const firstIdx = vals.findIndex(v=>v>0);
+  const line = new Array(vals.length).fill(null);
+  if(firstIdx === -1) return line;
+  let sum = 0;
+  for(let i=firstIdx;i<vals.length;i++){
+    sum += vals[i];
+    const count = i - firstIdx + 1;
+    line[i] = sum / count;
+  }
+  return line;
+}
+
 function renderIncomeExpenseBarChart(){
   const now = new Date();
   const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
   const months = [];
   for(let i=11;i>=0;i--){
     const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()] });
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()]+'-'+String(d.getFullYear()).slice(-2) });
   }
   const incomeByMonth = {}, expenseByMonth = {};
   data.income.forEach(i=>{ const k=monthKey(i.date); incomeByMonth[k]=(incomeByMonth[k]||0)+i.amount; });
   data.expenses.forEach(e=>{ const k=monthKey(e.date); expenseByMonth[k]=(expenseByMonth[k]||0)+e.amount; });
   const incomeVals = months.map(m=>incomeByMonth[m.key]||0);
   const expenseVals = months.map(m=>expenseByMonth[m.key]||0);
-  const avgIncome = incomeVals.reduce((a,b)=>a+b,0)/12;
-  const avgExpense = expenseVals.reduce((a,b)=>a+b,0)/12;
-  const maxVal = Math.max(...incomeVals, ...expenseVals, avgIncome, avgExpense, 1);
+  const incomeAvgLine = cumulativeAvgLine(incomeVals);
+  const expenseAvgLine = cumulativeAvgLine(expenseVals);
 
-  const width=600, height=220, padL=6, padR=6, padT=16, padB=28;
+  const rawMax = Math.max(...incomeVals, ...expenseVals, ...incomeAvgLine.filter(v=>v!=null), ...expenseAvgLine.filter(v=>v!=null), 1);
+  const step = 5000;
+  const axisMax = Math.max(step, Math.ceil(rawMax / step) * step);
+
+  const width=600, height=230, padL=40, padR=8, padT=16, padB=28;
   const chartW = width-padL-padR, chartH = height-padT-padB;
   const groupW = chartW/12;
   const barW = groupW*0.34;
   const baseline = padT+chartH;
-  function yFor(v){ return padT + chartH*(1 - v/maxVal); }
+  function yFor(v){ return padT + chartH*(1 - v/axisMax); }
+  function xForCenter(i){ return padL + groupW*i + groupW/2; }
+
+  let gridAndAxis = '';
+  for(let v=0; v<=axisMax; v+=step){
+    const y = yFor(v);
+    gridAndAxis += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${width-padR}" y2="${y.toFixed(1)}" stroke="#DED0AC" stroke-width="0.5"/>`;
+    gridAndAxis += `<text x="${(padL-6).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="8" fill="#6B6055" text-anchor="end">${v===0?'0':(v/1000)+'K'}</text>`;
+  }
 
   let bars = '';
   months.forEach((m,i)=>{
@@ -1717,23 +1742,45 @@ function renderIncomeExpenseBarChart(){
     const ey = yFor(expenseVals[i]); const eh = baseline-ey;
     bars += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${barW.toFixed(1)}" height="${ih.toFixed(1)}" fill="var(--loan-blue)" rx="1"/>`;
     bars += `<rect x="${ex.toFixed(1)}" y="${ey.toFixed(1)}" width="${barW.toFixed(1)}" height="${eh.toFixed(1)}" fill="var(--khoiri)" rx="1"/>`;
-    bars += `<text x="${(gx+groupW/2).toFixed(1)}" y="${height-8}" font-size="8" fill="#6B6055" text-anchor="middle">${m.label}</text>`;
+    bars += `<text x="${(gx+groupW/2).toFixed(1)}" y="${height-8}" font-size="7.5" fill="#6B6055" text-anchor="middle">${m.label}</text>`;
   });
-  const avgIY = yFor(avgIncome), avgEY = yFor(avgExpense);
-  const lines = `<line x1="${padL}" y1="${avgIY.toFixed(1)}" x2="${width-padR}" y2="${avgIY.toFixed(1)}" stroke="var(--loan-blue)" stroke-width="1.5" stroke-dasharray="5,3"/>
-    <line x1="${padL}" y1="${avgEY.toFixed(1)}" x2="${width-padR}" y2="${avgEY.toFixed(1)}" stroke="var(--khoiri)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+
+  function buildLinePath(lineVals){
+    let d = '';
+    let started = false;
+    lineVals.forEach((v,i)=>{
+      if(v==null) return;
+      const x = xForCenter(i), y = yFor(v);
+      d += (started ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+      started = true;
+    });
+    return d.trim();
+  }
+  function buildDots(lineVals, color){
+    return lineVals.map((v,i)=> v==null ? '' : `<circle cx="${xForCenter(i).toFixed(1)}" cy="${yFor(v).toFixed(1)}" r="2.5" fill="${color}"/>`).join('');
+  }
+
+  const incomePath = buildLinePath(incomeAvgLine);
+  const expensePath = buildLinePath(expenseAvgLine);
+  const lines = `
+    ${incomePath ? `<path d="${incomePath}" fill="none" stroke="var(--loan-blue)" stroke-width="1.75"/>` : ''}
+    ${expensePath ? `<path d="${expensePath}" fill="none" stroke="var(--khoiri)" stroke-width="1.75"/>` : ''}
+    ${buildDots(incomeAvgLine, 'var(--loan-blue)')}
+    ${buildDots(expenseAvgLine, 'var(--khoiri)')}
+  `;
 
   return `
     <div class="chart-box">
       <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; display:block;">
+        ${gridAndAxis}
         ${bars}
         ${lines}
       </svg>
       <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top:6px; font-size:11px;">
         <span><span style="display:inline-block; width:10px; height:10px; background:var(--loan-blue); border-radius:2px; margin-right:4px;"></span>${t('tabIncome')}</span>
         <span><span style="display:inline-block; width:10px; height:10px; background:var(--khoiri); border-radius:2px; margin-right:4px;"></span>${t('tabExpense')}</span>
-        <span style="color:var(--loan-blue);">┄ ${t('avgIncomeLegend')}</span>
-        <span style="color:var(--khoiri);">┄ ${t('avgExpenseLegend')}</span>
+        <span style="color:var(--loan-blue);">— ${t('avgIncomeLegend')}</span>
+        <span style="color:var(--khoiri);">— ${t('avgExpenseLegend')}</span>
       </div>
     </div>`;
 }
@@ -3151,6 +3198,7 @@ function renderMedicineDetail(){
       <div class="hp-info-row"><span>${t('pricePerPcsLabel')}</span><span>${fmtAmt(med.pricePerPcs||0)}</span></div>
       <div class="hp-info-row"><span>${t('intervalDaysLabel')}</span><span>${med.intervalDays} ${t('daysUnit')}</span></div>
       <div class="hp-info-row"><span>${t('consumptionPcsLabel')}</span><span>${med.consumptionPcs} pcs</span></div>
+      <div class="hp-info-row"><span>${t('consumptionAmountLabel')}</span><span>${fmtAmt((med.consumptionPcs||0) * (med.pricePerPcs||0))}</span></div>
       <div class="hp-info-row"><span>${t('presentStock')}</span><span style="font-weight:700;">${med.stock||0} pcs</span></div>
       <div class="hp-info-row"><span>${t('runsOutIn')}</span><span style="font-weight:700;">${days!=null ? days+' '+t('daysUnit') : '-'}</span></div>
       <div style="text-align:center; margin-top:14px;">
