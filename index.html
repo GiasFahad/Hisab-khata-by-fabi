@@ -386,8 +386,8 @@
 <div id="app"></div>
 
 <script>
-let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [] };
-let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null, ageCategory: 'task', hpInfoModal: null, weightModal: null };
+let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [], medicines: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null, ageCategory: 'task', hpInfoModal: null, weightModal: null, medInfoModal: null, stockModal: null };
 let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
 
 let appLang = 'en';
@@ -672,6 +672,40 @@ const T = {
   needToGain: { en:'Need to gain', bn:'বাড়াতে হবে' },
   alreadyHealthy: { en:'You are within a healthy weight range', bn:'আপনার ওজন স্বাস্থ্যকর সীমার মধ্যে আছে' },
 
+  msTab: { en:'M.S.', bn:'M.S.' },
+  noMedicinesYet: { en:'No medicines added yet', bn:'এখনও কোনো ঔষধ যোগ করা হয়নি' },
+  noMedicinesDesc: { en:'Tap + below to add your first medicine.', bn:'নিচের + বাটনে চেপে প্রথম ঔষধ যোগ করুন।' },
+  presentStock: { en:'Present Stock', bn:'বর্তমান স্টক' },
+  runsOutIn: { en:'runs out in', bn:'শেষ হবে' },
+  daysUnit: { en:'days', bn:'দিনে' },
+  activeStatus: { en:'Active', bn:'একটিভ' },
+  deactiveStatus: { en:'Deactive', bn:'ডিএকটিভ' },
+  newMedicineTitle: { en:'Add new medicine', bn:'নতুন ঔষধ যোগ করুন' },
+  editMedicineTitle: { en:'Edit medicine', bn:'ঔষধ সম্পাদনা' },
+  medicineNameLabel: { en:'Medicine Name', bn:'ঔষধের নাম' },
+  medicineNamePlaceholder: { en:'e.g. Napa 500mg', bn:'যেমনঃ নাপা ৫০০মিগ্রা' },
+  medicineDetailsLabel: { en:'Details', bn:'বিস্তারিত' },
+  pricePerPcsLabel: { en:'Per pcs price', bn:'প্রতি পিস দাম' },
+  intervalDaysLabel: { en:'Consumption Interval (days)', bn:'সেবনের বিরতি (দিন)' },
+  consumptionPcsLabel: { en:'Consumption (pcs)', bn:'সেবনের পরিমাণ (পিস)' },
+  confirmDeleteMedicineTitle: { en:'Delete this medicine?', bn:'ঔষধ মুছে ফেলবেন?' },
+  confirmDeleteMedicineMsg: { en:'All stock records under this medicine will also be deleted. This cannot be undone.', bn:'এই ঔষধের সব স্টক রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  activatedToast: { en:'Activated', bn:'একটিভ করা হয়েছে' },
+  deactivatedToast: { en:'Deactivated', bn:'ডিএকটিভ করা হয়েছে' },
+  editMedicine: { en:'Edit medicine', bn:'ঔষধ সম্পাদনা' },
+  deleteMedicine: { en:'Delete medicine', bn:'ঔষধ মুছুন' },
+  stockRecordsTitle: { en:'Stock & Consumption Records', bn:'স্টক ও সেবনের রেকর্ড' },
+  noRecordsYet: { en:'No records yet.', bn:'এখনও কোনো রেকর্ড নেই।' },
+  stockAddedLabel: { en:'Stock Added', bn:'স্টক যোগ হয়েছে' },
+  consumedLabel: { en:'Consumed', bn:'সেবন হয়েছে' },
+  autoLabel: { en:'auto', bn:'অটো' },
+  addStockTitle: { en:'Add stock', bn:'স্টক যোগ করুন' },
+  editRecordTitle: { en:'Edit record', bn:'রেকর্ড সম্পাদনা' },
+  pcsLabel: { en:'Pcs', bn:'পিস' },
+  confirmDeleteRecordTitle: { en:'Delete this record?', bn:'রেকর্ড মুছে ফেলবেন?' },
+  avgIncomeLegend: { en:'Avg income', bn:'গড় আয়' },
+  avgExpenseLegend: { en:'Avg expense', bn:'গড় খরচ' },
+
   totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
   noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
   noIncomeCategoriesDesc: { en:'Tap + below to add your first income category (e.g. salary, business).', bn:'নিচের + বাটনে চেপে প্রথম আয়ের খাত (যেমনঃ বেতন, ব্যবসা) যোগ করুন।' },
@@ -846,6 +880,7 @@ async function loadData(){
       data.incomeCategories = parsed.incomeCategories || [];
       data.ageEntries = parsed.ageEntries || [];
       data.healthProfiles = parsed.healthProfiles || [];
+      data.medicines = parsed.medicines || [];
     }else{
       data.persons = [];
       data.transactions = [];
@@ -855,9 +890,12 @@ async function loadData(){
       data.incomeCategories = [];
       data.ageEntries = [];
       data.healthProfiles = [];
+      data.medicines = [];
     }
     migrateOldFlatEntries('expense');
     migrateOldFlatEntries('income');
+    const consumed = processMedicineConsumption();
+    if(consumed) await saveData();
   }catch(e){
     showToast(t('loadFailedToast'));
   }
@@ -1646,6 +1684,60 @@ function renderPerson(){
   `;
 }
 
+function renderIncomeExpenseBarChart(){
+  const now = new Date();
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  const months = [];
+  for(let i=11;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()] });
+  }
+  const incomeByMonth = {}, expenseByMonth = {};
+  data.income.forEach(i=>{ const k=monthKey(i.date); incomeByMonth[k]=(incomeByMonth[k]||0)+i.amount; });
+  data.expenses.forEach(e=>{ const k=monthKey(e.date); expenseByMonth[k]=(expenseByMonth[k]||0)+e.amount; });
+  const incomeVals = months.map(m=>incomeByMonth[m.key]||0);
+  const expenseVals = months.map(m=>expenseByMonth[m.key]||0);
+  const avgIncome = incomeVals.reduce((a,b)=>a+b,0)/12;
+  const avgExpense = expenseVals.reduce((a,b)=>a+b,0)/12;
+  const maxVal = Math.max(...incomeVals, ...expenseVals, avgIncome, avgExpense, 1);
+
+  const width=600, height=220, padL=6, padR=6, padT=16, padB=28;
+  const chartW = width-padL-padR, chartH = height-padT-padB;
+  const groupW = chartW/12;
+  const barW = groupW*0.34;
+  const baseline = padT+chartH;
+  function yFor(v){ return padT + chartH*(1 - v/maxVal); }
+
+  let bars = '';
+  months.forEach((m,i)=>{
+    const gx = padL + groupW*i;
+    const ix = gx + groupW*0.12;
+    const ex = gx + groupW*0.52;
+    const iy = yFor(incomeVals[i]); const ih = baseline-iy;
+    const ey = yFor(expenseVals[i]); const eh = baseline-ey;
+    bars += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${barW.toFixed(1)}" height="${ih.toFixed(1)}" fill="var(--loan-blue)" rx="1"/>`;
+    bars += `<rect x="${ex.toFixed(1)}" y="${ey.toFixed(1)}" width="${barW.toFixed(1)}" height="${eh.toFixed(1)}" fill="var(--khoiri)" rx="1"/>`;
+    bars += `<text x="${(gx+groupW/2).toFixed(1)}" y="${height-8}" font-size="8" fill="#6B6055" text-anchor="middle">${m.label}</text>`;
+  });
+  const avgIY = yFor(avgIncome), avgEY = yFor(avgExpense);
+  const lines = `<line x1="${padL}" y1="${avgIY.toFixed(1)}" x2="${width-padR}" y2="${avgIY.toFixed(1)}" stroke="var(--loan-blue)" stroke-width="1.5" stroke-dasharray="5,3"/>
+    <line x1="${padL}" y1="${avgEY.toFixed(1)}" x2="${width-padR}" y2="${avgEY.toFixed(1)}" stroke="var(--khoiri)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+
+  return `
+    <div class="chart-box">
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; display:block;">
+        ${bars}
+        ${lines}
+      </svg>
+      <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top:6px; font-size:11px;">
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--loan-blue); border-radius:2px; margin-right:4px;"></span>${t('tabIncome')}</span>
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--khoiri); border-radius:2px; margin-right:4px;"></span>${t('tabExpense')}</span>
+        <span style="color:var(--loan-blue);">┄ ${t('avgIncomeLegend')}</span>
+        <span style="color:var(--khoiri);">┄ ${t('avgExpenseLegend')}</span>
+      </div>
+    </div>`;
+}
+
 function renderSummary(){
   let persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
   const q = state.searchQuery.trim().toLowerCase();
@@ -1684,21 +1776,7 @@ function renderSummary(){
   const avgExpense = calcMonthlyAverage(data.expenses);
 
   return `
-    <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">${t('loanSectionTitle')}</span></div>
-    <div class="summary-cards">
-      <div class="stat-card">
-        <div class="label">${t('totalReceivable')}</div>
-        <div class="val pos">${fmtAmt(totalGave)}</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">${t('totalPayable')}</div>
-        <div class="val neg">${fmtAmt(totalGot)}</div>
-      </div>
-    </div>
-    <div class="stat-card" style="margin-bottom:20px;">
-      <div class="label">${t('netTotalLabel')}</div>
-      <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?t('willReceive'):net<0?t('willGive'):''}</div>
-    </div>
+    ${renderIncomeExpenseBarChart()}
 
     <div class="section-title" style="margin-top:0;"><span style="font-weight:700; color:var(--green);">${t('incomeExpenseSectionTitle')}</span></div>
     <div class="summary-cards">
@@ -1715,7 +1793,7 @@ function renderSummary(){
       <div class="label">${t('netIE')}</div>
       <div class="val ${netIE>0?'pos':netIE<0?'khoiri-txt':'zero'}">${fmtAmt(Math.abs(netIE))} ${netIE>0?t('surplus'):netIE<0?t('deficit'):''}</div>
     </div>
-    <div class="summary-cards" style="margin-bottom:20px;">
+    <div class="summary-cards" style="margin-bottom:26px;">
       <div class="stat-card">
         <div class="label">${t('avgMonthlyIncome')}</div>
         <div class="val pos">${fmtAmt(Math.round(avgIncome))}</div>
@@ -1724,6 +1802,22 @@ function renderSummary(){
         <div class="label">${t('avgMonthlyExpense')}</div>
         <div class="val khoiri-txt">${fmtAmt(Math.round(avgExpense))}</div>
       </div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">${t('loanSectionTitle')}</span></div>
+    <div class="summary-cards">
+      <div class="stat-card">
+        <div class="label">${t('totalReceivable')}</div>
+        <div class="val pos">${fmtAmt(totalGave)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">${t('totalPayable')}</div>
+        <div class="val neg">${fmtAmt(totalGot)}</div>
+      </div>
+    </div>
+    <div class="stat-card" style="margin-bottom:20px;">
+      <div class="label">${t('netTotalLabel')}</div>
+      <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?t('willReceive'):net<0?t('willGive'):''}</div>
     </div>
 
     <div class="section-title">
@@ -2278,12 +2372,14 @@ function renderAgeSubTabs(){
     <div class="cat-subtabs">
       <button class="cat-subtab ${state.ageCategory==='task'?'active':''}" onclick="setAgeCategory('task')">${t('taskTab')}</button>
       <button class="cat-subtab ${state.ageCategory==='health'?'active':''}" onclick="setAgeCategory('health')">${t('healthProfileTab')}</button>
+      <button class="cat-subtab ${state.ageCategory==='ms'?'active':''}" onclick="setAgeCategory('ms')">${t('msTab')}</button>
     </div>`;
 }
 
 function renderAgeCalc(){
   const tabs = renderAgeSubTabs();
   if(state.ageCategory === 'health') return tabs + renderHealthProfileList();
+  if(state.ageCategory === 'ms') return tabs + renderMedicineList();
   const entries = [...data.ageEntries].sort((a,b)=> a.name.localeCompare(b.name,'bn'));
   const list = entries.length===0
     ? `<div class="empty-state">
@@ -2821,6 +2917,362 @@ function renderWeightModal(){
 }
 
 
+/* ================= Medicine Stock (M.S.) ================= */
+
+function bdNow(){
+  const now = new Date();
+  return new Date(now.getTime() + 6*60*60000);
+}
+
+function bdEffectiveDate(){
+  const bd = bdNow();
+  if(bd.getUTCHours() < 6){
+    bd.setUTCDate(bd.getUTCDate()-1);
+  }
+  const y = bd.getUTCFullYear();
+  const mo = String(bd.getUTCMonth()+1).padStart(2,'0');
+  const da = String(bd.getUTCDate()).padStart(2,'0');
+  return `${y}-${mo}-${da}`;
+}
+
+function addDaysToDateStr(dateStr, days){
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0,10);
+}
+
+function daysBetweenDates(dateStr1, dateStr2){
+  const d1 = new Date(dateStr1 + 'T00:00:00Z');
+  const d2 = new Date(dateStr2 + 'T00:00:00Z');
+  return Math.round((d2-d1)/86400000);
+}
+
+function processMedicineConsumption(){
+  let changed = false;
+  const today = bdEffectiveDate();
+  (data.medicines||[]).forEach(med=>{
+    if(!med.active) return;
+    const interval = Math.max(1, parseInt(med.intervalDays)||1);
+    const perDose = parseFloat(med.consumptionPcs)||0;
+    if(perDose <= 0) return;
+    if(!med.lastConsumedDate) return;
+    if(!med.records) med.records = [];
+    let guard = 0;
+    while(daysBetweenDates(med.lastConsumedDate, today) >= interval && guard < 400){
+      guard++;
+      const dueDate = addDaysToDateStr(med.lastConsumedDate, interval);
+      const deduct = Math.min(perDose, med.stock||0);
+      med.stock = Math.max(0, (med.stock||0) - deduct);
+      med.records.push({ id: uid(), type:'consume', pcs: deduct, date: dueDate, auto:true, createdAt: Date.now() });
+      med.lastConsumedDate = dueDate;
+      changed = true;
+    }
+  });
+  return changed;
+}
+
+function daysUntilEmpty(med){
+  const perDose = parseFloat(med.consumptionPcs)||0;
+  const interval = Math.max(1, parseInt(med.intervalDays)||1);
+  if(perDose<=0 || !med.stock) return null;
+  const cycles = Math.floor(med.stock / perDose);
+  return cycles * interval;
+}
+
+function renderMedicineList(){
+  let meds = [...data.medicines].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  if(meds.length===0){
+    return `<div class="empty-state">
+      <div class="big">💊</div>
+      <h3 class="serif">${t('noMedicinesYet')}</h3>
+      <p>${t('noMedicinesDesc')}</p>
+    </div>`;
+  }
+  return meds.map(med=>{
+    const days = daysUntilEmpty(med);
+    return `
+    <div class="person-card" style="border-left-color:${med.active?'var(--green)':'var(--red)'};" onclick="setView('medicine','${med.id}')">
+      <div>
+        <div class="person-name">${escapeHtml(med.name)}</div>
+        <div class="person-meta">${t('presentStock')}: ${med.stock||0} pcs${days!=null? ' · '+t('runsOutIn')+' '+days+' '+t('daysUnit') : ''}</div>
+      </div>
+      <div>
+        <span class="txn-tag ${med.active?'tag-gave':'tag-got'}">${med.active?t('activeStatus'):t('deactiveStatus')}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddMedicine(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.medInfoModal = { mode:'add', id:null, name:'', details:'', pricePerPcs:'', intervalDays:'1', consumptionPcs:'1' };
+  render();
+}
+
+function openEditMedicineInfo(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const med = data.medicines.find(x=>x.id===id);
+    state.medInfoModal = { mode:'edit', id, name:med.name, details:med.details||'', pricePerPcs:String(med.pricePerPcs||''), intervalDays:String(med.intervalDays||1), consumptionPcs:String(med.consumptionPcs||1) };
+    render();
+  });
+}
+
+function confirmDeleteMedicine(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteMedicineTitle'),
+      msg: t('confirmDeleteMedicineMsg'),
+      onYes: async ()=>{
+        data.medicines = data.medicines.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        state.ageCategory = 'ms';
+        setView('agecalc');
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeMedInfoModal(){
+  state.medInfoModal = null;
+  render();
+}
+
+async function saveMedInfoModal(){
+  try{
+    const m = state.medInfoModal;
+    const nameInput = document.getElementById('med-name-input');
+    const detailsInput = document.getElementById('med-details-input');
+    const priceInput = document.getElementById('med-price-input');
+    const intervalInput = document.getElementById('med-interval-input');
+    const consInput = document.getElementById('med-consumption-input');
+    const name = nameInput.value.trim();
+    if(!name){ showToast(t('enterName')); return; }
+    const details = detailsInput.value.trim();
+    const pricePerPcs = parseFloat(normalizeDigits(priceInput.value)) || 0;
+    const intervalDays = Math.max(1, parseInt(normalizeDigits(intervalInput.value)) || 1);
+    const consumptionPcs = parseFloat(normalizeDigits(consInput.value)) || 1;
+    if(m.mode === 'add'){
+      data.medicines.push({ id: uid(), name, details, pricePerPcs, intervalDays, consumptionPcs, active:true, stock:0, lastConsumedDate:null, records:[], createdAt: Date.now() });
+      showToast(t('entryAdded'));
+    }else{
+      const med = data.medicines.find(x=>x.id===m.id);
+      if(!med){ showToast(t('profileNotFoundErr')); return; }
+      med.name=name; med.details=details; med.pricePerPcs=pricePerPcs; med.intervalDays=intervalDays; med.consumptionPcs=consumptionPcs;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.medInfoModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
+  }
+}
+
+function renderMedInfoModal(){
+  const m = state.medInfoModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeMedInfoModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newMedicineTitle') : t('editMedicineTitle')}</h2>
+        <div class="field">
+          <label>${t('medicineNameLabel')}</label>
+          <input id="med-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('medicineNamePlaceholder')}">
+        </div>
+        <div class="field">
+          <label>${t('medicineDetailsLabel')}</label>
+          <textarea id="med-details-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.details)}</textarea>
+        </div>
+        <div class="field">
+          <label>${t('pricePerPcsLabel')}</label>
+          <input id="med-price-input" type="number" inputmode="decimal" value="${escapeHtml(m.pricePerPcs)}" placeholder="0">
+        </div>
+        <div class="field">
+          <label>${t('intervalDaysLabel')}</label>
+          <input id="med-interval-input" type="number" inputmode="numeric" value="${escapeHtml(m.intervalDays)}" placeholder="1">
+        </div>
+        <div class="field">
+          <label>${t('consumptionPcsLabel')}</label>
+          <input id="med-consumption-input" type="number" inputmode="decimal" value="${escapeHtml(m.consumptionPcs)}" placeholder="1">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeMedInfoModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveMedInfoModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function toggleMedicineActive(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  const med = data.medicines.find(x=>x.id===id);
+  if(!med) return;
+  med.active = !med.active;
+  if(med.active && !med.lastConsumedDate){
+    med.lastConsumedDate = bdEffectiveDate();
+  }
+  await saveData();
+  render();
+  showToast(med.active ? t('activatedToast') : t('deactivatedToast'));
+}
+
+function renderMedicineDetail(){
+  const med = data.medicines.find(x=>x.id===state.personId);
+  if(!med) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
+  const days = daysUntilEmpty(med);
+  const records = [...(med.records||[])].sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt-a.createdAt);
+  const recordsHtml = records.length===0
+    ? `<div class="empty-state"><p>${t('noRecordsYet')}</p></div>`
+    : records.map(r=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div>
+            <span class="txn-tag ${r.type==='add'?'tag-gave':'tag-got'}">${r.type==='add'?t('stockAddedLabel'):t('consumedLabel')}${r.auto?(' · '+t('autoLabel')):''}</span>
+            <div class="ie-date">${fmtDate(r.date)}</div>
+          </div>
+          <div class="ie-amt" style="color:${r.type==='add'?'var(--green)':'var(--khoiri)'};">${r.type==='add'?'+':'-'}${r.pcs} pcs</div>
+        </div>
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditRecord('${med.id}','${r.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteRecord('${med.id}','${r.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="hp-card">
+      <div class="hp-name">${escapeHtml(med.name)}</div>
+      ${med.details ? `<div style="font-size:13px; color:var(--ink-soft); margin-bottom:10px;">${escapeHtml(med.details)}</div>` : ''}
+      <div class="hp-info-row"><span>${t('pricePerPcsLabel')}</span><span>${fmtAmt(med.pricePerPcs||0)}</span></div>
+      <div class="hp-info-row"><span>${t('intervalDaysLabel')}</span><span>${med.intervalDays} ${t('daysUnit')}</span></div>
+      <div class="hp-info-row"><span>${t('consumptionPcsLabel')}</span><span>${med.consumptionPcs} pcs</span></div>
+      <div class="hp-info-row"><span>${t('presentStock')}</span><span style="font-weight:700;">${med.stock||0} pcs</span></div>
+      <div class="hp-info-row"><span>${t('runsOutIn')}</span><span style="font-weight:700;">${days!=null ? days+' '+t('daysUnit') : '-'}</span></div>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="btn" style="background:${med.active?'var(--green)':'var(--red)'}; color:#fff; width:100%;" onclick="toggleMedicineActive('${med.id}')">
+          ${med.active ? '● '+t('activeStatus') : '● '+t('deactiveStatus')}
+        </button>
+      </div>
+      ${canEdit() ? `
+      <div class="person-actions" style="margin-top:12px;">
+        <span onclick="openEditMedicineInfo('${med.id}')">${t('editMedicine')}</span>
+        <span onclick="confirmDeleteMedicine('${med.id}')">${t('deleteMedicine')}</span>
+      </div>` : ''}
+    </div>
+    <div class="section-title">${t('stockRecordsTitle')}</div>
+    ${recordsHtml}
+  `;
+}
+
+function openAddStock(medicineId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.stockModal = { mode:'add', id:null, medicineId, date: todayStr(), pcs:'' };
+  render();
+}
+
+function openEditRecord(medicineId, recordId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const med = data.medicines.find(x=>x.id===medicineId);
+    const rec = med.records.find(x=>x.id===recordId);
+    state.stockModal = { mode:'edit', id:recordId, medicineId, date:rec.date, pcs:String(rec.pcs) };
+    render();
+  });
+}
+
+function confirmDeleteRecord(medicineId, recordId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteRecordTitle'),
+      msg: t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        const med = data.medicines.find(x=>x.id===medicineId);
+        if(med){
+          const rec = med.records.find(x=>x.id===recordId);
+          if(rec){
+            if(rec.type==='add'){ med.stock = Math.max(0, (med.stock||0) - rec.pcs); }
+            else{ med.stock = (med.stock||0) + rec.pcs; }
+            med.records = med.records.filter(x=>x.id!==recordId);
+          }
+        }
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeStockModal(){
+  state.stockModal = null;
+  render();
+}
+
+async function saveStockModal(){
+  try{
+    const m = state.stockModal;
+    const dateInput = document.getElementById('stock-date-input');
+    const pcsInput = document.getElementById('stock-pcs-input');
+    const date = dateInput.value || todayStr();
+    const pcs = parseFloat(normalizeDigits(pcsInput.value));
+    if(!pcs || pcs <= 0){ showToast(t('enterValidAmount')); return; }
+    const med = data.medicines.find(x=>x.id===m.medicineId);
+    if(!med){ showToast(t('profileNotFoundErr')); return; }
+    if(!med.records) med.records = [];
+    if(m.mode === 'add'){
+      med.stock = (med.stock||0) + pcs;
+      med.records.push({ id: uid(), type:'add', pcs, date, auto:false, createdAt: Date.now() });
+      if(!med.lastConsumedDate) med.lastConsumedDate = bdEffectiveDate();
+      showToast(t('entryAdded'));
+    }else{
+      const rec = med.records.find(x=>x.id===m.id);
+      if(!rec){ showToast(t('profileNotFoundErr')); return; }
+      const diff = pcs - rec.pcs;
+      if(rec.type==='add'){ med.stock = Math.max(0, (med.stock||0) + diff); }
+      else{ med.stock = Math.max(0, (med.stock||0) - diff); }
+      rec.pcs = pcs; rec.date = date;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.stockModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
+  }
+}
+
+function renderStockModal(){
+  const m = state.stockModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeStockModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('addStockTitle') : t('editRecordTitle')}</h2>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="stock-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>${t('pcsLabel')}</label>
+          <input id="stock-pcs-input" type="number" inputmode="decimal" value="${escapeHtml(m.pcs)}" placeholder="1">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeStockModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveStockModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+
 function renderSettings(){
   const roleKey = 'role_' + (state.currentUser ? state.currentUser.role : 'viewer');
   return `
@@ -2902,13 +3354,13 @@ async function bootApp(){
 function startSyncPolling(){
   if(window.__syncInterval) return;
   window.__syncInterval = setInterval(async ()=>{
-    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.entryModal || state.ageModal || state.hpInfoModal || state.weightModal;
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.entryModal || state.ageModal || state.hpInfoModal || state.weightModal || state.medInfoModal || state.stockModal;
     if(modalOpen) return;
     try{
       const parsed = await fbGet(dataPath());
-      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [] };
-      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[], incomeCategories: fresh.incomeCategories||[], ageEntries: fresh.ageEntries||[], healthProfiles: fresh.healthProfiles||[] });
-      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories, incomeCategories: data.incomeCategories, ageEntries: data.ageEntries, healthProfiles: data.healthProfiles });
+      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [], medicines: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[], incomeCategories: fresh.incomeCategories||[], ageEntries: fresh.ageEntries||[], healthProfiles: fresh.healthProfiles||[], medicines: fresh.medicines||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories, incomeCategories: data.incomeCategories, ageEntries: data.ageEntries, healthProfiles: data.healthProfiles, medicines: data.medicines });
       if(freshStr !== currentStr){
         data.persons = fresh.persons || [];
         data.transactions = fresh.transactions || [];
@@ -2918,6 +3370,9 @@ function startSyncPolling(){
         data.incomeCategories = fresh.incomeCategories || [];
         data.ageEntries = fresh.ageEntries || [];
         data.healthProfiles = fresh.healthProfiles || [];
+        data.medicines = fresh.medicines || [];
+        const consumed = processMedicineConsumption();
+        if(consumed) await saveData();
         render();
       }
     }catch(e){}
@@ -2960,6 +3415,11 @@ function render(){
     headerTitle = p ? p.name : t('categoryFallback');
     backBtn = `<button class="icon-btn" onclick="state.ageCategory='health'; setView('agecalc')">←</button>`;
     mainHtml = renderHealthProfileDetail();
+  }else if(state.view === 'medicine'){
+    const med = data.medicines.find(x=>x.id===state.personId);
+    headerTitle = med ? med.name : t('categoryFallback');
+    backBtn = `<button class="icon-btn" onclick="state.ageCategory='ms'; setView('agecalc')">←</button>`;
+    mainHtml = renderMedicineDetail();
   }else if(state.view === 'settings'){
     headerTitle = t('settingsTitle');
     mainHtml = renderSettings();
@@ -2987,7 +3447,9 @@ function render(){
     ${state.view==='category' && canEdit() ? `<button class="fab-btn" style="background:${state.category==='income'?'var(--green)':'var(--khoiri)'};" onclick="openAddCategoryEntry('${state.personId}')">+</button>` : ''}
     ${state.view==='agecalc' && state.ageCategory==='task' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddAgeEntry()">+</button>` : ''}
     ${state.view==='agecalc' && state.ageCategory==='health' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddHealthProfile()">+</button>` : ''}
+    ${state.view==='agecalc' && state.ageCategory==='ms' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddMedicine()">+</button>` : ''}
     ${state.view==='healthProfile' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddWeightEntry('${state.personId}')">+</button>` : ''}
+    ${state.view==='medicine' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddStock('${state.personId}')">+</button>` : ''}
     <nav class="bottomnav">
       <button class="${state.view==='home'||state.view==='person'||state.view==='category'?'active':''}" onclick="setView('home')">
         <span class="ic">🏠</span>${t('navHome')}
@@ -2995,7 +3457,7 @@ function render(){
       <button class="${state.view==='summary'?'active':''}" onclick="setView('summary')">
         <span class="ic">📊</span>${t('navSummary')}
       </button>
-      <button class="${state.view==='agecalc'||state.view==='healthProfile'?'active':''}" onclick="setView('agecalc')">
+      <button class="${state.view==='agecalc'||state.view==='healthProfile'||state.view==='medicine'?'active':''}" onclick="setView('agecalc')">
         <span class="ic">💪</span>${t('navAge')}
       </button>
       <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
@@ -3008,6 +3470,8 @@ function render(){
     ${renderAgeModal()}
     ${renderHpInfoModal()}
     ${renderWeightModal()}
+    ${renderMedInfoModal()}
+    ${renderStockModal()}
     ${renderConfirmModal()}
     ${renderPwModal()}
     ${renderNewUserModal()}
