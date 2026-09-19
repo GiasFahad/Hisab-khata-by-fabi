@@ -235,6 +235,21 @@
     padding:12px 8px; margin-bottom:18px; box-shadow:var(--shadow);
   }
 
+  .l3m-card{
+    border:1px solid var(--line); border-radius:8px; overflow:hidden;
+    margin-bottom:16px; background:#fff; box-shadow:var(--shadow);
+  }
+  .l3m-header{
+    background:var(--loan-blue); color:#fff; text-align:center;
+    font-weight:700; padding:8px; font-size:13px;
+  }
+  .l3m-row{ display:flex; }
+  .l3m-cell{
+    flex:1; text-align:center; padding:8px 4px; font-size:13px;
+    color:#000; border:1px solid var(--line);
+  }
+  .l3m-labels .l3m-cell{ font-weight:600; background:#F6EFDF; }
+
   .section-title{
     font-size:14px; color:var(--ink-soft); margin:18px 0 8px 2px; font-weight:600;
     display:flex; justify-content:space-between; align-items:center;
@@ -689,6 +704,8 @@ const T = {
   intervalDaysLabel: { en:'Consumption Interval (days)', bn:'সেবনের বিরতি (দিন)' },
   consumptionPcsLabel: { en:'Consumption (pcs)', bn:'সেবনের পরিমাণ (পিস)' },
   consumptionAmountLabel: { en:'Consumption Amount', bn:'সেবনের খরচ' },
+  lastThreeMonthIncome: { en:'Last Three Month Income', bn:'গত তিন মাসের আয়' },
+  lastThreeMonthExpense: { en:'Last Three Month Expense', bn:'গত তিন মাসের খরচ' },
   confirmDeleteMedicineTitle: { en:'Delete this medicine?', bn:'ঔষধ মুছে ফেলবেন?' },
   confirmDeleteMedicineMsg: { en:'All stock records under this medicine will also be deleted. This cannot be undone.', bn:'এই ঔষধের সব স্টক রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
   activatedToast: { en:'Activated', bn:'একটিভ করা হয়েছে' },
@@ -1324,6 +1341,30 @@ function categoryEntries(kind, categoryId){
     .sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
 }
 
+function renderLastThreeMonthsCard(kind){
+  const now = new Date();
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  const months = [];
+  for(let i=0;i<3;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()]+'-'+String(d.getFullYear()).slice(-2) });
+  }
+  const entries = kind==='income' ? data.income : data.expenses;
+  const byMonth = {};
+  entries.forEach(e=>{ const k=monthKey(e.date); byMonth[k]=(byMonth[k]||0)+e.amount; });
+  const title = kind==='income' ? t('lastThreeMonthIncome') : t('lastThreeMonthExpense');
+  return `
+    <div class="l3m-card">
+      <div class="l3m-header">${title}</div>
+      <div class="l3m-row l3m-labels">
+        ${months.map((m,i)=>`<div class="l3m-cell">${i===0?'▶️ ':''}${m.label}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        ${months.map(m=>`<div class="l3m-cell">${Math.round(byMonth[m.key]||0).toLocaleString('en-IN')}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
 function renderCategoryList(kind){
   const cats0 = catsFor(kind);
   const entries0 = entriesFor(kind);
@@ -1332,6 +1373,7 @@ function renderCategoryList(kind){
   let cats = [...cats0].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
   const q = state.searchQuery.trim().toLowerCase();
   if(q){ cats = cats.filter(c=>c.name.toLowerCase().includes(q)); }
+  const l3mCard = renderLastThreeMonthsCard(kind);
 
   const searchHtml = cats0.length>0 ? `
     <div class="search-box">
@@ -1350,7 +1392,7 @@ function renderCategoryList(kind){
   if(cats0.length===0){
     const emptyTitle = kind==='income' ? t('noIncomeCategoriesYet') : t('noCategoriesYet');
     const emptyDesc = kind==='income' ? t('noIncomeCategoriesDesc') : t('noCategoriesDesc');
-    return `
+    return l3mCard + `
       <div class="empty-state">
         <div class="big">${kind==='income'?'💰':'🧾'}</div>
         <h3 class="serif">${emptyTitle}</h3>
@@ -1358,7 +1400,7 @@ function renderCategoryList(kind){
       </div>`;
   }
   if(cats.length===0){
-    return totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noCategoryResultsFor')}</p></div>`;
+    return l3mCard + totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noCategoryResultsFor')}</p></div>`;
   }
 
   const list = cats.map(c=>{
@@ -1376,7 +1418,7 @@ function renderCategoryList(kind){
       </div>`;
   }).join('');
 
-  return totalCard + searchHtml + list;
+  return l3mCard + totalCard + searchHtml + list;
 }
 
 function renderCategoryDetail(){
@@ -1742,6 +1784,14 @@ function renderIncomeExpenseBarChart(){
     const ey = yFor(expenseVals[i]); const eh = baseline-ey;
     bars += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${barW.toFixed(1)}" height="${ih.toFixed(1)}" fill="var(--loan-blue)" rx="1"/>`;
     bars += `<rect x="${ex.toFixed(1)}" y="${ey.toFixed(1)}" width="${barW.toFixed(1)}" height="${eh.toFixed(1)}" fill="var(--khoiri)" rx="1"/>`;
+    if(incomeVals[i] > 0){
+      const tx = ix + barW/2 + 2.5;
+      bars += `<text x="0" y="0" font-size="6.5" fill="#000" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(incomeVals[i]).toLocaleString('en-IN')}</text>`;
+    }
+    if(expenseVals[i] > 0){
+      const tx = ex + barW/2 + 2.5;
+      bars += `<text x="0" y="0" font-size="6.5" fill="#000" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(expenseVals[i]).toLocaleString('en-IN')}</text>`;
+    }
     bars += `<text x="${(gx+groupW/2).toFixed(1)}" y="${height-8}" font-size="7.5" fill="#6B6055" text-anchor="middle">${m.label}</text>`;
   });
 
