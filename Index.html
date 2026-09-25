@@ -1,0 +1,3643 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>হিসাব খাতা — By FaBi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6EFDF;
+    --paper-card:#FCF8EE;
+    --ink:#2B2420;
+    --ink-soft:#6B6055;
+    --maroon:#7A1F2B;
+    --maroon-dark:#5C1620;
+    --gold:#B8860B;
+    --line:#DED0AC;
+    --green:#2F6E4F;
+    --green-bg:#E4EFE3;
+    --red:#B23A32;
+    --red-bg:#F5E4DF;
+    --khoiri:#6B4226;
+    --khoiri-bg:#EBE0D5;
+    --loan-blue:#2C5F8A;
+    --loan-blue-bg:#DCE7EF;
+    --shadow:0 2px 8px rgba(90,60,30,0.10);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0; height:100%; overflow:hidden;}
+  body{
+    font-family:'Hind Siliguri', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  h1,h2,h3,.serif{font-family:'Tiro Bangla', serif;}
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:
+      linear-gradient(90deg, transparent 0 40px, rgba(122,31,43,0.25) 40px 41px, transparent 41px 100%),
+      repeating-linear-gradient(var(--paper), var(--paper) 33px, var(--line) 34px);
+  }
+  header.topbar{
+    background:var(--maroon);
+    color:#F3E9DC;
+    padding:18px 20px 16px 20px;
+    box-shadow:var(--shadow);
+    flex-shrink:0;
+    z-index:10;
+  }
+  header.topbar h1{
+    margin:0; font-size:22px; font-weight:400; letter-spacing:0.5px;
+  }
+  header.topbar .sub{
+    font-size:13px; color:#E7C9C2; margin-top:2px;
+  }
+  .back-row{
+    display:flex; align-items:center; gap:10px;
+  }
+  .icon-btn{
+    background:none; border:none; color:inherit; font-size:20px;
+    cursor:pointer; padding:4px; line-height:1; display:flex; align-items:center;
+  }
+  main{
+    flex:1;
+    min-height:0;
+    padding:16px 16px 90px 16px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .fab-btn{
+    position:absolute;
+    right:20px; bottom:76px;
+    width:56px; height:56px;
+    border-radius:50%;
+    background:var(--maroon);
+    color:#F3E9DC;
+    border:none;
+    font-size:28px;
+    box-shadow:0 3px 10px rgba(90,20,30,0.35);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    z-index:30;
+  }
+  .fab-btn:active{transform:scale(0.95);}
+  nav.bottomnav{
+    flex-shrink:0;
+    background:var(--paper-card);
+    border-top:1px solid var(--line);
+    display:flex;
+    box-shadow:0 -2px 8px rgba(90,60,30,0.08);
+    z-index:20;
+    position:relative;
+  }
+  nav.bottomnav button{
+    flex:1;
+    background:none; border:none;
+    padding:10px 0 8px 0;
+    font-family:'Hind Siliguri', sans-serif;
+    font-size:13px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  nav.bottomnav button .ic{font-size:20px;}
+  nav.bottomnav button.active{color:var(--maroon); font-weight:600;}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--ink-soft);
+  }
+  .empty-state .big{font-size:40px; margin-bottom:10px;}
+  .empty-state p{font-size:14px; line-height:1.6;}
+
+  .search-box{
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:9px 12px; margin-bottom:14px;
+  }
+  .search-box input{
+    border:none; outline:none; flex:1; font-family:'Hind Siliguri', sans-serif;
+    font-size:14px; background:transparent; color:var(--ink);
+  }
+  .search-box .ic{color:var(--ink-soft); font-size:15px;}
+
+  .filter-chips{ display:flex; gap:8px; margin-bottom:14px; }
+  .chip{
+    padding:6px 14px; border-radius:16px; border:1px solid var(--line);
+    background:#fff; font-size:13px; color:var(--ink-soft); cursor:pointer;
+  }
+  .chip.active{background:var(--maroon); color:#F3E9DC; border-color:var(--maroon);}
+
+  .cat-tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .cat-tab{
+    flex:1; padding:10px 0; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; font-family:'Hind Siliguri', sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer; text-align:center;
+  }
+  .cat-tab.cat-loan.active{background:var(--loan-blue); color:#fff; border-color:var(--loan-blue);}
+  .cat-tab.cat-income.active{background:var(--green); color:#fff; border-color:var(--green);}
+  .cat-tab.cat-expense.active{background:var(--khoiri); color:#fff; border-color:var(--khoiri);}
+
+  .ie-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px; margin-bottom:8px; box-shadow:var(--shadow);
+  }
+  .ie-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .ie-name{ font-size:15px; font-weight:600; }
+  .ie-date{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .ie-amt{ font-size:16px; font-weight:700; }
+  .ie-amt.income{ color:var(--green); }
+  .ie-amt.expense{ color:var(--khoiri); }
+  .ie-note{ font-size:13px; color:var(--ink); margin-top:6px; white-space:pre-wrap; }
+  .ie-actions{ display:flex; gap:14px; margin-top:8px; justify-content:flex-end; }
+  .ie-actions span{ font-size:12px; color:var(--maroon); cursor:pointer; text-decoration:underline; }
+
+  .person-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-left:4px solid var(--maroon);
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+  }
+  .person-card:active{background:#F1E9D6;}
+  .person-name{font-size:16px; font-weight:600;}
+  .person-meta{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .balance{font-size:15px; font-weight:700; text-align:right;}
+  .balance-label{font-size:11px; font-weight:400; margin-top:2px;}
+  .pos{color:var(--green);}
+  .neg{color:var(--red);}
+  .zero{color:var(--ink-soft);}
+  .khoiri-txt{color:var(--khoiri);}
+  .blue-txt{color:var(--loan-blue);}
+
+  .summary-cards{
+    display:flex; gap:10px; margin-bottom:18px;
+  }
+  .stat-card{
+    flex:1;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .stat-card .label{font-size:12px; color:var(--ink-soft);}
+  .stat-card .val{font-size:18px; font-weight:700; margin-top:4px;}
+
+  .stat-row-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .stat-row{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--paper-card); border:1px solid var(--line); border-radius:8px;
+    padding:10px 14px; box-shadow:var(--shadow);
+  }
+  .stat-row-label{ font-size:13px; color:var(--ink-soft); }
+  .stat-row-value{ font-size:15px; font-weight:700; }
+
+  .cat-subtabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .cat-subtab{
+    flex:1; padding:9px 0; border-radius:10px; border:1.5px solid var(--line);
+    background:#fff; font-family:'Hind Siliguri', sans-serif; font-size:13px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer; text-align:center;
+  }
+  .cat-subtab.active{background:var(--loan-blue); color:#fff; border-color:var(--loan-blue);}
+
+  .hp-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:10px;
+    padding:16px; margin-bottom:16px; box-shadow:var(--shadow);
+  }
+  .hp-name{ font-family:'Tiro Bangla', serif; font-size:19px; font-weight:600; margin-bottom:10px; }
+  .hp-age-row{ display:flex; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--line); }
+  .hp-age-row:last-of-type{ border-bottom:none; }
+  .hp-age-label{
+    width:24px; height:24px; border-radius:50%; background:var(--loan-blue); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;
+  }
+  .hp-age-date{ flex:1; font-size:13px; color:var(--ink-soft); }
+  .hp-age-value{ font-size:14px; font-weight:700; color:var(--loan-blue); }
+  .hp-info-row{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; color:var(--ink); }
+  .chart-box{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:10px;
+    padding:12px 8px; margin-bottom:18px; box-shadow:var(--shadow);
+  }
+
+  .l3m-card{
+    border:1px solid var(--line); border-radius:8px; overflow:hidden;
+    margin-bottom:16px; background:#fff; box-shadow:var(--shadow);
+  }
+  .l3m-header{
+    background:var(--loan-blue); color:#fff; text-align:center;
+    font-weight:700; padding:8px; font-size:13px;
+  }
+  .l3m-row{ display:flex; }
+  .l3m-cell{
+    flex:1; text-align:center; padding:8px 4px; font-size:13px;
+    color:#000; border:1px solid var(--line);
+  }
+  .l3m-labels .l3m-cell{ font-weight:600; background:#F6EFDF; }
+
+  .section-title{
+    font-size:14px; color:var(--ink-soft); margin:18px 0 8px 2px; font-weight:600;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .link-btn{
+    font-size:13px; color:var(--maroon); text-decoration:underline; cursor:pointer; font-weight:400;
+  }
+
+  .txn-row{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    box-shadow:var(--shadow);
+  }
+  .txn-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .txn-amt{font-size:16px; font-weight:700;}
+  .txn-date{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .txn-note{font-size:13px; color:var(--ink); margin-top:6px; white-space:pre-wrap;}
+  .txn-tag{
+    display:inline-block; font-size:11px; padding:2px 8px; border-radius:10px;
+    margin-bottom:2px;
+  }
+  .tag-gave{background:var(--green-bg); color:var(--green);}
+  .tag-got{background:var(--red-bg); color:var(--red);}
+  .txn-actions{display:flex; gap:14px; margin-top:8px; justify-content:flex-end;}
+  .txn-actions span{font-size:12px; color:var(--maroon); cursor:pointer; text-decoration:underline;}
+
+  .person-header-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow:var(--shadow);
+    text-align:center;
+  }
+  .person-header-card .name{font-size:20px; font-weight:600;}
+  .person-header-card .bal{font-size:26px; font-weight:700; margin-top:8px;}
+  .person-header-card .baltxt{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .person-actions{display:flex; justify-content:center; gap:16px; margin-top:12px; flex-wrap:wrap;}
+  .person-actions span{font-size:13px; color:var(--maroon); cursor:pointer; text-decoration:underline;}
+
+  .summary-list-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 4px; border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .summary-list-row:last-child{border-bottom:none;}
+
+  .overlay{
+    position:fixed; inset:0; background:rgba(43,36,32,0.45);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:100;
+  }
+  .sheet{
+    background:var(--paper-card);
+    width:100%; max-width:480px;
+    border-radius:16px 16px 0 0;
+    padding:20px 20px 24px 20px;
+    max-height:88vh; overflow-y:auto;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+  }
+  .sheet h2{margin:0 0 16px 0; font-size:18px; font-weight:400;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:13px; color:var(--ink-soft); margin-bottom:5px;}
+  .field input, .field textarea{
+    width:100%;
+    font-family:'Hind Siliguri', sans-serif;
+    font-size:15px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .type-toggle{display:flex; gap:10px;}
+  .type-toggle button{
+    flex:1; padding:12px; border-radius:8px; border:1.5px solid var(--line);
+    background:#fff; font-family:'Hind Siliguri', sans-serif; font-size:14px; font-weight:600;
+    cursor:pointer; color:var(--ink-soft);
+  }
+  .type-toggle button.sel-gave{border-color:var(--green); color:var(--green); background:var(--green-bg);}
+  .type-toggle button.sel-got{border-color:var(--red); color:var(--red); background:var(--red-bg);}
+  .sheet-actions{display:flex; gap:10px; margin-top:18px;}
+  .btn{
+    flex:1;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    font-family:'Hind Siliguri', sans-serif;
+    font-size:15px; font-weight:600;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--maroon); color:#F3E9DC;}
+  .btn-primary:active{background:var(--maroon-dark);}
+  .btn-secondary{background:#fff; color:var(--ink); border:1px solid var(--line);}
+  .btn-danger{background:var(--red-bg); color:var(--red); border:1px solid var(--red);}
+  .calc-eq-btn{
+    width:48px; flex-shrink:0; border-radius:8px; border:1px solid var(--maroon);
+    background:var(--maroon); color:#F3E9DC; font-size:18px; font-weight:700;
+    cursor:pointer; font-family:'Hind Siliguri', sans-serif;
+  }
+  .calc-eq-btn:active{background:var(--maroon-dark);}
+
+  .toast{
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:#F3E9DC; padding:10px 18px; border-radius:20px;
+    font-size:13px; z-index:200; box-shadow:0 2px 10px rgba(0,0,0,0.25);
+  }
+
+  .lock-screen{
+    flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:24px 24px 50px 24px; text-align:center;
+  }
+  .lock-screen .icon{font-size:44px; margin-bottom:14px;}
+  .lock-screen h2{margin:0 0 6px 0; font-size:19px;}
+  .lock-screen p{font-size:13px; color:var(--ink-soft); margin:0 0 22px 0; line-height:1.6; max-width:300px;}
+  .pin-dots{display:flex; gap:14px; margin-bottom:22px;}
+  .pin-dot{width:14px; height:14px; border-radius:50%; border:1.5px solid var(--maroon); background:transparent;}
+  .pin-dot.filled{background:var(--maroon);}
+  .pin-pad{display:grid; grid-template-columns:repeat(3,64px); gap:14px; margin-bottom:10px;}
+  .pin-key{
+    width:64px; height:64px; border-radius:50%; border:1px solid var(--line);
+    background:var(--paper-card); font-size:20px; font-weight:600; color:var(--ink);
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    font-family:'Hind Siliguri', sans-serif;
+  }
+  .pin-key:active{background:#EDE3CC;}
+  .pin-key.empty{visibility:hidden;}
+  .pin-error{color:var(--red); font-size:13px; margin-top:12px; min-height:18px;}
+  .lock-link{font-size:13px; color:var(--maroon); text-decoration:underline; cursor:pointer; margin-top:18px;}
+  .auth-tabs{
+    display:flex; gap:6px; background:#fff; border:1px solid var(--line);
+    border-radius:10px; padding:4px; margin-bottom:18px; width:100%; max-width:280px;
+  }
+  .auth-tab{
+    flex:1; padding:9px 0; border:none; border-radius:7px; background:transparent;
+    font-family:'Hind Siliguri', sans-serif; font-size:14px; font-weight:600;
+    color:var(--ink-soft); cursor:pointer;
+  }
+  .auth-tab.active{background:var(--maroon); color:#F3E9DC;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+let data = { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [], medicines: [] };
+let state = { view: 'home', personId: null, txnModal: null, personModal: false, confirmModal: null, searchQuery:'', txnFilter:'all', currentUser: null, pwModal: null, newUserModal: null, pwConfirmModal: null, category: 'loan', entryModal: null, ageModal: null, ageCategory: 'task', hpInfoModal: null, weightModal: null, medInfoModal: null, stockModal: null };
+let lock = { status:'checking', users:[], usernameInput:'', entry:'', error:'' };
+
+let appLang = 'en';
+try{
+  const savedLang = localStorage.getItem('hisabKhataLang');
+  if(savedLang === 'bn' || savedLang === 'en') appLang = savedLang;
+}catch(e){}
+
+const T = {
+  appTitle: { en:'Hisab Khata — By FaBi', bn:'হিসাব খাতা — By FaBi' },
+  navHome: { en:'Home', bn:'হোম' },
+  navSummary: { en:'Summary', bn:'সারসংক্ষেপ' },
+  navSettings: { en:'Settings', bn:'সেটিংস' },
+  tabLoan: { en:'Loans', bn:'ধার-দেনা' },
+  tabIncome: { en:'Income', bn:'আয়' },
+  tabExpense: { en:'Expense', bn:'খরচ' },
+  homeSubShared: { en:'Everyone\'s ledger in one place (shared)', bn:'সবার হিসাব এক জায়গায় (শেয়ার্ড)' },
+  homeSubPrivate: { en:'Your private ledger', bn:'আপনার ব্যক্তিগত হিসাব' },
+  summaryTitle: { en:'Summary Report', bn:'সারসংক্ষেপ রিপোর্ট' },
+  summarySub: { en:'Total ledger for everyone', bn:'সব ব্যক্তির মোট হিসাব' },
+  settingsTitle: { en:'Settings', bn:'সেটিংস' },
+  adminPanelTitle: { en:'Admin Panel', bn:'অ্যাডমিন প্যানেল' },
+  loginTitle: { en:'Login', bn:'লগইন করুন' },
+  loginDesc: { en:'Enter your username and password. Ask your admin to create your account.', bn:'ইউজারনেম ও পাসওয়ার্ড দিন। অ্যাডমিন আপনার অ্যাকাউন্ট তৈরি করে দেবে।' },
+  loginUsernameLabel: { en:'Username', bn:'ইউজারনেম' },
+  loginUsernamePlaceholder: { en:'Enter username', bn:'ইউজারনেম লিখুন' },
+  cancel: { en:'Cancel', bn:'বাতিল' },
+  save: { en:'Save', bn:'সংরক্ষণ করুন' },
+  edit: { en:'Edit', bn:'সম্পাদনা' },
+  delete: { en:'Delete', bn:'মুছুন' },
+  add: { en:'Add', bn:'যোগ করুন' },
+  changePassword: { en:'🔒 Change my password', bn:'🔒 আমার পাসওয়ার্ড পরিবর্তন করুন' },
+  adminPanelLink: { en:'⚙️ Admin Panel', bn:'⚙️ অ্যাডমিন প্যানেল' },
+  createAdminLink: { en:'🛡️ Create new admin', bn:'🛡️ নতুন অ্যাডমিন তৈরি করুন' },
+  logout: { en:'🚪 Logout', bn:'🚪 লগআউট' },
+  language: { en:'Language', bn:'ভাষা' },
+  loggedInAs: { en:'Logged in as', bn:'লগইন করা আছে' },
+  role_admin: { en:'Admin', bn:'অ্যাডমিন' },
+  role_editor: { en:'Editor', bn:'এডিটর' },
+  role_viewer: { en:'Viewer', bn:'ভিউয়ার' },
+  role_individual: { en:'Individual', bn:'ইনডিভিজুয়াল' },
+
+  netIE: { en:'Income − Expense (Net Savings)', bn:'আয় − খরচ (নিট সঞ্চয়)' },
+  surplus: { en:' (surplus)', bn:' (উদ্বৃত্ত)' },
+  deficit: { en:' (deficit)', bn:' (ঘাটতি)' },
+  avgMonthlyIncome: { en:'Avg. monthly income (since 1st entry)', bn:'গড় মাসিক আয় (প্রথম এন্ট্রি থেকে)' },
+  avgMonthlyExpense: { en:'Avg. monthly expense (since 1st entry)', bn:'গড় মাসিক খরচ (প্রথম এন্ট্রি থেকে)' },
+  avgMonthly: { en:'Avg. monthly (since 1st entry)', bn:'গড় মাসিক (প্রথম এন্ট্রি থেকে)' },
+  avgDaily: { en:'Avg. Daily', bn:'দৈনিক গড়' },
+  avgMonthlyUpTo: { en:'Avg. Monthly (Up to)', bn:'মাসিক গড় (Up to)' },
+  avgMonthlyOnlyEntry: { en:'Avg. Monthly (Only Entry)', bn:'মাসিক গড় (শুধু এন্ট্রি আছে এমন মাস)' },
+  totalExpense: { en:'Total expense', bn:'মোট খরচ' },
+  categoryNotFound: { en:'Category not found', bn:'খাত পাওয়া যায়নি' },
+  noEntriesInCategory: { en:'No entries in this category yet. Tap + to add one.', bn:'এই খাতে এখনও কোনো এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।' },
+  renameCategory: { en:'Rename category', bn:'নাম পরিবর্তন' },
+  deleteCategory: { en:'Delete category', bn:'খাত মুছুন' },
+  expenseEntries: { en:'Expense entries', bn:'খরচের এন্ট্রি' },
+
+  searchByName: { en:'Search by name...', bn:'নাম দিয়ে খুঁজুন...' },
+  searchByCategory: { en:'Search by category...', bn:'খাতের নাম দিয়ে খুঁজুন...' },
+  noPersonsYet: { en:'No one added yet', bn:'এখনও কেউ যোগ করা হয়নি' },
+  noPersonsDesc: { en:'Tap + below to add your first person and start tracking money given/taken.', bn:'নিচের + বাটনে চেপে প্রথম ব্যক্তি যোগ করুন এবং তার সাথে টাকা লেনদেনের হিসাব রাখা শুরু করুন।' },
+  noResultsFor: { en:'No results found for', bn:'নামে কেউ পাওয়া যায়নি' },
+  entries: { en:'entries', bn:'টি এন্ট্রি' },
+  willReceive: { en:'to receive', bn:'পাবেন' },
+  willGive: { en:'to give', bn:'দিবেন' },
+  settled: { en:'settled', bn:'সমান' },
+  loanEntries: { en:'Loan entries', bn:'লেনদেনের হিসাব' },
+  all: { en:'All', bn:'সব' },
+  gave: { en:'Gave', bn:'দিলাম' },
+  got: { en:'Got', bn:'পেলাম' },
+  renamePerson: { en:'Rename person', bn:'নাম পরিবর্তন' },
+  deletePerson: { en:'Delete person', bn:'ব্যক্তি মুছুন' },
+  pdfReport: { en:'PDF Report', bn:'PDF রিপোর্ট' },
+  convertToExpense: { en:'🧾 Convert to Expense', bn:'🧾 এটাকে খরচ (Expense) এ রূপান্তর করুন' },
+  youWillReceive: { en:'You will receive', bn:'আপনি পাবেন' },
+  youWillGive: { en:'You will give', bn:'আপনি দিবেন' },
+  settledUp: { en:'Settled up', bn:'হিসাব সমান' },
+
+  totalIncomeLabel: { en:'Total income', bn:'মোট আয়' },
+  noIncomeYet: { en:'No income entries yet', bn:'এখনও কোনো আয় এন্ট্রি নেই' },
+  noIncomeDesc: { en:'Tap + below to add your first income entry.', bn:'নিচের + বাটনে চেপে প্রথম আয় এন্ট্রি যোগ করুন।' },
+  noResultsForQuery: { en:'No results found for', bn:'নামে কিছু পাওয়া যায়নি' },
+  totalExpenseAllCats: { en:'Total expense (all categories)', bn:'মোট খরচ (সব খাত মিলিয়ে)' },
+  noCategoriesYet: { en:'No expense categories yet', bn:'এখনও কোনো খরচের খাত নেই' },
+  noCategoriesDesc: { en:'Tap + below to add your first expense category (e.g. groceries, rent).', bn:'নিচের + বাটনে চেপে প্রথম খরচের খাত (যেমনঃ বাজার, বাসা ভাড়া) যোগ করুন।' },
+  noCategoryResultsFor: { en:'No category found for', bn:'নামে কোনো খাত পাওয়া যায়নি' },
+
+  newPersonTitle: { en:'Add new person', bn:'নতুন ব্যক্তি যোগ করুন' },
+  editNameTitle: { en:'Rename', bn:'নাম পরিবর্তন করুন' },
+  newCategoryTitle: { en:'Add new expense category', bn:'নতুন খরচের খাত যোগ করুন' },
+  editCategoryTitle: { en:'Rename category', bn:'খাতের নাম পরিবর্তন করুন' },
+  nameLabel: { en:'Name', bn:'নাম' },
+  namePlaceholderPerson: { en:'e.g. Karim Mia', bn:'যেমনঃ করিম মিয়া' },
+  namePlaceholderCategory: { en:'e.g. Groceries', bn:'যেমনঃ বাজার খরচ' },
+
+  newLoanEntryTitle: { en:'Add new loan entry', bn:'নতুন হিসাব যোগ করুন' },
+  editLoanEntryTitle: { en:'Edit loan entry', bn:'হিসাব সম্পাদনা' },
+  entryType: { en:'Type', bn:'ধরন' },
+  gaveMoney: { en:'Gave money', bn:'টাকা দিলাম' },
+  gotMoney: { en:'Got money', bn:'টাকা পেলাম' },
+  amountLabel: { en:'Amount (৳) — you can calculate, e.g. 500+200', bn:'পরিমাণ (৳) — সরাসরি লিখুন, অথবা হিসাব করতে যেমনঃ 500+200-50' },
+  amountLabelSimple: { en:'Amount (৳) — you can calculate, e.g. 500+200', bn:'পরিমাণ (৳) — হিসাব করতে যেমনঃ 500+200' },
+  dateLabel: { en:'Date', bn:'তারিখ' },
+  noteLabel: { en:'Note (optional)', bn:'নোট (ঐচ্ছিক)' },
+  notePlaceholder: { en:'e.g. money for groceries', bn:'যেমনঃ বাজারের জন্য টাকা' },
+  noteDetailsPlaceholder: { en:'Write details', bn:'বিস্তারিত লিখুন' },
+
+  newIncomeEntry: { en:'Add new income entry', bn:'নতুন আয় এন্ট্রি' },
+  editIncomeEntry: { en:'Edit income entry', bn:'আয় এন্ট্রি সম্পাদনা' },
+  incomeNamePlaceholder: { en:'e.g. Salary', bn:'যেমনঃ বেতন' },
+
+  newExpenseTitle: { en:'Add new expense', bn:'নতুন খরচ যোগ করুন' },
+  editExpenseTitle: { en:'Edit expense', bn:'খরচ সম্পাদনা' },
+  categoryLabel: { en:'Category', bn:'খাত' },
+  addNewCategoryOption: { en:'+ Add new category', bn:'+ নতুন খাত যোগ করুন' },
+  newCategoryNameLabel: { en:'New category name', bn:'নতুন খাতের নাম' },
+
+  confirmDeletePersonTitle: { en:'Delete this person?', bn:'ব্যক্তি মুছে ফেলবেন?' },
+  confirmDeletePersonMsg: { en:'All their loan entries will also be deleted. This cannot be undone.', bn:'এই ব্যক্তির সব হিসাবও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  confirmDeleteEntryTitle: { en:'Delete this entry?', bn:'হিসাব মুছে ফেলবেন?' },
+  confirmDeleteEntryMsg: { en:'This entry will be permanently deleted.', bn:'এই এন্ট্রিটি স্থায়ীভাবে মুছে যাবে।' },
+  confirmDeleteIncomeTitle: { en:'Delete this income entry?', bn:'আয় এন্ট্রি মুছে ফেলবেন?' },
+  confirmDeleteCategoryTitle: { en:'Delete this category?', bn:'খাত মুছে ফেলবেন?' },
+  confirmDeleteCategoryMsg: { en:'All expense entries in this category will also be deleted. This cannot be undone.', bn:'এই খাতের সব খরচ এন্ট্রিও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  confirmDeleteExpenseTitle: { en:'Delete this expense entry?', bn:'খরচের এন্ট্রি মুছে ফেলবেন?' },
+  yesDelete: { en:'Yes, delete', bn:'হ্যাঁ, মুছুন' },
+  noKeep: { en:'No, keep it', bn:'না, থাক' },
+
+  noPermission: { en:'You don\'t have permission for this', bn:'আপনার এই কাজের অনুমতি নেই' },
+  entryAdded: { en:'Entry added', bn:'হিসাব যোগ হয়েছে' },
+  entryUpdated: { en:'Entry updated', bn:'হিসাব পরিবর্তন হয়েছে' },
+  deletedToast: { en:'Deleted', bn:'মুছে ফেলা হয়েছে' },
+  personAdded: { en:'Person added', bn:'ব্যক্তি যোগ হয়েছে' },
+  nameChanged: { en:'Name updated', bn:'নাম পরিবর্তন হয়েছে' },
+  enterName: { en:'Please enter a name', bn:'নাম লিখুন' },
+  enterValidAmount: { en:'Please enter a valid amount', bn:'সঠিক পরিমাণ লিখুন' },
+  calcError: { en:'Invalid calculation — only numbers and + - * / allowed', bn:'হিসাবটি সঠিক নয় — শুধু সংখ্যা ও + - * / চিহ্ন ব্যবহার করুন' },
+  calcResultSet: { en:'Result filled in', bn:'ফলাফল বসানো হয়েছে' },
+
+  confirmLogoutTitle: { en:'Log out?', bn:'লগআউট করবেন?' },
+  confirmLogoutMsg: { en:'You will need to log in again with your username and password.', bn:'আবার ঢুকতে হলে ইউজারনেম ও পাসওয়ার্ড দিয়ে লগইন করতে হবে।' },
+  confirmDeleteUserTitle: { en:'Delete this user?', bn:'ইউজার মুছে ফেলবেন?' },
+  confirmDeleteUserMsg: { en:'will be permanently deleted. This cannot be undone.', bn:'ইউজারটি মুছে ফেলা হবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+
+  individualDataPrivateNote: { en:'This user\'s data is private — admin cannot view it', bn:'এই ইউজারের ডেটা ব্যক্তিগত — অ্যাডমিন দেখতে পারবে না' },
+  makeViewOnly: { en:'Make view-only', bn:'ভিউ-অনলি করুন' },
+  makeEditor: { en:'Make editor', bn:'এডিট দিন' },
+  changeUserPassword: { en:'Change password', bn:'পাসওয়ার্ড পরিবর্তন' },
+  userList: { en:'User list', bn:'ইউজার তালিকা' },
+  newUser: { en:'New user', bn:'নতুন ইউজার' },
+  noUsersYet: { en:'No users created yet.', bn:'এখনও কোনো ইউজার তৈরি করা হয়নি।' },
+
+  oldPasswordTitle: { en:'Enter old password', bn:'পুরাতন পাসওয়ার্ড দিন' },
+  oldPasswordDesc: { en:'For security, first enter your current password.', bn:'নিরাপত্তার জন্য আগে আপনার বর্তমান পাসওয়ার্ড দিন।' },
+  adminResetDesc: { en:'For security, first enter your own (admin) password.', bn:'নিরাপত্তার জন্য আগে আপনার (অ্যাডমিনের) নিজের পাসওয়ার্ড দিন।' },
+  oldPasswordLabel: { en:'Old password (4 digits)', bn:'পুরাতন পাসওয়ার্ড (৪ ডিজিট)' },
+  yourAdminPasswordLabel: { en:'Your admin password (4 digits)', bn:'আপনার অ্যাডমিন পাসওয়ার্ড (৪ ডিজিট)' },
+  next: { en:'Next', bn:'পরবর্তী' },
+  newPasswordTitle: { en:'Enter new password', bn:'নতুন পাসওয়ার্ড দিন' },
+  newPasswordLabel: { en:'New password (4 digits)', bn:'নতুন পাসওয়ার্ড (৪ ডিজিট)' },
+  newPasswordAgainLabel: { en:'Re-enter new password', bn:'নতুন পাসওয়ার্ড আবার লিখুন' },
+  passwordChangedToast: { en:'Password changed', bn:'পাসওয়ার্ড পরিবর্তন হয়েছে' },
+  wrongPasswordErr: { en:'Password is incorrect', bn:'পাসওয়ার্ড সঠিক নয়' },
+  enter4DigitPassword: { en:'Enter a 4-digit password', bn:'৪ ডিজিটের পাসওয়ার্ড দিন' },
+  bothPasswordsMustMatch: { en:'Enter the same 4-digit password in both fields', bn:'দুই জায়গাতেই ৪ ডিজিটের পাসওয়ার্ড দিন' },
+  passwordsMustMatch: { en:'Passwords must match', bn:'নতুন পাসওয়ার্ড দুইবার একই দিন' },
+  createNewUserTitle: { en:'Create new user', bn:'নতুন ইউজার তৈরি করুন' },
+  createNewAdminTitle: { en:'Create new admin', bn:'নতুন অ্যাডমিন তৈরি করুন' },
+  usernameLabel: { en:'Username', bn:'ইউজারনেম' },
+  usernamePlaceholderExample: { en:'e.g. Rahim', bn:'যেমনঃ রহিম' },
+  accessLabel: { en:'Access', bn:'অ্যাক্সেস' },
+  accessEditor: { en:'Edit', bn:'এডিট' },
+  accessViewer: { en:'View only', bn:'শুধু ভিউ' },
+  accessIndividual: { en:'Individual', bn:'ইনডিভিজুয়াল' },
+  individualHint: { en:'An individual user\'s data is completely separate and private — no one else, including the admin, can see it.', bn:'ইনডিভিজুয়াল ইউজারের ডেটা সম্পূর্ণ আলাদা ও ব্যক্তিগত থাকবে — অ্যাডমিনসহ অন্য কেউ এই ডেটা দেখতে পারবে না।' },
+  create: { en:'Create', bn:'তৈরি করুন' },
+  usernameTaken: { en:'This username already exists', bn:'এই ইউজারনেম আগে থেকেই আছে' },
+  newAdminCreatedToast: { en:'New admin created', bn:'নতুন অ্যাডমিন তৈরি হয়েছে' },
+  newUserCreatedToast: { en:'New user created', bn:'নতুন ইউজার তৈরি হয়েছে' },
+  confirmWithPasswordTitle: { en:'Confirm with password', bn:'পাসওয়ার্ড দিয়ে নিশ্চিত করুন' },
+  confirmWithPasswordDesc: { en:'Enter your password to confirm this action.', bn:'এই কাজটি করতে আপনার পাসওয়ার্ড দিন।' },
+  enterUsername: { en:'Please enter a username', bn:'ইউজারনেম লিখুন' },
+  confirmBtn: { en:'Confirm', bn:'নিশ্চিত করুন' },
+
+  loadFailedToast: { en:'Check your internet connection — could not load data', bn:'ইন্টারনেট সংযোগ পরীক্ষা করুন — ডেটা লোড করা যায়নি' },
+  saveFailedToast: { en:'Save failed — check your internet connection', bn:'সংরক্ষণে সমস্যা হয়েছে — ইন্টারনেট সংযোগ পরীক্ষা করুন' },
+  categoryNameTaken: { en:'A category with this name already exists', bn:'এই নামে খাত আগে থেকেই আছে' },
+  categoryAdded: { en:'Category added', bn:'খাত যোগ হয়েছে' },
+  categoryRenamed: { en:'Category renamed', bn:'খাতের নাম পরিবর্তন হয়েছে' },
+  noGaveEntriesToConvert: { en:'This person has no "gave" entries — nothing to convert to expense', bn:'এই ব্যক্তির কোনো "দিলাম" এন্ট্রি নেই — খরচে রূপান্তর করার কিছু নেই' },
+  convertedToExpense: { en:'Converted to expense', bn:'খরচে রূপান্তরিত হয়েছে' },
+  categoryDeleted: { en:'Category deleted', bn:'খাত মুছে ফেলা হয়েছে' },
+  enterCategoryName: { en:'Please enter a category name', bn:'খাতের নাম লিখুন' },
+  pickACategory: { en:'Please pick a category', bn:'একটা খাত বেছে নিন' },
+  expenseAdded: { en:'Expense added', bn:'খরচ যোগ হয়েছে' },
+  expenseUpdated: { en:'Expense updated', bn:'খরচ পরিবর্তন হয়েছে' },
+  reportDownloaded: { en:'Report downloaded — open the file and use Print > Save as PDF', bn:'রিপোর্ট ডাউনলোড হয়েছে — ফাইলটি খুলে Print > Save as PDF করুন' },
+  checkInternet: { en:'Check your internet connection', bn:'ইন্টারনেট সংযোগ পরীক্ষা করুন' },
+  enterUsernameFirst: { en:'Please enter your username first', bn:'আগে ইউজারনেম লিখুন' },
+  wrongLoginErr: { en:'Username or password is incorrect, try again', bn:'ইউজারনেম অথবা পাসওয়ার্ড সঠিক নয়, আবার চেষ্টা করুন' },
+  userDeleted: { en:'User deleted', bn:'ইউজার মুছে ফেলা হয়েছে' },
+  loadingText: { en:'Loading...', bn:'লোড হচ্ছে...' },
+
+  loanSectionTitle: { en:'Loans', bn:'ধার-দেনা' },
+  incomeExpenseSectionTitle: { en:'Income & Expense', bn:'আয় ও খরচ' },
+  totalReceivable: { en:'Total to receive', bn:'মোট পাবেন' },
+  totalPayable: { en:'Total to give', bn:'মোট দিবেন' },
+  netTotalLabel: { en:'Overall net balance', bn:'সব মিলিয়ে নিট হিসাব' },
+  personBasedLabel: { en:'Per-person ledger', bn:'ব্যক্তিভিত্তিক হিসাব' },
+  noPersonsAtAll: { en:'No one added yet.', bn:'এখনও কোনো ব্যক্তি নেই।' },
+  noOneFound: { en:'No one found.', bn:'কেউ পাওয়া যায়নি।' },
+  createExpenseCatFirst: { en:'Expense', bn:'খরচ' },
+
+  pdfHintText: { en:'To make a PDF from this file, open it in a browser and press Ctrl+P (or the share/print icon on mobile), then choose "Save as PDF".', bn:'এই ফাইলটি থেকে PDF বানাতে চাইলে ব্রাউজারে এই ফাইল খুলে Ctrl+P (বা মোবাইলে শেয়ার/প্রিন্ট আইকন) চেপে "Save as PDF" বেছে নিন।' },
+  reportGeneratedOn: { en:'Report generated on', bn:'রিপোর্ট তৈরির তারিখঃ' },
+  grandTotalLoan: { en:'Grand total', bn:'সর্বমোট হিসাবঃ' },
+  reportDateCol: { en:'Date', bn:'তারিখ' },
+  reportTypeCol: { en:'Type', bn:'ধরন' },
+  reportAmountCol: { en:'Amount', bn:'পরিমাণ' },
+  reportNoteCol: { en:'Note', bn:'নোট' },
+  reportNoEntries: { en:'No entries', bn:'কোনো এন্ট্রি নেই' },
+  reportNameCol: { en:'Name', bn:'নাম' },
+  reportStatusCol: { en:'Status', bn:'অবস্থা' },
+  reportNoPersons: { en:'No persons', bn:'কোনো ব্যক্তি নেই' },
+  summaryReportTitle: { en:'Hisab Khata — Summary Report', bn:'হিসাব খাতা — সারসংক্ষেপ রিপোর্ট' },
+  personFallback: { en:'Person', bn:'ব্যক্তি' },
+  categoryFallback: { en:'Category', bn:'খাত' },
+  noPagePermission: { en:'You don\'t have permission to view this page.', bn:'আপনার এই পাতা দেখার অনুমতি নেই।' },
+
+  navAge: { en:'HP', bn:'HP' },
+  healthProfileTab: { en:'Health Profile', bn:'হেলথ প্রোফাইল' },
+  ageCalcTitle: { en:'Tasks / Health Profile', bn:'Tasks / Health Profile' },
+  ageCalcSub: { en:'', bn:'' },
+  noAgeEntriesYet: { en:'No entries yet', bn:'এখনও কোনো এন্ট্রি নেই' },
+  noAgeEntriesDesc: { en:'Tap + below to add a name and date to track its age.', bn:'নিচের + বাটনে চেপে একটা নাম ও তারিখ যোগ করুন, তার বয়স দেখতে।' },
+  confirmDeleteAgeTitle: { en:'Delete this entry?', bn:'এন্ট্রি মুছে ফেলবেন?' },
+  pickADate: { en:'Please pick a date', bn:'একটা তারিখ বেছে নিন' },
+  newAgeEntryTitle: { en:'Add new entry', bn:'নতুন এন্ট্রি যোগ করুন' },
+  editAgeEntryTitle: { en:'Edit entry', bn:'এন্ট্রি সম্পাদনা' },
+  taskTab: { en:'Task', bn:'টাস্ক' },
+  ageTab: { en:'Age', bn:'বয়স' },
+  sectionLabel: { en:'Section', bn:'সেকশন' },
+
+  noProfilesYet: { en:'No health profiles yet', bn:'এখনও কোনো হেলথ প্রোফাইল নেই' },
+  noProfilesDesc: { en:'Tap + below to create your first health profile.', bn:'নিচের + বাটনে চেপে প্রথম হেলথ প্রোফাইল তৈরি করুন।' },
+  newProfileTitle: { en:'Create new profile', bn:'নতুন প্রোফাইল তৈরি করুন' },
+  editProfileTitle: { en:'Edit profile', bn:'প্রোফাইল সম্পাদনা' },
+  dateOLabel: { en:'Date O', bn:'তারিখ O' },
+  dateCLabel: { en:'Date C', bn:'তারিখ C' },
+  genderLabel: { en:'Gender', bn:'লিঙ্গ' },
+  genderMale: { en:'Male', bn:'পুরুষ' },
+  genderFemale: { en:'Female', bn:'মহিলা' },
+  genderOther: { en:'Other', bn:'অন্যান্য' },
+  bloodGroupLabel: { en:'Blood Group', bn:'রক্তের গ্রুপ' },
+  heightLabel: { en:'Height', bn:'উচ্চতা' },
+  weightLabel: { en:'Weight', bn:'ওজন' },
+  editProfile: { en:'Edit profile', bn:'প্রোফাইল সম্পাদনা' },
+  deleteProfile: { en:'Delete profile', bn:'প্রোফাইল মুছুন' },
+  confirmDeleteProfileTitle: { en:'Delete this profile?', bn:'প্রোফাইল মুছে ফেলবেন?' },
+  confirmDeleteProfileMsg: { en:'All weight records under this profile will also be deleted. This cannot be undone.', bn:'এই প্রোফাইলের সব ওজনের রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  weightChartTitle: { en:'Weight (KG)', bn:'ওজন (কেজি)' },
+  bmiChartTitle: { en:'BMI', bn:'BMI' },
+  weightEntriesTitle: { en:'Weight entries', bn:'ওজনের এন্ট্রি' },
+  noWeightEntriesYet: { en:'No weight entries yet. Tap + to add one.', bn:'এখনও কোনো ওজনের এন্ট্রি নেই। + বাটনে চেপে যোগ করুন।' },
+  noChartData: { en:'Not enough data for a chart yet', bn:'চার্ট দেখানোর জন্য যথেষ্ট ডেটা নেই' },
+  currentBmiLabel: { en:'Current BMI', bn:'বর্তমান BMI' },
+  noWeightForBmi: { en:'Add a weight entry to see BMI', bn:'BMI দেখতে একটা ওজনের এন্ট্রি যোগ করুন' },
+  bmi_underweight: { en:'UNDERWEIGHT', bn:'কম ওজন' },
+  bmi_healthy: { en:'HEALTHY', bn:'স্বাস্থ্যকর' },
+  bmi_overweight: { en:'OVERWEIGHT', bn:'অতিরিক্ত ওজন' },
+  bmi_obese: { en:'OBESE', bn:'স্থূল' },
+  bmi_extremelyObese: { en:'EXTREMELY OBESE', bn:'অতিমাত্রায় স্থূল' },
+  newWeightTitle: { en:'Add weight entry', bn:'নতুন ওজন এন্ট্রি' },
+  editWeightTitle: { en:'Edit weight entry', bn:'ওজন এন্ট্রি সম্পাদনা' },
+  weightKgLabel: { en:'Weight (kg)', bn:'ওজন (কেজি)' },
+  confirmDeleteWeightTitle: { en:'Delete this weight entry?', bn:'ওজনের এন্ট্রি মুছে ফেলবেন?' },
+  profileNotFoundErr: { en:'Profile not found — please go back and try again', bn:'প্রোফাইল খুঁজে পাওয়া যায়নি — ফিরে গিয়ে আবার চেষ্টা করুন' },
+  unexpectedErr: { en:'Something went wrong', bn:'একটা সমস্যা হয়েছে' },
+  healthyWeightRangeLabel: { en:'Healthy Weight Range', bn:'স্বাস্থ্যকর ওজনের সীমা' },
+  needToLose: { en:'Need to lose', bn:'কমাতে হবে' },
+  needToGain: { en:'Need to gain', bn:'বাড়াতে হবে' },
+  alreadyHealthy: { en:'You are within a healthy weight range', bn:'আপনার ওজন স্বাস্থ্যকর সীমার মধ্যে আছে' },
+
+  msTab: { en:'M.S.', bn:'M.S.' },
+  noMedicinesYet: { en:'No medicines added yet', bn:'এখনও কোনো ঔষধ যোগ করা হয়নি' },
+  noMedicinesDesc: { en:'Tap + below to add your first medicine.', bn:'নিচের + বাটনে চেপে প্রথম ঔষধ যোগ করুন।' },
+  presentStock: { en:'Present Stock', bn:'বর্তমান স্টক' },
+  runsOutIn: { en:'runs out in', bn:'শেষ হবে' },
+  daysUnit: { en:'days', bn:'দিনে' },
+  activeStatus: { en:'Active', bn:'একটিভ' },
+  deactiveStatus: { en:'Deactive', bn:'ডিএকটিভ' },
+  newMedicineTitle: { en:'Add new medicine', bn:'নতুন ঔষধ যোগ করুন' },
+  editMedicineTitle: { en:'Edit medicine', bn:'ঔষধ সম্পাদনা' },
+  medicineNameLabel: { en:'Medicine Name', bn:'ঔষধের নাম' },
+  medicineNamePlaceholder: { en:'e.g. Napa 500mg', bn:'যেমনঃ নাপা ৫০০মিগ্রা' },
+  medicineDetailsLabel: { en:'Details', bn:'বিস্তারিত' },
+  pricePerPcsLabel: { en:'Per pcs price', bn:'প্রতি পিস দাম' },
+  intervalDaysLabel: { en:'Consumption Interval (days)', bn:'সেবনের বিরতি (দিন)' },
+  nextConsumptionDateLabel: { en:'Next Consumption Date', bn:'পরবর্তী সেবনের তারিখ' },
+  consumptionPcsLabel: { en:'Consumption (pcs)', bn:'সেবনের পরিমাণ (পিস)' },
+  consumptionAmountLabel: { en:'Consumption Amount', bn:'সেবনের খরচ' },
+  lastThreeMonthIncome: { en:'Last Three Month Income', bn:'গত তিন মাসের আয়' },
+  lastThreeMonthExpense: { en:'Last Three Month Expense', bn:'গত তিন মাসের খরচ' },
+  lastFourMonthSummaryTitle: { en:'Last Four Month Summary', bn:'গত চার মাসের সারসংক্ষেপ' },
+  balanceRowLabel: { en:'Balance', bn:'ব্যালেন্স' },
+  confirmDeleteMedicineTitle: { en:'Delete this medicine?', bn:'ঔষধ মুছে ফেলবেন?' },
+  confirmDeleteMedicineMsg: { en:'All stock records under this medicine will also be deleted. This cannot be undone.', bn:'এই ঔষধের সব স্টক রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
+  activatedToast: { en:'Activated', bn:'একটিভ করা হয়েছে' },
+  deactivatedToast: { en:'Deactivated', bn:'ডিএকটিভ করা হয়েছে' },
+  editMedicine: { en:'Edit medicine', bn:'ঔষধ সম্পাদনা' },
+  deleteMedicine: { en:'Delete medicine', bn:'ঔষধ মুছুন' },
+  stockRecordsTitle: { en:'Stock & Consumption Records', bn:'স্টক ও সেবনের রেকর্ড' },
+  noRecordsYet: { en:'No records yet.', bn:'এখনও কোনো রেকর্ড নেই।' },
+  stockAddedLabel: { en:'Stock Added', bn:'স্টক যোগ হয়েছে' },
+  consumedLabel: { en:'Consumed', bn:'সেবন হয়েছে' },
+  autoLabel: { en:'auto', bn:'অটো' },
+  addStockTitle: { en:'Add stock', bn:'স্টক যোগ করুন' },
+  editRecordTitle: { en:'Edit record', bn:'রেকর্ড সম্পাদনা' },
+  pcsLabel: { en:'Pcs', bn:'পিস' },
+  confirmDeleteRecordTitle: { en:'Delete this record?', bn:'রেকর্ড মুছে ফেলবেন?' },
+  avgIncomeLegend: { en:'Avg income', bn:'গড় আয়' },
+  avgExpenseLegend: { en:'Avg expense', bn:'গড় খরচ' },
+
+  totalIncomeAllCats: { en:'Total income (all categories)', bn:'মোট আয় (সব খাত মিলিয়ে)' },
+  noIncomeCategoriesYet: { en:'No income categories yet', bn:'এখনও কোনো আয়ের খাত নেই' },
+  noIncomeCategoriesDesc: { en:'Tap + below to add your first income category (e.g. salary, business).', bn:'নিচের + বাটনে চেপে প্রথম আয়ের খাত (যেমনঃ বেতন, ব্যবসা) যোগ করুন।' },
+  incomeEntries: { en:'Income entries', bn:'আয়ের এন্ট্রি' },
+
+  convertConfirmTitle: { en:'Convert to Expense?', bn:'খরচ (Expense)-এ রূপান্তর করবেন?' },
+  convertMsgPart1: { en:'{count} "gave" entries for "{name}" will be moved to the Expense list, each under the category "{name}". This person will then be removed from the Loans list.', bn:'"{name}"-এর {count} টি "দিলাম" এন্ট্রি খরচ (Expense) তালিকায় নিয়ে যাওয়া হবে, প্রতিটার নাম হবে "{name}"। এরপর এই ব্যক্তিটি ধার-দেনার তালিকা থেকে মুছে যাবে।' },
+  convertMsgPart2: { en:'⚠️ This person also has {count} "got" entries — since those aren\'t expenses, they will be discarded and deleted.', bn:'⚠️ এই ব্যক্তির {count} টি "পেলাম" এন্ট্রি আছে — সেগুলো খরচ না হওয়ায় বাদ দেওয়া হবে এবং মুছে যাবে।' },
+} ;
+
+
+function t(key){
+  const entry = T[key];
+  if(!entry) return key;
+  return entry[appLang] || entry.bn;
+}
+
+function setLang(lang){
+  appLang = lang;
+  try{ localStorage.setItem('hisabKhataLang', lang); }catch(e){}
+  if(lock.status === 'unlocked'){ render(); } else { renderLock(); }
+}
+
+function canEdit(){
+  return !!state.currentUser && (state.currentUser.role === 'admin' || state.currentUser.role === 'editor' || state.currentUser.role === 'individual');
+}
+function isAdmin(){
+  return !!state.currentUser && state.currentUser.role === 'admin';
+}
+function isIndividual(){
+  return !!state.currentUser && state.currentUser.role === 'individual';
+}
+function dataPath(){
+  if(isIndividual()){
+    return 'hisabKhata/individualData/' + encodeURIComponent(state.currentUser.username);
+  }
+  return 'hisabKhata/ledgerData';
+}
+
+function requestPasswordConfirm(onSuccess){
+  state.pwConfirmModal = { entry:'', error:'', onSuccess };
+  render();
+}
+
+function closePwConfirm(){
+  state.pwConfirmModal = null;
+  render();
+}
+
+function submitPwConfirm(){
+  const m = state.pwConfirmModal;
+  if(!m) return;
+  if(m.entry.length !== 4){ m.error = t('enter4DigitPassword'); render(); return; }
+  if(m.entry !== state.currentUser.password){
+    m.error = t('wrongPasswordErr');
+    m.entry = '';
+    render();
+    return;
+  }
+  const action = m.onSuccess;
+  state.pwConfirmModal = null;
+  action();
+}
+
+function renderPwConfirmModal(){
+  const m = state.pwConfirmModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closePwConfirm()">
+      <div class="sheet">
+        <h2 class="serif">${t('confirmWithPasswordTitle')}</h2>
+        <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">${t('confirmWithPasswordDesc')}</p>
+        <div class="field">
+          <label>${t('newPasswordLabel')}</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.entry)}" oninput="state.pwConfirmModal.entry=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="pin-error">${m.error||''}</div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closePwConfirm()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="submitPwConfirm()">${t('confirmBtn')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function todayStr(){
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return local.toISOString().slice(0,10);
+}
+
+function fmtAmt(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + '৳' + Math.abs(n).toLocaleString('en-IN');
+}
+
+const MONTHS_BN = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টে','অক্টো','নভে','ডিসে'];
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso){
+  const [y,m,d] = iso.split('-');
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  return d + ' ' + MONTHS[parseInt(m,10)-1] + ' ' + y;
+}
+
+const FB_BASE = "https://hisab-khata-fabi-default-rtdb.asia-southeast1.firebasedatabase.app";
+const FB_API_KEY = "AIzaSyAW59wLxDrloAF_90WMANd3bxvhCcXKKnI";
+let fbAuth = { idToken: null, refreshToken: null, expiresAt: 0 };
+
+async function ensureFirebaseAuth(){
+  const now = Date.now();
+  if(fbAuth.idToken && now < fbAuth.expiresAt - 60000){
+    return fbAuth.idToken;
+  }
+  if(fbAuth.refreshToken){
+    try{
+      const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `grant_type=refresh_token&refresh_token=${fbAuth.refreshToken}`
+      });
+      if(res.ok){
+        const d = await res.json();
+        fbAuth.idToken = d.id_token;
+        fbAuth.refreshToken = d.refresh_token;
+        fbAuth.expiresAt = Date.now() + (parseInt(d.expires_in) * 1000);
+        return fbAuth.idToken;
+      }
+    }catch(e){}
+  }
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ returnSecureToken: true })
+  });
+  if(!res.ok) throw new Error('firebase auth failed');
+  const d = await res.json();
+  fbAuth.idToken = d.idToken;
+  fbAuth.refreshToken = d.refreshToken;
+  fbAuth.expiresAt = Date.now() + (parseInt(d.expiresIn) * 1000);
+  return fbAuth.idToken;
+}
+
+async function fbGet(path){
+  const token = await ensureFirebaseAuth();
+  const res = await fetch(`${FB_BASE}/${path}.json?auth=${token}`);
+  if(!res.ok) throw new Error('fb get failed');
+  return await res.json();
+}
+
+async function fbSet(path, value){
+  const token = await ensureFirebaseAuth();
+  const res = await fetch(`${FB_BASE}/${path}.json?auth=${token}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(value)
+  });
+  if(!res.ok) throw new Error('fb set failed');
+  return true;
+}
+
+async function loadData(){
+  try{
+    const parsed = await fbGet(dataPath());
+    if(parsed){
+      data.persons = parsed.persons || [];
+      data.transactions = parsed.transactions || [];
+      data.income = parsed.income || [];
+      data.expenses = parsed.expenses || [];
+      data.expenseCategories = parsed.expenseCategories || [];
+      data.incomeCategories = parsed.incomeCategories || [];
+      data.ageEntries = parsed.ageEntries || [];
+      data.healthProfiles = parsed.healthProfiles || [];
+      data.medicines = parsed.medicines || [];
+    }else{
+      data.persons = [];
+      data.transactions = [];
+      data.income = [];
+      data.expenses = [];
+      data.expenseCategories = [];
+      data.incomeCategories = [];
+      data.ageEntries = [];
+      data.healthProfiles = [];
+      data.medicines = [];
+    }
+    migrateOldFlatEntries('expense');
+    migrateOldFlatEntries('income');
+    const consumed = processMedicineConsumption();
+    if(consumed) await saveData();
+  }catch(e){
+    showToast(t('loadFailedToast'));
+  }
+}
+
+function migrateOldFlatEntries(kind){
+  const entries = kind==='income' ? data.income : data.expenses;
+  const needsMigration = entries.some(e => e.name && !e.categoryId);
+  if(!needsMigration) return;
+  const cats = kind==='income' ? data.incomeCategories : data.expenseCategories;
+  const fallbackName = kind==='income' ? t('tabIncome') : t('tabExpense');
+  const migrated = entries.map(e=>{
+    if(e.categoryId) return e;
+    let cat = cats.find(c=>c.name.toLowerCase() === (e.name||'').toLowerCase());
+    if(!cat){
+      cat = { id: uid(), name: e.name || fallbackName };
+      cats.push(cat);
+    }
+    return { id: e.id, categoryId: cat.id, amount: e.amount, date: e.date, note: e.note||'', createdAt: e.createdAt || Date.now() };
+  });
+  if(kind==='income'){ data.income = migrated; } else { data.expenses = migrated; }
+  saveData();
+}
+
+async function saveData(){
+  try{
+    await fbSet(dataPath(), data);
+  }catch(e){
+    showToast(t('saveFailedToast'));
+  }
+}
+
+function personBalance(personId){
+  let bal = 0;
+  data.transactions.forEach(t=>{
+    if(t.personId === personId){
+      bal += t.type === 'gave' ? t.amount : -t.amount;
+    }
+  });
+  return bal;
+}
+
+function personTxns(personId){
+  return data.transactions
+    .filter(t=>t.personId===personId)
+    .sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+}
+
+function showToast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1800);
+}
+
+function setView(v, id){
+  state.view = v;
+  state.personId = id || null;
+  state.txnFilter = 'all';
+  render();
+}
+
+function setSearchQuery(val){
+  state.searchQuery = val;
+  render();
+  const input = document.getElementById('search-input');
+  if(input){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+}
+
+function setTxnFilter(f){
+  state.txnFilter = f;
+  render();
+}
+
+function openAddPerson(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.personModal = { mode:'add', name:'' };
+  render();
+}
+
+function openEditPerson(personId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const p = data.persons.find(x=>x.id===personId);
+    state.personModal = { mode:'edit', id:personId, name:p.name };
+    render();
+  });
+}
+
+function closePersonModal(){
+  state.personModal = null;
+  render();
+}
+
+async function savePersonModal(){
+  const input = document.getElementById('person-name-input');
+  const name = input.value.trim();
+  if(!name){ showToast(t('enterName')); return; }
+  const m = state.personModal;
+  const mode = m.mode;
+  if(mode === 'add'){
+    data.persons.push({ id: uid(), name });
+    showToast(t('personAdded'));
+  }else if(mode === 'edit'){
+    const p = data.persons.find(x=>x.id===m.id);
+    p.name = name;
+    showToast(t('nameChanged'));
+  }else if(mode === 'add-cat'){
+    const cats = catsFor(m.kind);
+    const dup = cats.find(c=>c.name.toLowerCase()===name.toLowerCase());
+    if(dup){ showToast(t('categoryNameTaken')); return; }
+    cats.push({ id: uid(), name });
+    showToast(t('categoryAdded'));
+  }else if(mode === 'edit-cat'){
+    const c = catsFor(m.kind).find(x=>x.id===m.id);
+    c.name = name;
+    showToast(t('categoryRenamed'));
+  }
+  await saveData();
+  state.personModal = null;
+  render();
+}
+
+function convertPersonToExpense(personId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  const p = data.persons.find(x=>x.id===personId);
+  if(!p) return;
+  const txns = data.transactions.filter(t=>t.personId===personId);
+  const gaveTxns = txns.filter(t=>t.type==='gave');
+  const gotTxns = txns.filter(t=>t.type==='got');
+
+  if(gaveTxns.length === 0){
+    showToast(t('noGaveEntriesToConvert'));
+    return;
+  }
+
+  requestPasswordConfirm(()=>{
+    let msg = t('convertMsgPart1').split('{name}').join(p.name).split('{count}').join(gaveTxns.length);
+    if(gotTxns.length > 0){
+      msg += ' ' + t('convertMsgPart2').split('{count}').join(gotTxns.length);
+    }
+    state.confirmModal = {
+      title: t('convertConfirmTitle'),
+      msg,
+      onYes: async ()=>{
+        let cat = data.expenseCategories.find(c=>c.name.toLowerCase()===p.name.toLowerCase());
+        if(!cat){
+          cat = { id: uid(), name: p.name };
+          data.expenseCategories.push(cat);
+        }
+        gaveTxns.forEach(t=>{
+          data.expenses.push({
+            id: uid(), categoryId: cat.id, amount: t.amount, date: t.date, note: t.note || '', createdAt: t.createdAt || Date.now()
+          });
+        });
+        data.persons = data.persons.filter(x=>x.id!==personId);
+        data.transactions = data.transactions.filter(t=>t.personId!==personId);
+        await saveData();
+        state.confirmModal = null;
+        state.category = 'expense';
+        setView('home');
+        showToast(t('convertedToExpense'));
+      }
+    };
+    render();
+  });
+}
+
+function confirmDeletePerson(personId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:t('confirmDeletePersonTitle'),
+      msg:t('confirmDeletePersonMsg'),
+      onYes: async ()=>{
+        data.persons = data.persons.filter(p=>p.id!==personId);
+        data.transactions = data.transactions.filter(t=>t.personId!==personId);
+        await saveData();
+        state.confirmModal = null;
+        setView('home');
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function openAddTxn(personId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.txnModal = { mode:'add', personId, type:'gave', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openEditTxn(txnId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const t = data.transactions.find(x=>x.id===txnId);
+    state.txnModal = { mode:'edit', id:txnId, personId:t.personId, type:t.type, amount:String(t.amount), date:t.date, note:t.note||'' };
+    render();
+  });
+}
+
+function closeTxnModal(){
+  state.txnModal = null;
+  render();
+}
+
+function setTxnType(type){
+  state.txnModal.type = type;
+  render();
+}
+
+function evaluateExpression(expr){
+  const cleaned = expr.trim();
+  if(!cleaned) return null;
+  if(!/^[0-9+\-*/.() \s]+$/.test(cleaned)) return null;
+  try{
+    const result = Function('"use strict"; return (' + cleaned + ')')();
+    if(typeof result !== 'number' || !isFinite(result)) return null;
+    return Math.round(result * 100) / 100;
+  }catch(e){
+    return null;
+  }
+}
+
+function calcFieldById(id){
+  const input = document.getElementById(id);
+  if(!input) return;
+  const result = evaluateExpression(input.value);
+  if(result === null){
+    showToast(t('calcError'));
+    return;
+  }
+  input.value = String(result);
+  showToast(t('calcResultSet'));
+}
+
+function calcAmountField(){
+  calcFieldById('txn-amount-input');
+}
+
+async function saveTxnModal(){
+  const amtInput = document.getElementById('txn-amount-input');
+  const dateInput = document.getElementById('txn-date-input');
+  const noteInput = document.getElementById('txn-note-input');
+  const amount = evaluateExpression(amtInput.value);
+  if(!amount || amount <= 0){ showToast(t('enterValidAmount')); return; }
+  const date = dateInput.value || todayStr();
+  const note = noteInput.value.trim();
+  const m = state.txnModal;
+  if(m.mode === 'add'){
+    data.transactions.push({
+      id: uid(), personId: m.personId, type: m.type,
+      amount, date, note, createdAt: Date.now()
+    });
+    showToast(t('entryAdded'));
+  }else{
+    const t = data.transactions.find(x=>x.id===m.id);
+    t.type = m.type; t.amount = amount; t.date = date; t.note = note;
+    showToast(t('entryUpdated'));
+  }
+  await saveData();
+  state.txnModal = null;
+  render();
+}
+
+function confirmDeleteTxn(txnId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:t('confirmDeleteEntryTitle'),
+      msg:t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        data.transactions = data.transactions.filter(t=>t.id!==txnId);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeConfirm(){
+  state.confirmModal = null;
+  if(lock.status !== 'unlocked'){ renderLock(); } else { render(); }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setCategory(cat){
+  state.category = cat;
+  state.searchQuery = '';
+  render();
+}
+
+function renderCategoryTabs(){
+  return `
+    <div class="cat-tabs">
+      <button class="cat-tab cat-loan ${state.category==='loan'?'active':''}" onclick="setCategory('loan')">${t('tabLoan')}</button>
+      <button class="cat-tab cat-income ${state.category==='income'?'active':''}" onclick="setCategory('income')">${t('tabIncome')}</button>
+      <button class="cat-tab cat-expense ${state.category==='expense'?'active':''}" onclick="setCategory('expense')">${t('tabExpense')}</button>
+    </div>`;
+}
+
+function renderHome(){
+  const tabs = renderCategoryTabs();
+  if(state.category === 'income') return tabs + renderCategoryList('income');
+  if(state.category === 'expense') return tabs + renderCategoryList('expense');
+  return tabs + renderLoanList();
+}
+
+function renderLoanList(){
+  let persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ persons = persons.filter(p=>p.name.toLowerCase().includes(q)); }
+
+  const searchHtml = `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="${t('searchByName')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>`;
+
+  if(data.persons.length===0){
+    return `
+      <div class="empty-state">
+        <div class="big">📒</div>
+        <h3 class="serif">${t('noPersonsYet')}</h3>
+        <p>${t('noPersonsDesc')}</p>
+      </div>`;
+  }
+  if(persons.length===0){
+    return searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noResultsFor')}</p></div>`;
+  }
+  const list = persons.map(p=>{
+    const bal = personBalance(p.id);
+    const cnt = data.transactions.filter(t=>t.personId===p.id).length;
+    let cls='zero', label=t('settled');
+    if(bal>0){cls='pos'; label=t('willReceive');}
+    else if(bal<0){cls='neg'; label=t('willGive');}
+    return `
+      <div class="person-card" style="border-left-color:var(--loan-blue);" onclick="setView('person','${p.id}')">
+        <div>
+          <div class="person-name">${escapeHtml(p.name)}</div>
+          <div class="person-meta">${cnt} ${t('entries')}</div>
+        </div>
+        <div>
+          <div class="balance ${cls}">${fmtAmt(Math.abs(bal))}</div>
+          <div class="balance-label ${cls}">${label}</div>
+        </div>
+      </div>`;
+  }).join('');
+  return searchHtml + list;
+}
+
+function monthKey(dateStr){
+  return dateStr.slice(0,7);
+}
+
+function countMonthsUpTo(entries){
+  if(!entries.length) return 1;
+  const dates = entries.map(e=>e.date).sort();
+  const first = new Date(dates[0] + 'T00:00:00');
+  const now = new Date();
+  let months = (now.getFullYear()-first.getFullYear())*12 + (now.getMonth()-first.getMonth()) + 1;
+  if(months < 1) months = 1;
+  if(months > 12) months = 12;
+  return months;
+}
+
+function countMonthsWithEntries(entries){
+  if(!entries.length) return 1;
+  const keys = new Set(entries.map(e=>monthKey(e.date)));
+  let count = keys.size;
+  if(count < 1) count = 1;
+  if(count > 12) count = 12;
+  return count;
+}
+
+function avgMonthlyUpTo(entries){
+  if(!entries.length) return 0;
+  const total = entries.reduce((s,e)=>s+e.amount, 0);
+  return total / countMonthsUpTo(entries);
+}
+
+function avgMonthlyOnlyEntry(entries){
+  if(!entries.length) return 0;
+  const total = entries.reduce((s,e)=>s+e.amount, 0);
+  return total / countMonthsWithEntries(entries);
+}
+
+function avgDaily(entries){
+  if(!entries.length) return 0;
+  const total = entries.reduce((s,e)=>s+e.amount, 0);
+  return total / (countMonthsUpTo(entries) * 30);
+}
+
+function calcMonthlyAverage(entries){
+  return avgMonthlyUpTo(entries);
+}
+
+function catsFor(kind){
+  return kind === 'income' ? data.incomeCategories : data.expenseCategories;
+}
+function entriesFor(kind){
+  return kind === 'income' ? data.income : data.expenses;
+}
+function kindColorClass(kind){
+  return kind === 'income' ? 'pos' : 'khoiri-txt';
+}
+function kindCssVar(kind){
+  return kind === 'income' ? 'var(--green)' : 'var(--khoiri)';
+}
+
+function categoryTotal(kind, categoryId){
+  return entriesFor(kind).filter(e=>e.categoryId===categoryId).reduce((s,e)=>s+e.amount, 0);
+}
+
+function categoryEntries(kind, categoryId){
+  return entriesFor(kind).filter(e=>e.categoryId===categoryId)
+    .sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+}
+
+function renderLastThreeMonthsCard(kind){
+  const now = new Date();
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  const months = [];
+  for(let i=0;i<3;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()]+'-'+String(d.getFullYear()).slice(-2) });
+  }
+  const entries = kind==='income' ? data.income : data.expenses;
+  const byMonth = {};
+  entries.forEach(e=>{ const k=monthKey(e.date); byMonth[k]=(byMonth[k]||0)+e.amount; });
+  const title = kind==='income' ? t('lastThreeMonthIncome') : t('lastThreeMonthExpense');
+  return `
+    <div class="l3m-card">
+      <div class="l3m-header">${title}</div>
+      <div class="l3m-row l3m-labels">
+        ${months.map((m,i)=>`<div class="l3m-cell">${i===0?'▶️ ':''}${m.label}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        ${months.map(m=>`<div class="l3m-cell">${Math.round(byMonth[m.key]||0).toLocaleString('en-IN')}</div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderLastFourMonthSummary(){
+  const now = new Date();
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  const months = [];
+  for(let i=0;i<4;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()]+'-'+String(d.getFullYear()).slice(-2) });
+  }
+  const incomeByMonth = {}, expenseByMonth = {};
+  data.income.forEach(i=>{ const k=monthKey(i.date); incomeByMonth[k]=(incomeByMonth[k]||0)+i.amount; });
+  data.expenses.forEach(e=>{ const k=monthKey(e.date); expenseByMonth[k]=(expenseByMonth[k]||0)+e.amount; });
+  return `
+    <div class="l3m-card">
+      <div class="l3m-header">${t('lastFourMonthSummaryTitle')}</div>
+      <div class="l3m-row l3m-labels">
+        <div class="l3m-cell" style="flex:0.75;"></div>
+        ${months.map((m,i)=>`<div class="l3m-cell">${i===0?'▶️ ':''}${m.label}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        <div class="l3m-cell" style="flex:0.75; font-weight:600; background:#F6EFDF;">${t('tabIncome')}</div>
+        ${months.map(m=>`<div class="l3m-cell" style="color:var(--green);">${Math.round(incomeByMonth[m.key]||0).toLocaleString('en-IN')}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        <div class="l3m-cell" style="flex:0.75; font-weight:600; background:#F6EFDF;">${t('tabExpense')}</div>
+        ${months.map(m=>`<div class="l3m-cell" style="color:var(--khoiri);">${Math.round(expenseByMonth[m.key]||0).toLocaleString('en-IN')}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        <div class="l3m-cell" style="flex:0.75; font-weight:600; background:#F6EFDF;">${t('balanceRowLabel')}</div>
+        ${months.map(m=>{
+          const bal = (incomeByMonth[m.key]||0) - (expenseByMonth[m.key]||0);
+          const color = bal>0?'var(--green)':bal<0?'var(--red)':'#000';
+          return `<div class="l3m-cell" style="color:${color};">${Math.round(bal).toLocaleString('en-IN')}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function renderCategoryList(kind){
+  const cats0 = catsFor(kind);
+  const entries0 = entriesFor(kind);
+  const colorClass = kindColorClass(kind);
+  const cssVar = kindCssVar(kind);
+  let cats = [...cats0].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ cats = cats.filter(c=>c.name.toLowerCase().includes(q)); }
+  const l3mCard = renderLastThreeMonthsCard(kind);
+
+  const searchHtml = cats0.length>0 ? `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="${t('searchByCategory')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>` : '';
+
+  const grandTotal = entries0.reduce((s,e)=>s+e.amount, 0);
+  const totalLabel = kind==='income' ? t('totalIncomeAllCats') : t('totalExpenseAllCats');
+  const totalCard = cats0.length>0 ? `
+    <div class="stat-card" style="margin-bottom:16px; text-align:center;">
+      <div class="label">${totalLabel}</div>
+      <div class="val ${colorClass}">${fmtAmt(grandTotal)}</div>
+    </div>` : '';
+
+  if(cats0.length===0){
+    const emptyTitle = kind==='income' ? t('noIncomeCategoriesYet') : t('noCategoriesYet');
+    const emptyDesc = kind==='income' ? t('noIncomeCategoriesDesc') : t('noCategoriesDesc');
+    return l3mCard + `
+      <div class="empty-state">
+        <div class="big">${kind==='income'?'💰':'🧾'}</div>
+        <h3 class="serif">${emptyTitle}</h3>
+        <p>${emptyDesc}</p>
+      </div>`;
+  }
+  if(cats.length===0){
+    return l3mCard + totalCard + searchHtml + `<div class="empty-state"><p>"${escapeHtml(state.searchQuery)}" ${t('noCategoryResultsFor')}</p></div>`;
+  }
+
+  const list = cats.map(c=>{
+    const total = categoryTotal(kind, c.id);
+    const cnt = entries0.filter(e=>e.categoryId===c.id).length;
+    return `
+      <div class="person-card" style="border-left-color:${cssVar};" onclick="setView('category','${c.id}'); state.category='${kind}';">
+        <div>
+          <div class="person-name">${escapeHtml(c.name)}</div>
+          <div class="person-meta">${cnt} ${t('entries')}</div>
+        </div>
+        <div>
+          <div class="balance ${colorClass}">${fmtAmt(total)}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  return l3mCard + totalCard + searchHtml + list;
+}
+
+function renderCategoryDetail(){
+  const kind = state.category;
+  const c = catsFor(kind).find(x=>x.id===state.personId);
+  if(!c) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
+  const total = categoryTotal(kind, c.id);
+  const entries = categoryEntries(kind, c.id);
+  const aDaily = avgDaily(entries);
+  const aUpTo = avgMonthlyUpTo(entries);
+  const aOnlyEntry = avgMonthlyOnlyEntry(entries);
+  const colorClass = kindColorClass(kind);
+  const amtClass = kind==='income' ? 'income' : 'expense';
+  const totalLabel = kind==='income' ? t('totalIncomeLabel') : t('totalExpense');
+
+  const entryHtml = entries.length===0
+    ? `<div class="empty-state"><p>${t('noEntriesInCategory')}</p></div>`
+    : entries.map(e=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div class="ie-date">${fmtDate(e.date)}</div>
+          <div class="ie-amt ${amtClass}">${fmtAmt(e.amount)}</div>
+        </div>
+        ${e.note ? `<div class="ie-note">${escapeHtml(e.note)}</div>` : ''}
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditCategoryEntry('${e.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteCategoryEntry('${e.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="stat-row-list">
+      <div class="stat-row">
+        <span class="stat-row-label">${totalLabel}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(total)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">${t('avgDaily')}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(Math.round(aDaily))}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">${t('avgMonthlyUpTo')}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(Math.round(aUpTo))}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-row-label">${t('avgMonthlyOnlyEntry')}</span>
+        <span class="stat-row-value ${colorClass}">${fmtAmt(Math.round(aOnlyEntry))}</span>
+      </div>
+    </div>
+    <div class="person-header-card">
+      <div class="name serif">${escapeHtml(c.name)}</div>
+      <div class="person-actions">
+        ${canEdit() ? `<span onclick="openEditCategory('${kind}','${c.id}')">${t('renameCategory')}</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeleteCategory('${kind}','${c.id}')">${t('deleteCategory')}</span>` : ''}
+      </div>
+    </div>
+    <div class="section-title">${kind==='income' ? t('incomeEntries') : t('expenseEntries')}</div>
+    ${entryHtml}
+  `;
+}
+
+function openAddCategory(kind){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.personModal = { mode:'add-cat', kind, name:'' };
+  render();
+}
+
+function openEditCategory(kind, id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const c = catsFor(kind).find(x=>x.id===id);
+    state.personModal = { mode:'edit-cat', kind, id, name:c.name };
+    render();
+  });
+}
+
+function confirmDeleteCategory(kind, id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title:t('confirmDeleteCategoryTitle'),
+      msg:t('confirmDeleteCategoryMsg'),
+      onYes: async ()=>{
+        if(kind==='income'){
+          data.incomeCategories = data.incomeCategories.filter(x=>x.id!==id);
+          data.income = data.income.filter(e=>e.categoryId!==id);
+        }else{
+          data.expenseCategories = data.expenseCategories.filter(x=>x.id!==id);
+          data.expenses = data.expenses.filter(e=>e.categoryId!==id);
+        }
+        await saveData();
+        state.confirmModal = null;
+        setView('home');
+        state.category = kind;
+        showToast(t('categoryDeleted'));
+      }
+    };
+    render();
+  });
+}
+
+function openAddCategoryEntry(categoryId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.entryModal = { mode:'add', id:null, kind: state.category, categoryId, isNewCategory:false, newCategoryName:'', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openQuickAddEntry(kind){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  const firstCat = catsFor(kind)[0];
+  state.entryModal = { mode:'add', id:null, kind, categoryId: firstCat ? firstCat.id : '__new__', isNewCategory: !firstCat, newCategoryName:'', amount:'', date: todayStr(), note:'' };
+  render();
+}
+
+function openEditCategoryEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const kind = state.category;
+    const e = entriesFor(kind).find(x=>x.id===id);
+    state.entryModal = { mode:'edit', id, kind, categoryId:e.categoryId, isNewCategory:false, newCategoryName:'', amount:String(e.amount), date:e.date, note:e.note||'' };
+    render();
+  });
+}
+
+function confirmDeleteCategoryEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const kind = state.category;
+    state.confirmModal = {
+      title: kind==='income' ? t('confirmDeleteIncomeTitle') : t('confirmDeleteExpenseTitle'),
+      msg:t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        if(kind==='income'){ data.income = data.income.filter(x=>x.id!==id); }
+        else{ data.expenses = data.expenses.filter(x=>x.id!==id); }
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeEntryModal(){
+  state.entryModal = null;
+  render();
+}
+
+function onEntryCategorySelectChange(val){
+  const m = state.entryModal;
+  if(!m) return;
+  if(val === '__new__'){
+    m.isNewCategory = true;
+  }else{
+    m.isNewCategory = false;
+    m.categoryId = val;
+  }
+  render();
+}
+
+async function saveEntryModal(){
+  const m = state.entryModal;
+  const kind = m.kind;
+  const amtInput = document.getElementById('entry-amount-input');
+  const dateInput = document.getElementById('entry-date-input');
+  const noteInput = document.getElementById('entry-note-input');
+  let categoryId = m.categoryId;
+  const cats = catsFor(kind);
+  const entries = entriesFor(kind);
+
+  if(m.isNewCategory){
+    const nameInput = document.getElementById('entry-new-cat-input');
+    const newName = nameInput.value.trim();
+    if(!newName){ showToast(t('enterCategoryName')); return; }
+    const existing = cats.find(c=>c.name.toLowerCase()===newName.toLowerCase());
+    if(existing){
+      categoryId = existing.id;
+    }else{
+      categoryId = uid();
+      cats.push({ id: categoryId, name: newName });
+    }
+  }
+  if(!categoryId){ showToast(t('pickACategory')); return; }
+
+  const amount = evaluateExpression(amtInput.value);
+  if(!amount || amount <= 0){ showToast(t('enterValidAmount')); return; }
+  const date = dateInput.value || todayStr();
+  const note = noteInput.value.trim();
+
+  if(m.mode === 'add'){
+    entries.push({ id: uid(), categoryId, amount, date, note, createdAt: Date.now() });
+    showToast(kind==='income' ? t('entryAdded') : t('expenseAdded'));
+  }else{
+    const e = entries.find(x=>x.id===m.id);
+    e.categoryId = categoryId; e.amount = amount; e.date = date; e.note = note;
+    showToast(kind==='income' ? t('entryUpdated') : t('expenseUpdated'));
+  }
+  await saveData();
+  state.entryModal = null;
+  render();
+}
+
+function renderEntryModal(){
+  const m = state.entryModal;
+  if(!m) return '';
+  const kind = m.kind;
+  const cats = [...catsFor(kind)].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const options = cats.map(c=>`<option value="${c.id}" ${(!m.isNewCategory && m.categoryId===c.id)?'selected':''}>${escapeHtml(c.name)}</option>`).join('');
+  const titleAdd = kind==='income' ? t('newIncomeEntry') : t('newExpenseTitle');
+  const titleEdit = kind==='income' ? t('editIncomeEntry') : t('editExpenseTitle');
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeEntryModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? titleAdd : titleEdit}</h2>
+        <div class="field">
+          <label>${t('categoryLabel')}</label>
+          <select id="entry-cat-select" onchange="onEntryCategorySelectChange(this.value)" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+            ${options}
+            <option value="__new__" ${m.isNewCategory?'selected':''}>${t('addNewCategoryOption')}</option>
+          </select>
+        </div>
+        ${m.isNewCategory ? `
+        <div class="field">
+          <label>${t('newCategoryNameLabel')}</label>
+          <input id="entry-new-cat-input" type="text" value="${escapeHtml(m.newCategoryName)}" placeholder="${t('namePlaceholderCategory')}">
+        </div>` : ''}
+        <div class="field">
+          <label>${t('amountLabelSimple')}</label>
+          <div style="display:flex; gap:8px;">
+            <input id="entry-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="0" style="flex:1;">
+            <button type="button" class="calc-eq-btn" onclick="calcFieldById('entry-amount-input')">=</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="entry-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>${t('noteLabel')}</label>
+          <textarea id="entry-note-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.note)}</textarea>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeEntryModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveEntryModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+function renderPerson(){
+  const p = data.persons.find(x=>x.id===state.personId);
+  if(!p) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
+  const bal = personBalance(p.id);
+  let cls='zero', label=t('settledUp');
+  if(bal>0){cls='pos'; label=t('youWillReceive');}
+  else if(bal<0){cls='neg'; label=t('youWillGive');}
+
+  let txns = personTxns(p.id);
+  if(state.txnFilter==='gave') txns = txns.filter(t=>t.type==='gave');
+  if(state.txnFilter==='got') txns = txns.filter(t=>t.type==='got');
+
+  const filterHtml = `
+    <div class="filter-chips">
+      <span class="chip ${state.txnFilter==='all'?'active':''}" onclick="setTxnFilter('all')">${t('all')}</span>
+      <span class="chip ${state.txnFilter==='gave'?'active':''}" onclick="setTxnFilter('gave')">${t('gave')}</span>
+      <span class="chip ${state.txnFilter==='got'?'active':''}" onclick="setTxnFilter('got')">${t('got')}</span>
+    </div>`;
+
+  const txnHtml = txns.length===0
+    ? `<div class="empty-state"><p>${t('noEntriesInCategory')}</p></div>`
+    : txns.map(tx=>`
+      <div class="txn-row">
+        <div class="txn-top">
+          <div>
+            <span class="txn-tag ${tx.type==='gave'?'tag-gave':'tag-got'}">${tx.type==='gave'?t('gave'):t('got')}</span>
+            <div class="txn-date">${fmtDate(tx.date)}</div>
+          </div>
+          <div class="txn-amt ${tx.type==='gave'?'pos':'neg'}">${fmtAmt(tx.amount)}</div>
+        </div>
+        ${tx.note ? `<div class="txn-note">${escapeHtml(tx.note)}</div>` : ''}
+        ${canEdit() ? `
+        <div class="txn-actions">
+          <span onclick="openEditTxn('${tx.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteTxn('${tx.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="person-header-card">
+      <div class="name serif">${escapeHtml(p.name)}</div>
+      <div class="bal ${cls}">${fmtAmt(Math.abs(bal))}</div>
+      <div class="baltxt">${label}</div>
+      <div class="person-actions">
+        ${canEdit() ? `<span onclick="openEditPerson('${p.id}')">${t('renamePerson')}</span>` : ''}
+        ${canEdit() ? `<span onclick="confirmDeletePerson('${p.id}')">${t('deletePerson')}</span>` : ''}
+        <span onclick="exportPersonPDF('${p.id}')">${t('pdfReport')}</span>
+      </div>
+      ${canEdit() ? `<div style="text-align:center; margin-top:12px;"><span class="link-btn" style="color:var(--khoiri);" onclick="convertPersonToExpense('${p.id}')">${t('convertToExpense')}</span></div>` : ''}
+    </div>
+    <div class="section-title">${t('loanEntries')}</div>
+    ${filterHtml}
+    ${txnHtml}
+  `;
+}
+
+function cumulativeAvgLine(vals){
+  const firstIdx = vals.findIndex(v=>v>0);
+  const line = new Array(vals.length).fill(null);
+  if(firstIdx === -1) return line;
+  let sum = 0;
+  for(let i=firstIdx;i<vals.length;i++){
+    sum += vals[i];
+    const count = i - firstIdx + 1;
+    line[i] = sum / count;
+  }
+  return line;
+}
+
+function renderIncomeExpenseBarChart(){
+  const now = new Date();
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  const months = [];
+  for(let i=11;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()]+'-'+String(d.getFullYear()).slice(-2) });
+  }
+  const incomeByMonth = {}, expenseByMonth = {};
+  data.income.forEach(i=>{ const k=monthKey(i.date); incomeByMonth[k]=(incomeByMonth[k]||0)+i.amount; });
+  data.expenses.forEach(e=>{ const k=monthKey(e.date); expenseByMonth[k]=(expenseByMonth[k]||0)+e.amount; });
+  const incomeVals = months.map(m=>incomeByMonth[m.key]||0);
+  const expenseVals = months.map(m=>expenseByMonth[m.key]||0);
+  const incomeAvgLine = cumulativeAvgLine(incomeVals);
+  const expenseAvgLine = cumulativeAvgLine(expenseVals);
+
+  const rawMax = Math.max(...incomeVals, ...expenseVals, ...incomeAvgLine.filter(v=>v!=null), ...expenseAvgLine.filter(v=>v!=null), 1);
+  const step = 5000;
+  const axisMax = Math.max(step, Math.ceil(rawMax / step) * step);
+
+  const width=600, height=230, padL=40, padR=8, padT=16, padB=28;
+  const chartW = width-padL-padR, chartH = height-padT-padB;
+  const groupW = chartW/12;
+  const barW = groupW*0.34;
+  const baseline = padT+chartH;
+  function yFor(v){ return padT + chartH*(1 - v/axisMax); }
+  function xForCenter(i){ return padL + groupW*i + groupW/2; }
+
+  let gridAndAxis = '';
+  for(let v=0; v<=axisMax; v+=step){
+    const y = yFor(v);
+    gridAndAxis += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${width-padR}" y2="${y.toFixed(1)}" stroke="#DED0AC" stroke-width="0.5"/>`;
+    gridAndAxis += `<text x="${(padL-6).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="8" fill="#6B6055" text-anchor="end">${v===0?'0':(v/1000)+'K'}</text>`;
+  }
+
+  let bars = '';
+  months.forEach((m,i)=>{
+    const gx = padL + groupW*i;
+    const ix = gx + groupW*0.12;
+    const ex = gx + groupW*0.52;
+    const iy = yFor(incomeVals[i]); const ih = baseline-iy;
+    const ey = yFor(expenseVals[i]); const eh = baseline-ey;
+    bars += `<rect x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${barW.toFixed(1)}" height="${ih.toFixed(1)}" fill="var(--loan-blue)" rx="1"/>`;
+    bars += `<rect x="${ex.toFixed(1)}" y="${ey.toFixed(1)}" width="${barW.toFixed(1)}" height="${eh.toFixed(1)}" fill="var(--khoiri)" rx="1"/>`;
+    if(incomeVals[i] > 0){
+      const tx = ix + barW/2 + 2.5;
+      bars += `<text x="0" y="0" font-size="13" fill="#fff" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(incomeVals[i]).toLocaleString('en-IN')}</text>`;
+    }
+    if(expenseVals[i] > 0){
+      const tx = ex + barW/2 + 2.5;
+      bars += `<text x="0" y="0" font-size="13" fill="#fff" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(expenseVals[i]).toLocaleString('en-IN')}</text>`;
+    }
+    bars += `<text x="${(gx+groupW/2).toFixed(1)}" y="${height-8}" font-size="7.5" fill="#6B6055" text-anchor="middle">${m.label}</text>`;
+  });
+
+  function buildLinePath(lineVals){
+    let d = '';
+    let started = false;
+    lineVals.forEach((v,i)=>{
+      if(v==null) return;
+      const x = xForCenter(i), y = yFor(v);
+      d += (started ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+      started = true;
+    });
+    return d.trim();
+  }
+  function buildDots(lineVals, color){
+    return lineVals.map((v,i)=> v==null ? '' : `<circle cx="${xForCenter(i).toFixed(1)}" cy="${yFor(v).toFixed(1)}" r="2.5" fill="${color}"/>`).join('');
+  }
+
+  const incomePath = buildLinePath(incomeAvgLine);
+  const expensePath = buildLinePath(expenseAvgLine);
+  const lines = `
+    ${incomePath ? `<path d="${incomePath}" fill="none" stroke="var(--loan-blue)" stroke-width="1.75"/>` : ''}
+    ${expensePath ? `<path d="${expensePath}" fill="none" stroke="var(--khoiri)" stroke-width="1.75"/>` : ''}
+    ${buildDots(incomeAvgLine, 'var(--loan-blue)')}
+    ${buildDots(expenseAvgLine, 'var(--khoiri)')}
+  `;
+
+  return `
+    <div class="chart-box">
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; display:block;">
+        ${gridAndAxis}
+        ${bars}
+        ${lines}
+      </svg>
+      <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top:6px; font-size:11px;">
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--loan-blue); border-radius:2px; margin-right:4px;"></span>${t('tabIncome')}</span>
+        <span><span style="display:inline-block; width:10px; height:10px; background:var(--khoiri); border-radius:2px; margin-right:4px;"></span>${t('tabExpense')}</span>
+        <span style="color:var(--loan-blue);">— ${t('avgIncomeLegend')}</span>
+        <span style="color:var(--khoiri);">— ${t('avgExpenseLegend')}</span>
+      </div>
+    </div>`;
+}
+
+function renderSummary(){
+  let persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const q = state.searchQuery.trim().toLowerCase();
+  if(q){ persons = persons.filter(p=>p.name.toLowerCase().includes(q)); }
+
+  let totalGave=0, totalGot=0;
+  data.persons.forEach(p=>{
+    const bal = personBalance(p.id);
+    if(bal > 0) totalGave += bal;
+    else if(bal < 0) totalGot += Math.abs(bal);
+  });
+  const net = totalGave - totalGot;
+
+  const searchHtml = data.persons.length>0 ? `
+    <div class="search-box">
+      <span class="ic">🔍</span>
+      <input id="search-input" type="text" placeholder="${t('searchByName')}" value="${escapeHtml(state.searchQuery)}" oninput="setSearchQuery(this.value)">
+    </div>` : '';
+
+  const rows = persons.map(p=>{
+    const bal = personBalance(p.id);
+    let cls='zero', label=t('settled');
+    if(bal>0){cls='pos'; label=t('willReceive');}
+    else if(bal<0){cls='neg'; label=t('willGive');}
+    return `<div class="summary-list-row" onclick="setView('person','${p.id}')" style="cursor:pointer;">
+      <span>${escapeHtml(p.name)}</span>
+      <span class="${cls}" style="font-weight:600;">${fmtAmt(Math.abs(bal))} <span style="font-weight:400; font-size:12px;">(${label})</span></span>
+    </div>`;
+  }).join('');
+
+  const totalIncome = data.income.reduce((s,i)=>s+i.amount, 0);
+  const totalExpense = data.expenses.reduce((s,i)=>s+i.amount, 0);
+  const netIE = totalIncome - totalExpense;
+
+  const avgIncome = calcMonthlyAverage(data.income);
+  const avgExpense = calcMonthlyAverage(data.expenses);
+
+  return `
+    ${renderIncomeExpenseBarChart()}
+    ${renderLastFourMonthSummary()}
+
+    <div class="section-title" style="margin-top:0;"><span style="font-weight:700; color:var(--green);">${t('incomeExpenseSectionTitle')}</span></div>
+    <div class="summary-cards">
+      <div class="stat-card">
+        <div class="label">${t('totalIncomeLabel')}</div>
+        <div class="val pos">${fmtAmt(totalIncome)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">${t('totalExpense')}</div>
+        <div class="val khoiri-txt">${fmtAmt(totalExpense)}</div>
+      </div>
+    </div>
+    <div class="stat-card" style="margin-bottom:16px;">
+      <div class="label">${t('netIE')}</div>
+      <div class="val ${netIE>0?'pos':netIE<0?'khoiri-txt':'zero'}">${fmtAmt(Math.abs(netIE))} ${netIE>0?t('surplus'):netIE<0?t('deficit'):''}</div>
+    </div>
+    <div class="summary-cards" style="margin-bottom:26px;">
+      <div class="stat-card">
+        <div class="label">${t('avgMonthlyIncome')}</div>
+        <div class="val pos">${fmtAmt(Math.round(avgIncome))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">${t('avgMonthlyExpense')}</div>
+        <div class="val khoiri-txt">${fmtAmt(Math.round(avgExpense))}</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;"><span class="blue-txt" style="font-weight:700;">${t('loanSectionTitle')}</span></div>
+    <div class="summary-cards">
+      <div class="stat-card">
+        <div class="label">${t('totalReceivable')}</div>
+        <div class="val pos">${fmtAmt(totalGave)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">${t('totalPayable')}</div>
+        <div class="val neg">${fmtAmt(totalGot)}</div>
+      </div>
+    </div>
+    <div class="stat-card" style="margin-bottom:20px;">
+      <div class="label">${t('netTotalLabel')}</div>
+      <div class="val ${net>0?'pos':net<0?'neg':'zero'}">${fmtAmt(Math.abs(net))} ${net>0?t('willReceive'):net<0?t('willGive'):''}</div>
+    </div>
+
+    <div class="section-title">
+      <span>${t('personBasedLabel')}</span>
+      ${data.persons.length>0 ? `<span class="link-btn" onclick="exportSummaryPDF()">${t('pdfReport')}</span>` : ''}
+    </div>
+    ${searchHtml}
+    ${persons.length===0 ? `<div class="empty-state"><p>${data.persons.length===0 ? t('noPersonsAtAll') : t('noOneFound')}</p></div>` : rows}
+  `;
+}
+
+function renderPersonModal(){
+  if(!state.personModal) return '';
+  const m = state.personModal;
+  const titles = { 'add':t('newPersonTitle'), 'edit':t('editNameTitle'), 'add-cat':t('newCategoryTitle'), 'edit-cat':t('editCategoryTitle') };
+  const placeholders = { 'add':t('namePlaceholderPerson'), 'edit':t('namePlaceholderPerson'), 'add-cat':t('namePlaceholderCategory'), 'edit-cat':t('namePlaceholderCategory') };
+  return `
+    <div class="overlay" onclick="if(event.target===this) closePersonModal()">
+      <div class="sheet">
+        <h2 class="serif">${titles[m.mode]}</h2>
+        <div class="field">
+          <label>${t('nameLabel')}</label>
+          <input id="person-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${placeholders[m.mode]}">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closePersonModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="savePersonModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderTxnModal(){
+  if(!state.txnModal) return '';
+  const m = state.txnModal;
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeTxnModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newLoanEntryTitle') : t('editLoanEntryTitle')}</h2>
+        <div class="field">
+          <label>${t('entryType')}</label>
+          <div class="type-toggle">
+            <button class="${m.type==='gave'?'sel-gave':''}" onclick="setTxnType('gave')">${t('gaveMoney')}</button>
+            <button class="${m.type==='got'?'sel-got':''}" onclick="setTxnType('got')">${t('gotMoney')}</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>${t('amountLabel')}</label>
+          <div style="display:flex; gap:8px;">
+            <input id="txn-amount-input" type="text" inputmode="decimal" value="${escapeHtml(m.amount)}" placeholder="${appLang==='en'?'e.g. 1200 or 500+200':'যেমনঃ ১২০০ অথবা ৫০০+২০০'}" style="flex:1;">
+            <button type="button" class="calc-eq-btn" onclick="calcAmountField()">=</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="txn-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>${t('noteLabel')}</label>
+          <textarea id="txn-note-input" placeholder="${t('notePlaceholder')}">${escapeHtml(m.note)}</textarea>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeTxnModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveTxnModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function runConfirmYes(){
+  if(state.confirmModal && typeof state.confirmModal.onYes === 'function'){
+    state.confirmModal.onYes();
+  }
+}
+
+function renderConfirmModal(){
+  if(!state.confirmModal) return '';
+  const c = state.confirmModal;
+  return `
+    <div class="overlay">
+      <div class="sheet">
+        <h2 class="serif">${escapeHtml(c.title)}</h2>
+        <p style="font-size:14px; color:var(--ink-soft); margin:0 0 8px 0;">${escapeHtml(c.msg)}</p>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeConfirm()">${t('noKeep')}</button>
+          <button class="btn btn-danger" onclick="runConfirmYes()">${t('yesDelete')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function genDateStr(){
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return fmtDate(local.toISOString().slice(0,10));
+}
+
+function downloadReport(filename, bodyHtml){
+  const fullHtml = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${filename}</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Hind Siliguri',sans-serif; color:#2B2420; padding:24px; max-width:700px; margin:0 auto;}
+  h1{font-family:'Tiro Bangla',serif; font-size:22px; margin-bottom:2px;}
+  .pmeta{font-size:12px; color:#6B6055; margin-bottom:16px;}
+  .rtot{margin:14px 0; font-size:15px; font-weight:600; background:#F6EFDF; padding:10px 14px; border-radius:8px;}
+  table{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+  th,td{border:1px solid #DED0AC; padding:8px 10px; text-align:left;}
+  th{background:#F6EFDF;}
+  .hint{margin-top:24px; font-size:12px; color:#6B6055; border-top:1px solid #DED0AC; padding-top:12px;}
+  .brand{margin-top:6px; font-size:11px; color:#B8860B;}
+  @media print{ .hint{display:none;} }
+</style>
+</head>
+<body>
+${bodyHtml}
+<div class="hint">${t('pdfHintText')}</div>
+<div class="brand">${t('appTitle')}</div>
+</body>
+</html>`;
+  const blob = new Blob([fullHtml], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  showToast(t('reportDownloaded'));
+}
+
+function exportPersonPDF(personId){
+  const p = data.persons.find(x=>x.id===personId);
+  const bal = personBalance(personId);
+  const label = bal>0 ? t('youWillReceive') : bal<0 ? t('youWillGive') : t('settledUp');
+  const txns = personTxns(personId);
+  const rows = txns.map(tx=>`
+    <tr>
+      <td>${fmtDate(tx.date)}</td>
+      <td>${tx.type==='gave'?t('gave'):t('got')}</td>
+      <td>${fmtAmt(tx.amount)}</td>
+      <td>${escapeHtml(tx.note||'-')}</td>
+    </tr>`).join('');
+  const html = `
+    <h1>${t('appTitle').split(' — ')[0]} — ${escapeHtml(p.name)}</h1>
+    <div class="pmeta">${t('reportGeneratedOn')} ${genDateStr()}</div>
+    <div class="rtot">${t('grandTotalLoan')} ${fmtAmt(Math.abs(bal))} — ${label}</div>
+    <table>
+      <thead><tr><th>${t('reportDateCol')}</th><th>${t('reportTypeCol')}</th><th>${t('reportAmountCol')}</th><th>${t('reportNoteCol')}</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="4">${t('reportNoEntries')}</td></tr>`}</tbody>
+    </table>`;
+  downloadReport(`report-${p.name}.html`, html);
+}
+
+function exportSummaryPDF(){
+  let totalGave=0, totalGot=0;
+  data.persons.forEach(p=>{
+    const bal = personBalance(p.id);
+    if(bal > 0) totalGave += bal;
+    else if(bal < 0) totalGot += Math.abs(bal);
+  });
+  const net = totalGave - totalGot;
+  const persons = [...data.persons].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  const rows = persons.map(p=>{
+    const bal = personBalance(p.id);
+    const label = bal>0 ? t('willReceive') : bal<0 ? t('willGive') : t('settled');
+    return `<tr><td>${escapeHtml(p.name)}</td><td>${fmtAmt(Math.abs(bal))}</td><td>${label}</td></tr>`;
+  }).join('');
+  const netLabel = net>0?t('willReceive'):net<0?t('willGive'):'';
+  const html = `
+    <h1>${t('summaryReportTitle')}</h1>
+    <div class="pmeta">${t('reportGeneratedOn')} ${genDateStr()}</div>
+    <div class="rtot">${t('totalReceivable')}: ${fmtAmt(totalGave)} &nbsp; | &nbsp; ${t('totalPayable')}: ${fmtAmt(totalGot)} &nbsp; | &nbsp; ${t('netTotalLabel')}: ${fmtAmt(Math.abs(net))} ${netLabel}</div>
+    <table>
+      <thead><tr><th>${t('reportNameCol')}</th><th>${t('reportAmountCol')}</th><th>${t('reportStatusCol')}</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="3">${t('reportNoPersons')}</td></tr>`}</tbody>
+    </table>`;
+  downloadReport('report-summary.html', html);
+}
+
+function logout(){
+  state.confirmModal = {
+    title: t('confirmLogoutTitle'),
+    msg: t('confirmLogoutMsg'),
+    onYes: ()=>{
+      if(window.__syncInterval){ clearInterval(window.__syncInterval); window.__syncInterval = null; }
+      state.currentUser = null;
+      state.confirmModal = null;
+      state.view = 'home';
+      state.personId = null;
+      lock.status = 'auth';
+      lock.usernameInput = '';
+      lock.entry = '';
+      lock.error = '';
+      renderLock();
+    }
+  };
+  render();
+}
+
+async function loadUsers(){
+  try{
+    let users = await fbGet('hisabKhata/users');
+    if(!users || !users.length){
+      users = [{ username: 'FaBi-Admin', password: '1234', role: 'admin' }];
+      await fbSet('hisabKhata/users', users);
+    }
+    lock.users = users;
+  }catch(e){
+    lock.users = [];
+    lock.error = t('checkInternet');
+  }
+  lock.status = 'auth';
+  try{
+    const remembered = localStorage.getItem('hisabKhataLastUsername');
+    if(remembered) lock.usernameInput = remembered;
+  }catch(e){}
+}
+
+async function saveUsers(){
+  await fbSet('hisabKhata/users', lock.users);
+}
+
+function setLockUsername(val){
+  lock.usernameInput = val;
+  lock.error = '';
+  renderLock();
+  const input = document.getElementById('lock-username-input');
+  if(input){ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+}
+
+function updatePinDotsDisplay(count){
+  const dotsEl = document.querySelector('.lock-screen .pin-dots');
+  if(!dotsEl) return false;
+  dotsEl.innerHTML = [0,1,2,3].map(i=>`<div class="pin-dot ${i<count?'filled':''}"></div>`).join('');
+  return true;
+}
+
+function pinPress(digit){
+  const uname = lock.usernameInput.trim();
+  if(!uname){
+    lock.error = t('enterUsernameFirst');
+    renderLock();
+    return;
+  }
+  if(lock.entry.length < 4) lock.entry += digit;
+  if(lock.entry.length === 4){
+    updatePinDotsDisplay(lock.entry.length);
+    setTimeout(async ()=>{
+      const match = lock.users.find(u=>u.username.toLowerCase()===uname.toLowerCase() && u.password===lock.entry);
+      if(match){
+        state.currentUser = match;
+        lock.status = 'unlocked';
+        try{ localStorage.setItem('hisabKhataLastUsername', match.username); }catch(e){}
+        await bootApp();
+      }else{
+        lock.error = t('wrongLoginErr');
+        lock.entry = '';
+        renderLock();
+      }
+    }, 150);
+  }else{
+    if(!updatePinDotsDisplay(lock.entry.length)){
+      renderLock();
+    }
+  }
+}
+
+function pinBackspace(){
+  lock.entry = lock.entry.slice(0,-1);
+  if(!updatePinDotsDisplay(lock.entry.length)){
+    renderLock();
+  }
+}
+
+function renderPinPad(pressFn, backFn){
+  const keys = ['1','2','3','4','5','6','7','8','9','','0','back'];
+  return `<div class="pin-pad">${keys.map(k=>{
+    if(k==='') return `<div class="pin-key empty"></div>`;
+    if(k==='back') return `<button class="pin-key" onclick="${backFn}()">⌫</button>`;
+    return `<button class="pin-key" onclick="${pressFn}('${k}')">${k}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderLock(){
+  const app = document.getElementById('app');
+  const dotsCount = lock.entry.length;
+  const usernameField = `
+    <div class="field" style="width:100%; max-width:280px; text-align:left;">
+      <label>${t('loginUsernameLabel')}</label>
+      <input id="lock-username-input" type="text" placeholder="${t('loginUsernamePlaceholder')}" value="${escapeHtml(lock.usernameInput)}" oninput="setLockUsername(this.value)">
+    </div>`;
+
+  app.innerHTML = `
+    <header class="topbar">
+      <div class="back-row">
+        <div>
+          <h1>${t('appTitle')}</h1>
+          <div class="sub">${appLang==='en' ? 'Secure access' : 'সুরক্ষিত প্রবেশ'}</div>
+        </div>
+      </div>
+    </header>
+    <div class="lock-screen">
+      <div class="icon">🔒</div>
+      <h2 class="serif">${t('loginTitle')}</h2>
+      <p>${t('loginDesc')}</p>
+      ${usernameField}
+      <div class="pin-dots">
+        ${[0,1,2,3].map(i=>`<div class="pin-dot ${i<dotsCount?'filled':''}"></div>`).join('')}
+      </div>
+      ${renderPinPad('pinPress','pinBackspace')}
+      <div class="pin-error">${lock.error}</div>
+      <div style="margin-top:20px; display:flex; gap:8px;">
+        <button class="chip ${appLang==='en'?'active':''}" onclick="setLang('en')" type="button">English</button>
+        <button class="chip ${appLang==='bn'?'active':''}" onclick="setLang('bn')" type="button">বাংলা</button>
+      </div>
+    </div>
+  `;
+  lock.error = '';
+}
+
+/* ---------- Change my own password ---------- */
+function openChangeMyPassword(){
+  state.pwModal = { type:'self', old:'', n1:'', n2:'', step:'old', error:'' };
+  render();
+}
+
+function closePwModal(){
+  state.pwModal = null;
+  render();
+}
+
+async function submitPwModal(){
+  const m = state.pwModal;
+  if(!m) return;
+  if(m.step === 'old'){
+    if(m.old.length !== 4){ m.error = t('enter4DigitPassword'); render(); return; }
+    if(m.old !== state.currentUser.password){ m.error = t('wrongPasswordErr'); render(); return; }
+    m.step = 'new';
+    m.error = '';
+    render();
+    return;
+  }
+  if(m.n1.length !== 4 || m.n2.length !== 4){ m.error = t('bothPasswordsMustMatch'); render(); return; }
+  if(m.n1 !== m.n2){ m.error = t('passwordsMustMatch'); render(); return; }
+  if(m.type === 'self'){
+    const target = lock.users.find(u=>u.username===state.currentUser.username);
+    target.password = m.n1;
+    state.currentUser.password = m.n1;
+  }else{
+    const target = lock.users.find(u=>u.username===m.targetUsername);
+    if(target) target.password = m.n1;
+  }
+  await saveUsers();
+  state.pwModal = null;
+  render();
+  showToast(t('passwordChangedToast'));
+}
+
+function renderPwModal(){
+  const m = state.pwModal;
+  if(!m) return '';
+  const isAdminReset = m.type === 'adminReset';
+  if(m.step === 'old'){
+    return `
+      <div class="overlay" onclick="if(event.target===this) closePwModal()">
+        <div class="sheet">
+          <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}" — ${t('changeUserPassword')}` : t('oldPasswordTitle')}</h2>
+          <p style="font-size:13px; color:var(--ink-soft); margin:-8px 0 16px 0;">${isAdminReset ? t('adminResetDesc') : t('oldPasswordDesc')}</p>
+          <div class="field">
+            <label>${isAdminReset ? t('yourAdminPasswordLabel') : t('oldPasswordLabel')}</label>
+            <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.old)}" oninput="state.pwModal.old=this.value.replace(/\\D/g,'').slice(0,4); render();">
+          </div>
+          <div class="pin-error">${m.error||''}</div>
+          <div class="sheet-actions">
+            <button class="btn btn-secondary" onclick="closePwModal()">${t('cancel')}</button>
+            <button class="btn btn-primary" onclick="submitPwModal()">${t('next')}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="overlay" onclick="if(event.target===this) closePwModal()">
+      <div class="sheet">
+        <h2 class="serif">${isAdminReset ? `"${escapeHtml(m.targetUsername)}" — ${t('newPasswordTitle')}` : t('newPasswordTitle')}</h2>
+        <div class="field">
+          <label>${t('newPasswordLabel')}</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.n1)}" oninput="state.pwModal.n1=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="field">
+          <label>${t('newPasswordAgainLabel')}</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.n2)}" oninput="state.pwModal.n2=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="pin-error">${m.error||''}</div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closePwModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="submitPwModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------- Admin: reset another user's password ---------- */
+function openAdminResetPassword(username){
+  state.pwModal = { type:'adminReset', targetUsername: username, old:'', n1:'', n2:'', step:'old', error:'' };
+  render();
+}
+
+/* ---------- Admin: create new user ---------- */
+function openCreateUser(forcedRole){
+  state.newUserModal = { username:'', p1:'', p2:'', role: forcedRole || 'editor', lockRole: !!forcedRole, error:'' };
+  render();
+}
+
+function closeNewUserModal(){
+  state.newUserModal = null;
+  render();
+}
+
+async function submitNewUser(){
+  const m = state.newUserModal;
+  const uname = m.username.trim();
+  if(!uname){ m.error = t('enterUsername'); render(); return; }
+  if(lock.users.some(u=>u.username.toLowerCase()===uname.toLowerCase())){
+    m.error = t('usernameTaken');
+    render();
+    return;
+  }
+  if(m.p1.length !== 4 || m.p2.length !== 4){ m.error = t('bothPasswordsMustMatch'); render(); return; }
+  if(m.p1 !== m.p2){ m.error = t('passwordsMustMatch'); render(); return; }
+  lock.users.push({ username: uname, password: m.p1, role: m.role });
+  await saveUsers();
+  state.newUserModal = null;
+  render();
+  showToast(m.role==='admin' ? t('newAdminCreatedToast') : t('newUserCreatedToast'));
+}
+
+function renderNewUserModal(){
+  const m = state.newUserModal;
+  if(!m) return '';
+  const roleLabels = { editor:t('accessEditor'), viewer:t('accessViewer'), individual:t('role_individual')+' ('+(appLang==='en'?'own separate data':'নিজস্ব আলাদা ডেটা')+')', admin:t('role_admin') };
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeNewUserModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.role==='admin' ? t('createNewAdminTitle') : t('createNewUserTitle')}</h2>
+        <div class="field">
+          <label>${t('usernameLabel')}</label>
+          <input type="text" value="${escapeHtml(m.username)}" oninput="state.newUserModal.username=this.value; render();" placeholder="${t('usernamePlaceholderExample')}">
+        </div>
+        <div class="field">
+          <label>${t('newPasswordLabel')}</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p1)}" oninput="state.newUserModal.p1=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        <div class="field">
+          <label>${t('newPasswordAgainLabel')}</label>
+          <input type="password" inputmode="numeric" maxlength="4" value="${escapeHtml(m.p2)}" oninput="state.newUserModal.p2=this.value.replace(/\\D/g,'').slice(0,4); render();">
+        </div>
+        ${m.lockRole ? `
+        <div class="field">
+          <label>${t('accessLabel')}</label>
+          <div style="font-size:14px; color:var(--ink-soft); padding:8px 0;">🛡️ ${roleLabels[m.role]}</div>
+        </div>` : `
+        <div class="field">
+          <label>${t('accessLabel')}</label>
+          <div class="type-toggle" style="flex-wrap:wrap; gap:8px;">
+            <button style="flex:1 1 30%;" class="${m.role==='editor'?'sel-gave':''}" onclick="state.newUserModal.role='editor'; render();">${t('accessEditor')}</button>
+            <button style="flex:1 1 30%;" class="${m.role==='viewer'?'sel-got':''}" onclick="state.newUserModal.role='viewer'; render();">${t('accessViewer')}</button>
+            <button style="flex:1 1 30%;" class="${m.role==='individual'?'sel-gave':''}" onclick="state.newUserModal.role='individual'; render();">${t('accessIndividual')}</button>
+          </div>
+          ${m.role==='individual' ? `<div style="font-size:12px; color:var(--ink-soft); margin-top:6px;">${t('individualHint')}</div>` : ''}
+        </div>`}
+        <div class="pin-error">${m.error||''}</div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeNewUserModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="submitNewUser()">${t('create')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleUserRole(username){
+  const u = lock.users.find(x=>x.username===username);
+  if(!u) return;
+  u.role = u.role === 'editor' ? 'viewer' : 'editor';
+  saveUsers();
+  render();
+}
+
+function confirmDeleteUser(username){
+  state.confirmModal = {
+    title:t('confirmDeleteUserTitle'),
+    msg:`"${username}" ${t('confirmDeleteUserMsg')}`,
+    onYes: async ()=>{
+      lock.users = lock.users.filter(u=>u.username!==username);
+      await saveUsers();
+      state.confirmModal = null;
+      render();
+      showToast(t('userDeleted'));
+    }
+  };
+  render();
+}
+
+/* ================= Age / Date Calculator ================= */
+
+function calcAgeYMD(startDateStr){
+  const start = new Date(startDateStr + 'T00:00:00');
+  const now = new Date();
+  const isFuture = start > now;
+  const a = isFuture ? start : now;
+  const b = isFuture ? now : start;
+  let years = a.getFullYear() - b.getFullYear();
+  let months = a.getMonth() - b.getMonth();
+  let days = a.getDate() - b.getDate();
+  if(days < 0){
+    months--;
+    const prevMonthLastDay = new Date(a.getFullYear(), a.getMonth(), 0).getDate();
+    days += prevMonthLastDay;
+  }
+  if(months < 0){
+    years--;
+    months += 12;
+  }
+  if(years < 0){ years=0; months=0; days=0; }
+  return { years, months, days, isFuture };
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+function fmtAge(startDateStr){
+  const a = calcAgeYMD(startDateStr);
+  const sign = a.isFuture ? '- ' : '';
+  return `${sign}${pad2(a.years)}Y : ${pad2(a.months)}M : ${pad2(a.days)}D`;
+}
+
+function ageColorClass(startDateStr){
+  return calcAgeYMD(startDateStr).isFuture ? 'khoiri-txt' : '';
+}
+
+function setAgeCategory(kind){
+  state.ageCategory = kind;
+  render();
+}
+
+function renderAgeSubTabs(){
+  return `
+    <div class="cat-subtabs">
+      <button class="cat-subtab ${state.ageCategory==='task'?'active':''}" onclick="setAgeCategory('task')">${t('taskTab')}</button>
+      <button class="cat-subtab ${state.ageCategory==='health'?'active':''}" onclick="setAgeCategory('health')">${t('healthProfileTab')}</button>
+      <button class="cat-subtab ${state.ageCategory==='ms'?'active':''}" onclick="setAgeCategory('ms')">${t('msTab')}</button>
+    </div>`;
+}
+
+function renderAgeCalc(){
+  const tabs = renderAgeSubTabs();
+  if(state.ageCategory === 'health') return tabs + renderHealthProfileList();
+  if(state.ageCategory === 'ms') return tabs + renderMedicineList();
+  const entries = [...data.ageEntries].sort((a,b)=> a.name.localeCompare(b.name,'bn'));
+  const list = entries.length===0
+    ? `<div class="empty-state">
+        <div class="big">📋</div>
+        <h3 class="serif">${t('noAgeEntriesYet')}</h3>
+        <p>${t('noAgeEntriesDesc')}</p>
+      </div>`
+    : entries.map(e=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div>
+            <div class="ie-name">${escapeHtml(e.name)}</div>
+            <div class="ie-date">${fmtDate(e.date)}</div>
+          </div>
+          <div class="ie-amt ${ageColorClass(e.date)}" style="${ageColorClass(e.date)?'':'color:var(--loan-blue);'} font-size:16px;">${fmtAge(e.date)}</div>
+        </div>
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditAgeEntry('${e.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteAgeEntry('${e.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+  return tabs + list;
+}
+
+function openAddAgeEntry(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.ageModal = { mode:'add', id:null, name:'', date: todayStr() };
+  render();
+}
+
+function openEditAgeEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const e = data.ageEntries.find(x=>x.id===id);
+    state.ageModal = { mode:'edit', id, name:e.name, date:e.date };
+    render();
+  });
+}
+
+function confirmDeleteAgeEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteAgeTitle'),
+      msg: t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        data.ageEntries = data.ageEntries.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeAgeModal(){
+  state.ageModal = null;
+  render();
+}
+
+async function saveAgeModal(){
+  const nameInput = document.getElementById('age-name-input');
+  const dateInput = document.getElementById('age-date-input');
+  const name = nameInput.value.trim();
+  if(!name){ showToast(t('enterName')); return; }
+  const date = dateInput.value;
+  if(!date){ showToast(t('pickADate')); return; }
+  const m = state.ageModal;
+  if(m.mode === 'add'){
+    data.ageEntries.push({ id: uid(), name, date, createdAt: Date.now() });
+    showToast(t('entryAdded'));
+  }else{
+    const e = data.ageEntries.find(x=>x.id===m.id);
+    e.name = name; e.date = date;
+    showToast(t('entryUpdated'));
+  }
+  await saveData();
+  state.ageModal = null;
+  render();
+}
+
+function renderAgeModal(){
+  const m = state.ageModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeAgeModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newAgeEntryTitle') : t('editAgeEntryTitle')}</h2>
+        <div class="field">
+          <label>${t('nameLabel')}</label>
+          <input id="age-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('namePlaceholderPerson')}">
+        </div>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="age-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeAgeModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveAgeModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ================= Health Profile ================= */
+
+const BMI_CATEGORIES = [
+  { max: 18.4, key:'underweight', range:'<18.4', color:'#E0B930' },
+  { max: 24.9, key:'healthy', range:'18.5-24.9', color:'#5FAE4A' },
+  { max: 29.9, key:'overweight', range:'25-29.9', color:'#F0973B' },
+  { max: 34.9, key:'obese', range:'30-34.9', color:'#E9542E' },
+  { max: Infinity, key:'extremelyObese', range:'>35', color:'#B8241D' },
+];
+
+function bmiCategoryIndex(bmi){
+  for(let i=0;i<BMI_CATEGORIES.length;i++){ if(bmi <= BMI_CATEGORIES[i].max) return i; }
+  return BMI_CATEGORIES.length-1;
+}
+
+function calcBmi(kg, heightCm){
+  if(!kg || !heightCm) return null;
+  const m = heightCm / 100;
+  return kg / (m*m);
+}
+
+function healthyWeightRange(heightCm){
+  if(!heightCm) return null;
+  const m = heightCm / 100;
+  return { min: 18.5 * m * m, max: 24.9 * m * m };
+}
+
+function fmtShortDate(iso){
+  const [y,m,d] = iso.split('-');
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  return d + ' ' + MONTHS[parseInt(m,10)-1];
+}
+
+function genderLabel(g){
+  if(g==='M') return t('genderMale');
+  if(g==='F') return t('genderFemale');
+  if(g==='O') return t('genderOther');
+  return '-';
+}
+
+function renderBmiLegend(currentBmi){
+  const idx = currentBmi!=null ? bmiCategoryIndex(currentBmi) : -1;
+  const markerRow = `<div style="display:flex;">${BMI_CATEGORIES.map((c,i)=>`<div style="flex:1; text-align:center; font-size:14px; line-height:1; color:${i===idx?c.color:'transparent'};">▼</div>`).join('')}</div>`;
+  const barRow = `<div style="display:flex; border-radius:8px; overflow:hidden; margin-bottom:4px;">
+    ${BMI_CATEGORIES.map((c,i)=>`
+      <div style="flex:1; background:${c.color}; color:#fff; text-align:center; padding:8px 2px; ${i===idx?'box-shadow:inset 0 0 0 2px #2B2420;':''}">
+        <div style="font-size:10px; font-weight:700;">${c.range}</div>
+        <div style="font-size:7px; letter-spacing:0.3px;">${t('bmi_'+c.key)}</div>
+      </div>`).join('')}
+  </div>`;
+  const currentText = currentBmi!=null ? `<div style="text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;">${t('currentBmiLabel')}: <strong>${currentBmi.toFixed(1)}</strong></div>` : `<div style="text-align:center; font-size:12px; color:var(--ink-soft); margin-bottom:14px;">${t('noWeightForBmi')}</div>`;
+  return markerRow + barRow + currentText;
+}
+
+function renderLineChart(points, opts){
+  opts = opts || {};
+  const color = opts.color || 'var(--loan-blue)';
+  if(!points || points.length===0){
+    return `<div class="empty-state" style="padding:24px 10px;"><p>${t('noChartData')}</p></div>`;
+  }
+  const width = 400, height = 160, padL = 34, padR = 12, padT = 14, padB = 26;
+  const ys = points.map(p=>p.y);
+  let minY = Math.min(...ys), maxY = Math.max(...ys);
+  if(minY===maxY){ minY -= 1; maxY += 1; }
+  const rangeY = maxY - minY;
+  const stepX = points.length>1 ? (width-padL-padR)/(points.length-1) : 0;
+  const coords = points.map((p,i)=>{
+    const x = points.length>1 ? padL + stepX*i : (padL + (width-padL-padR)/2);
+    const y = padT + (height-padT-padB) * (1 - (p.y-minY)/rangeY);
+    return {x,y,label:p.x,val:p.y};
+  });
+  const pathD = coords.map((c,i)=> (i===0?'M':'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ');
+  const circles = coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3" fill="${color}" />`).join('');
+  const labelIdxs = coords.length<=4 ? coords.map((_,i)=>i) : [0, Math.floor((coords.length-1)/2), coords.length-1];
+  const xLabels = labelIdxs.map(i=>{
+    const c=coords[i];
+    return `<text x="${c.x.toFixed(1)}" y="${height-8}" font-size="9" fill="#6B6055" text-anchor="middle">${escapeHtml(c.label)}</text>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; display:block;">
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${height-padB}" stroke="#DED0AC" stroke-width="1"/>
+    <line x1="${padL}" y1="${height-padB}" x2="${width-padR}" y2="${height-padB}" stroke="#DED0AC" stroke-width="1"/>
+    <text x="4" y="${padT+4}" font-size="9" fill="#6B6055">${maxY.toFixed(1)}</text>
+    <text x="4" y="${height-padB}" font-size="9" fill="#6B6055">${minY.toFixed(1)}</text>
+    <path d="${pathD}" fill="none" stroke="${color}" stroke-width="2"/>
+    ${circles}
+    ${xLabels}
+  </svg>`;
+}
+
+function renderHealthProfileList(){
+  let profiles = [...data.healthProfiles].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  if(profiles.length===0){
+    return `<div class="empty-state">
+      <div class="big">🩺</div>
+      <h3 class="serif">${t('noProfilesYet')}</h3>
+      <p>${t('noProfilesDesc')}</p>
+    </div>`;
+  }
+  return profiles.map(p=>{
+    const weights = [...(p.weights||[])].sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
+    const latest = weights.length ? weights[weights.length-1] : null;
+    const bmi = latest ? calcBmi(latest.kg, p.heightCm) : null;
+    const bmiHtml = bmi!=null ? `
+        <div class="balance" style="color:${BMI_CATEGORIES[bmiCategoryIndex(bmi)].color};">${bmi.toFixed(1)}</div>
+        <div class="balance-label" style="color:${BMI_CATEGORIES[bmiCategoryIndex(bmi)].color};">${t('bmi_'+BMI_CATEGORIES[bmiCategoryIndex(bmi)].key)}</div>` : '';
+    return `
+    <div class="person-card" style="border-left-color:var(--loan-blue);" onclick="setView('healthProfile','${p.id}')">
+      <div>
+        <div class="person-name">${escapeHtml(p.name)}</div>
+        <div class="person-meta">O: ${p.dateO ? fmtAge(p.dateO) : '-'}</div>
+      </div>
+      <div>${bmiHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function openAddHealthProfile(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.hpInfoModal = { mode:'add', id:null, name:'', dateO:'', dateC:'', gender:'M', bloodGroup:'A+', heightValue:'', heightUnit:'cm' };
+  render();
+}
+
+function openEditHealthProfileInfo(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const p = data.healthProfiles.find(x=>x.id===id);
+    state.hpInfoModal = { mode:'edit', id, name:p.name, dateO:p.dateO||'', dateC:p.dateC||'', gender:p.gender||'M', bloodGroup:p.bloodGroup||'A+', heightValue: p.heightCm ? String(p.heightCm) : '', heightUnit:'cm' };
+    render();
+  });
+}
+
+function confirmDeleteHealthProfile(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteProfileTitle'),
+      msg: t('confirmDeleteProfileMsg'),
+      onYes: async ()=>{
+        data.healthProfiles = data.healthProfiles.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        state.ageCategory = 'health';
+        setView('agecalc');
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeHpInfoModal(){
+  state.hpInfoModal = null;
+  render();
+}
+
+async function saveHpInfoModal(){
+  try{
+    const m = state.hpInfoModal;
+    const nameInput = document.getElementById('hp-name-input');
+    const dateOInput = document.getElementById('hp-dateO-input');
+    const dateCInput = document.getElementById('hp-dateC-input');
+    const heightInput = document.getElementById('hp-height-input');
+    const name = nameInput.value.trim();
+    if(!name){ showToast(t('enterName')); return; }
+    const dateO = dateOInput.value;
+    const dateC = dateCInput.value;
+    let heightCm = null;
+    const heightVal = parseFloat(normalizeDigits(heightInput.value));
+    if(heightVal){
+      heightCm = m.heightUnit === 'inch' ? Math.round(heightVal * 2.54 * 10) / 10 : heightVal;
+    }
+    if(m.mode === 'add'){
+      data.healthProfiles.push({ id: uid(), name, dateO, dateC, gender: m.gender, bloodGroup: m.bloodGroup, heightCm, weights: [], createdAt: Date.now() });
+      showToast(t('entryAdded'));
+    }else{
+      const p = data.healthProfiles.find(x=>x.id===m.id);
+      if(!p){ showToast(t('profileNotFoundErr')); return; }
+      p.name = name; p.dateO = dateO; p.dateC = dateC; p.gender = m.gender; p.bloodGroup = m.bloodGroup;
+      if(heightCm !== null) p.heightCm = heightCm;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.hpInfoModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
+  }
+}
+
+function renderHpInfoModal(){
+  const m = state.hpInfoModal;
+  if(!m) return '';
+  const genders = [['M',t('genderMale')],['F',t('genderFemale')],['O',t('genderOther')]];
+  const bloodGroups = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeHpInfoModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newProfileTitle') : t('editProfileTitle')}</h2>
+        <div class="field">
+          <label>${t('nameLabel')}</label>
+          <input id="hp-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('namePlaceholderPerson')}">
+        </div>
+        <div class="field">
+          <label>${t('dateOLabel')}</label>
+          <input id="hp-dateO-input" type="date" value="${m.dateO}">
+        </div>
+        <div class="field">
+          <label>${t('dateCLabel')}</label>
+          <input id="hp-dateC-input" type="date" value="${m.dateC}">
+        </div>
+        <div class="field">
+          <label>${t('genderLabel')}</label>
+          <select id="hp-gender-select" onchange="state.hpInfoModal.gender=this.value;" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+            ${genders.map(g=>`<option value="${g[0]}" ${m.gender===g[0]?'selected':''}>${g[1]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>${t('bloodGroupLabel')}</label>
+          <select id="hp-bg-select" onchange="state.hpInfoModal.bloodGroup=this.value;" style="width:100%; font-family:'Hind Siliguri', sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+            ${bloodGroups.map(b=>`<option value="${b}" ${m.bloodGroup===b?'selected':''}>${b}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>${t('heightLabel')}</label>
+          <div style="display:flex; gap:8px;">
+            <input id="hp-height-input" type="number" inputmode="decimal" value="${escapeHtml(m.heightValue)}" placeholder="${m.heightUnit==='cm'?'170':'67'}" style="flex:1;">
+            <select onchange="state.hpInfoModal.heightUnit=this.value; render();" style="width:90px; font-family:'Hind Siliguri', sans-serif; font-size:14px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink);">
+              <option value="cm" ${m.heightUnit==='cm'?'selected':''}>cm</option>
+              <option value="inch" ${m.heightUnit==='inch'?'selected':''}>inch</option>
+            </select>
+          </div>
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeHpInfoModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveHpInfoModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderHealthProfileDetail(){
+  const p = data.healthProfiles.find(x=>x.id===state.personId);
+  if(!p) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
+  const weights = [...(p.weights||[])].sort((a,b)=> a.date.localeCompare(b.date) || a.createdAt-b.createdAt);
+  const latestWeight = weights.length ? weights[weights.length-1] : null;
+  const currentBmi = latestWeight ? calcBmi(latestWeight.kg, p.heightCm) : null;
+  const hRange = healthyWeightRange(p.heightCm);
+
+  let weightGuideHtml = '';
+  if(hRange){
+    let guideLine = '';
+    if(latestWeight){
+      if(latestWeight.kg > hRange.max){
+        const diff = latestWeight.kg - hRange.max;
+        guideLine = `<div class="stat-row-label" style="color:var(--khoiri); margin-top:4px;">${t('needToLose')}: <strong>${diff.toFixed(1)} kg</strong></div>`;
+      }else if(latestWeight.kg < hRange.min){
+        const diff = hRange.min - latestWeight.kg;
+        guideLine = `<div class="stat-row-label" style="color:var(--loan-blue); margin-top:4px;">${t('needToGain')}: <strong>${diff.toFixed(1)} kg</strong></div>`;
+      }else{
+        guideLine = `<div class="stat-row-label" style="color:var(--green); margin-top:4px;">✓ ${t('alreadyHealthy')}</div>`;
+      }
+    }
+    weightGuideHtml = `
+      <div class="stat-row" style="flex-direction:column; align-items:flex-start;">
+        <div style="display:flex; justify-content:space-between; width:100%;">
+          <span class="stat-row-label">${t('healthyWeightRangeLabel')}</span>
+          <span class="stat-row-value pos">${hRange.min.toFixed(1)} - ${hRange.max.toFixed(1)} kg</span>
+        </div>
+        ${guideLine}
+      </div>`;
+  }
+
+  const weightPoints = weights.map(w=>({x: fmtShortDate(w.date), y: w.kg}));
+  const bmiPoints = p.heightCm ? weights.map(w=>({x: fmtShortDate(w.date), y: calcBmi(w.kg, p.heightCm)})) : [];
+
+  const entriesHtml = weights.length===0
+    ? `<div class="empty-state"><p>${t('noWeightEntriesYet')}</p></div>`
+    : [...weights].reverse().map(w=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div class="ie-date">${fmtDate(w.date)}</div>
+          <div class="ie-amt" style="color:var(--loan-blue);">${w.kg} kg</div>
+        </div>
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditWeightEntry('${w.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteWeightEntry('${w.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="hp-card">
+      <div class="hp-name">${escapeHtml(p.name)}</div>
+      <div class="hp-age-row">
+        <span class="hp-age-label">O</span>
+        <span class="hp-age-date">${p.dateO ? fmtDate(p.dateO) : '-'}</span>
+        <span class="hp-age-value ${p.dateO?ageColorClass(p.dateO):''}">${p.dateO ? fmtAge(p.dateO) : ''}</span>
+      </div>
+      <div class="hp-age-row">
+        <span class="hp-age-label" style="background:var(--khoiri);">C</span>
+        <span class="hp-age-date">${p.dateC ? fmtDate(p.dateC) : '-'}</span>
+        <span class="hp-age-value ${p.dateC?ageColorClass(p.dateC):''}">${p.dateC ? fmtAge(p.dateC) : ''}</span>
+      </div>
+      <div class="hp-info-row">
+        <span>${t('genderLabel')}: ${genderLabel(p.gender)}</span>
+        <span>${t('bloodGroupLabel')}: ${p.bloodGroup || '-'}</span>
+      </div>
+      <div class="hp-info-row">
+        <span>${t('heightLabel')}: ${p.heightCm ? p.heightCm + ' cm' : '-'}</span>
+        <span>${t('weightLabel')}: ${latestWeight ? latestWeight.kg + ' kg' : '-'}</span>
+      </div>
+      ${canEdit() ? `
+      <div class="person-actions" style="margin-top:10px;">
+        <span onclick="openEditHealthProfileInfo('${p.id}')">${t('editProfile')}</span>
+        <span onclick="confirmDeleteHealthProfile('${p.id}')">${t('deleteProfile')}</span>
+      </div>` : ''}
+    </div>
+
+    ${renderBmiLegend(currentBmi)}
+
+    ${weightGuideHtml ? `<div class="stat-row-list">${weightGuideHtml}</div>` : ''}
+
+    <div class="section-title">${t('weightChartTitle')}</div>
+    <div class="chart-box">${renderLineChart(weightPoints, {color:'var(--loan-blue)'})}</div>
+
+    <div class="section-title">${t('bmiChartTitle')}</div>
+    <div class="chart-box">${renderLineChart(bmiPoints, {color:'var(--khoiri)'})}</div>
+
+    <div class="section-title">${t('weightEntriesTitle')}</div>
+    ${entriesHtml}
+  `;
+}
+
+function openAddWeightEntry(profileId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.weightModal = { mode:'add', id:null, profileId, date: todayStr(), kg:'' };
+  render();
+}
+
+function openEditWeightEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const p = data.healthProfiles.find(x=>x.id===state.personId);
+    const w = p.weights.find(x=>x.id===id);
+    state.weightModal = { mode:'edit', id, profileId: p.id, date:w.date, kg:String(w.kg) };
+    render();
+  });
+}
+
+function confirmDeleteWeightEntry(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteWeightTitle'),
+      msg: t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        const p = data.healthProfiles.find(x=>x.id===state.personId);
+        p.weights = p.weights.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeWeightModal(){
+  state.weightModal = null;
+  render();
+}
+
+function normalizeDigits(str){
+  const bn = '০১২৩৪৫৬৭৮৯';
+  return String(str).replace(/[০-৯]/g, d => bn.indexOf(d)).trim();
+}
+
+async function saveWeightModal(){
+  try{
+    const m = state.weightModal;
+    const dateInput = document.getElementById('weight-date-input');
+    const kgInput = document.getElementById('weight-kg-input');
+    const date = dateInput.value || todayStr();
+    const kg = parseFloat(normalizeDigits(kgInput.value));
+    if(!kg || kg <= 0){ showToast(t('enterValidAmount')); return; }
+    const p = data.healthProfiles.find(x=>x.id===m.profileId);
+    if(!p){ showToast(t('profileNotFoundErr')); return; }
+    if(!p.weights) p.weights = [];
+    if(m.mode === 'add'){
+      p.weights.push({ id: uid(), date, kg, createdAt: Date.now() });
+      showToast(t('entryAdded'));
+    }else{
+      const w = p.weights.find(x=>x.id===m.id);
+      if(!w){ showToast(t('profileNotFoundErr')); return; }
+      w.date = date; w.kg = kg;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.weightModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
+  }
+}
+
+function renderWeightModal(){
+  const m = state.weightModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeWeightModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newWeightTitle') : t('editWeightTitle')}</h2>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="weight-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>${t('weightKgLabel')}</label>
+          <input id="weight-kg-input" type="number" inputmode="decimal" value="${escapeHtml(m.kg)}" placeholder="70">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeWeightModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveWeightModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+/* ================= Medicine Stock (M.S.) ================= */
+
+function bdNow(){
+  const now = new Date();
+  return new Date(now.getTime() + 6*60*60000);
+}
+
+function bdEffectiveDate(){
+  const bd = bdNow();
+  if(bd.getUTCHours() < 6){
+    bd.setUTCDate(bd.getUTCDate()-1);
+  }
+  const y = bd.getUTCFullYear();
+  const mo = String(bd.getUTCMonth()+1).padStart(2,'0');
+  const da = String(bd.getUTCDate()).padStart(2,'0');
+  return `${y}-${mo}-${da}`;
+}
+
+function addDaysToDateStr(dateStr, days){
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0,10);
+}
+
+function daysBetweenDates(dateStr1, dateStr2){
+  const d1 = new Date(dateStr1 + 'T00:00:00Z');
+  const d2 = new Date(dateStr2 + 'T00:00:00Z');
+  return Math.round((d2-d1)/86400000);
+}
+
+function processMedicineConsumption(){
+  let changed = false;
+  const today = bdEffectiveDate();
+  (data.medicines||[]).forEach(med=>{
+    if(!med.active) return;
+    const interval = Math.max(1, parseInt(med.intervalDays)||1);
+    const perDose = parseFloat(med.consumptionPcs)||0;
+    if(perDose <= 0) return;
+    if(!med.lastConsumedDate) return;
+    if(!med.records) med.records = [];
+    let guard = 0;
+    while(daysBetweenDates(med.lastConsumedDate, today) >= interval && guard < 400){
+      guard++;
+      const dueDate = addDaysToDateStr(med.lastConsumedDate, interval);
+      const deduct = Math.min(perDose, med.stock||0);
+      med.stock = Math.max(0, (med.stock||0) - deduct);
+      med.records.push({ id: uid(), type:'consume', pcs: deduct, date: dueDate, auto:true, createdAt: Date.now() });
+      med.lastConsumedDate = dueDate;
+      changed = true;
+    }
+  });
+  return changed;
+}
+
+function daysUntilEmpty(med){
+  const perDose = parseFloat(med.consumptionPcs)||0;
+  const interval = Math.max(1, parseInt(med.intervalDays)||1);
+  if(perDose<=0 || !med.stock) return null;
+  const cycles = Math.floor(med.stock / perDose);
+  return cycles * interval;
+}
+
+function renderMedicineList(){
+  let meds = [...data.medicines].sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+  if(meds.length===0){
+    return `<div class="empty-state">
+      <div class="big">💊</div>
+      <h3 class="serif">${t('noMedicinesYet')}</h3>
+      <p>${t('noMedicinesDesc')}</p>
+    </div>`;
+  }
+  return meds.map(med=>{
+    const days = daysUntilEmpty(med);
+    return `
+    <div class="person-card" style="border-left-color:${med.active?'var(--green)':'var(--red)'};" onclick="setView('medicine','${med.id}')">
+      <div>
+        <div class="person-name">${escapeHtml(med.name)}</div>
+        <div class="person-meta">${t('presentStock')}: ${med.stock||0} pcs${days!=null? ' · '+t('runsOutIn')+' '+days+' '+t('daysUnit') : ''}</div>
+      </div>
+      <div>
+        <span class="txn-tag ${med.active?'tag-gave':'tag-got'}">${med.active?t('activeStatus'):t('deactiveStatus')}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddMedicine(){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.medInfoModal = { mode:'add', id:null, name:'', details:'', pricePerPcs:'', intervalDays:'1', consumptionPcs:'1', nextConsumptionDate: addDaysToDateStr(bdEffectiveDate(), 1) };
+  render();
+}
+
+function openEditMedicineInfo(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const med = data.medicines.find(x=>x.id===id);
+    const interval = Math.max(1, parseInt(med.intervalDays)||1);
+    const nextDate = med.lastConsumedDate ? addDaysToDateStr(med.lastConsumedDate, interval) : addDaysToDateStr(bdEffectiveDate(), interval);
+    state.medInfoModal = { mode:'edit', id, name:med.name, details:med.details||'', pricePerPcs:String(med.pricePerPcs||''), intervalDays:String(med.intervalDays||1), consumptionPcs:String(med.consumptionPcs||1), nextConsumptionDate: nextDate };
+    render();
+  });
+}
+
+function confirmDeleteMedicine(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteMedicineTitle'),
+      msg: t('confirmDeleteMedicineMsg'),
+      onYes: async ()=>{
+        data.medicines = data.medicines.filter(x=>x.id!==id);
+        await saveData();
+        state.confirmModal = null;
+        state.ageCategory = 'ms';
+        setView('agecalc');
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeMedInfoModal(){
+  state.medInfoModal = null;
+  render();
+}
+
+async function saveMedInfoModal(){
+  try{
+    const m = state.medInfoModal;
+    const nameInput = document.getElementById('med-name-input');
+    const detailsInput = document.getElementById('med-details-input');
+    const priceInput = document.getElementById('med-price-input');
+    const intervalInput = document.getElementById('med-interval-input');
+    const consInput = document.getElementById('med-consumption-input');
+    const nextDateInput = document.getElementById('med-nextdate-input');
+    const name = nameInput.value.trim();
+    if(!name){ showToast(t('enterName')); return; }
+    const details = detailsInput.value.trim();
+    const pricePerPcs = parseFloat(normalizeDigits(priceInput.value)) || 0;
+    const intervalDays = Math.max(1, parseInt(normalizeDigits(intervalInput.value)) || 1);
+    const consumptionPcs = parseFloat(normalizeDigits(consInput.value)) || 1;
+    const nextConsumptionDate = nextDateInput.value || addDaysToDateStr(bdEffectiveDate(), intervalDays);
+    const lastConsumedDate = addDaysToDateStr(nextConsumptionDate, -intervalDays);
+    if(m.mode === 'add'){
+      data.medicines.push({ id: uid(), name, details, pricePerPcs, intervalDays, consumptionPcs, active:true, stock:0, lastConsumedDate, records:[], createdAt: Date.now() });
+      showToast(t('entryAdded'));
+    }else{
+      const med = data.medicines.find(x=>x.id===m.id);
+      if(!med){ showToast(t('profileNotFoundErr')); return; }
+      med.name=name; med.details=details; med.pricePerPcs=pricePerPcs; med.intervalDays=intervalDays; med.consumptionPcs=consumptionPcs; med.lastConsumedDate=lastConsumedDate;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.medInfoModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
+  }
+}
+
+function renderMedInfoModal(){
+  const m = state.medInfoModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeMedInfoModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('newMedicineTitle') : t('editMedicineTitle')}</h2>
+        <div class="field">
+          <label>${t('medicineNameLabel')}</label>
+          <input id="med-name-input" type="text" value="${escapeHtml(m.name)}" placeholder="${t('medicineNamePlaceholder')}">
+        </div>
+        <div class="field">
+          <label>${t('medicineDetailsLabel')}</label>
+          <textarea id="med-details-input" placeholder="${t('noteDetailsPlaceholder')}">${escapeHtml(m.details)}</textarea>
+        </div>
+        <div class="field">
+          <label>${t('pricePerPcsLabel')}</label>
+          <input id="med-price-input" type="number" inputmode="decimal" value="${escapeHtml(m.pricePerPcs)}" placeholder="0">
+        </div>
+        <div class="field">
+          <label>${t('intervalDaysLabel')}</label>
+          <input id="med-interval-input" type="number" inputmode="numeric" value="${escapeHtml(m.intervalDays)}" placeholder="1">
+        </div>
+        <div class="field">
+          <label>${t('nextConsumptionDateLabel')}</label>
+          <input id="med-nextdate-input" type="date" value="${escapeHtml(m.nextConsumptionDate||'')}">
+        </div>
+        <div class="field">
+          <label>${t('consumptionPcsLabel')}</label>
+          <input id="med-consumption-input" type="number" inputmode="decimal" value="${escapeHtml(m.consumptionPcs)}" placeholder="1">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeMedInfoModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveMedInfoModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function toggleMedicineActive(id){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  const med = data.medicines.find(x=>x.id===id);
+  if(!med) return;
+  med.active = !med.active;
+  if(med.active && !med.lastConsumedDate){
+    med.lastConsumedDate = bdEffectiveDate();
+  }
+  await saveData();
+  render();
+  showToast(med.active ? t('activatedToast') : t('deactivatedToast'));
+}
+
+function renderMedicineDetail(){
+  const med = data.medicines.find(x=>x.id===state.personId);
+  if(!med) return `<div class="empty-state">${t('categoryNotFound')}</div>`;
+  const days = daysUntilEmpty(med);
+  const records = [...(med.records||[])].sort((a,b)=> b.date.localeCompare(a.date) || b.createdAt-a.createdAt);
+  const recordsHtml = records.length===0
+    ? `<div class="empty-state"><p>${t('noRecordsYet')}</p></div>`
+    : records.map(r=>`
+      <div class="ie-card">
+        <div class="ie-top">
+          <div>
+            <span class="txn-tag ${r.type==='add'?'tag-gave':'tag-got'}">${r.type==='add'?t('stockAddedLabel'):t('consumedLabel')}${r.auto?(' · '+t('autoLabel')):''}</span>
+            <div class="ie-date">${fmtDate(r.date)}</div>
+          </div>
+          <div class="ie-amt" style="color:${r.type==='add'?'var(--green)':'var(--khoiri)'};">${r.type==='add'?'+':'-'}${r.pcs} pcs</div>
+        </div>
+        ${canEdit() ? `
+        <div class="ie-actions">
+          <span onclick="openEditRecord('${med.id}','${r.id}')">${t('edit')}</span>
+          <span onclick="confirmDeleteRecord('${med.id}','${r.id}')">${t('delete')}</span>
+        </div>` : ''}
+      </div>`).join('');
+
+  return `
+    <div class="hp-card">
+      <div class="hp-name">${escapeHtml(med.name)}</div>
+      ${med.details ? `<div style="font-size:13px; color:var(--ink-soft); margin-bottom:10px;">${escapeHtml(med.details)}</div>` : ''}
+      <div class="hp-info-row"><span>${t('pricePerPcsLabel')}</span><span>${fmtAmt(med.pricePerPcs||0)}</span></div>
+      <div class="hp-info-row"><span>${t('intervalDaysLabel')}</span><span>${med.intervalDays} ${t('daysUnit')}</span></div>
+      <div class="hp-info-row"><span>${t('consumptionPcsLabel')}</span><span>${med.consumptionPcs} pcs</span></div>
+      <div class="hp-info-row"><span>${t('consumptionAmountLabel')}</span><span>${fmtAmt((med.consumptionPcs||0) * (med.pricePerPcs||0))}</span></div>
+      <div class="hp-info-row"><span>${t('nextConsumptionDateLabel')}</span><span>${med.lastConsumedDate ? fmtDate(addDaysToDateStr(med.lastConsumedDate, Math.max(1, parseInt(med.intervalDays)||1))) : '-'}</span></div>
+      <div class="hp-info-row"><span>${t('presentStock')}</span><span style="font-weight:700;">${med.stock||0} pcs</span></div>
+      <div class="hp-info-row"><span>${t('runsOutIn')}</span><span style="font-weight:700;">${days!=null ? days+' '+t('daysUnit') : '-'}</span></div>
+      <div style="text-align:center; margin-top:14px;">
+        <button class="btn" style="background:${med.active?'var(--green)':'var(--red)'}; color:#fff; width:100%;" onclick="toggleMedicineActive('${med.id}')">
+          ${med.active ? '● '+t('activeStatus') : '● '+t('deactiveStatus')}
+        </button>
+      </div>
+      ${canEdit() ? `
+      <div class="person-actions" style="margin-top:12px;">
+        <span onclick="openEditMedicineInfo('${med.id}')">${t('editMedicine')}</span>
+        <span onclick="confirmDeleteMedicine('${med.id}')">${t('deleteMedicine')}</span>
+      </div>` : ''}
+    </div>
+    <div class="section-title">${t('stockRecordsTitle')}</div>
+    ${recordsHtml}
+  `;
+}
+
+function openAddStock(medicineId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  state.stockModal = { mode:'add', id:null, medicineId, date: todayStr(), pcs:'' };
+  render();
+}
+
+function openEditRecord(medicineId, recordId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    const med = data.medicines.find(x=>x.id===medicineId);
+    const rec = med.records.find(x=>x.id===recordId);
+    state.stockModal = { mode:'edit', id:recordId, medicineId, date:rec.date, pcs:String(rec.pcs) };
+    render();
+  });
+}
+
+function confirmDeleteRecord(medicineId, recordId){
+  if(!canEdit()){ showToast(t('noPermission')); return; }
+  requestPasswordConfirm(()=>{
+    state.confirmModal = {
+      title: t('confirmDeleteRecordTitle'),
+      msg: t('confirmDeleteEntryMsg'),
+      onYes: async ()=>{
+        const med = data.medicines.find(x=>x.id===medicineId);
+        if(med){
+          const rec = med.records.find(x=>x.id===recordId);
+          if(rec){
+            if(rec.type==='add'){ med.stock = Math.max(0, (med.stock||0) - rec.pcs); }
+            else{ med.stock = (med.stock||0) + rec.pcs; }
+            med.records = med.records.filter(x=>x.id!==recordId);
+          }
+        }
+        await saveData();
+        state.confirmModal = null;
+        render();
+        showToast(t('deletedToast'));
+      }
+    };
+    render();
+  });
+}
+
+function closeStockModal(){
+  state.stockModal = null;
+  render();
+}
+
+async function saveStockModal(){
+  try{
+    const m = state.stockModal;
+    const dateInput = document.getElementById('stock-date-input');
+    const pcsInput = document.getElementById('stock-pcs-input');
+    const date = dateInput.value || todayStr();
+    const pcs = parseFloat(normalizeDigits(pcsInput.value));
+    if(!pcs || pcs <= 0){ showToast(t('enterValidAmount')); return; }
+    const med = data.medicines.find(x=>x.id===m.medicineId);
+    if(!med){ showToast(t('profileNotFoundErr')); return; }
+    if(!med.records) med.records = [];
+    if(m.mode === 'add'){
+      med.stock = (med.stock||0) + pcs;
+      med.records.push({ id: uid(), type:'add', pcs, date, auto:false, createdAt: Date.now() });
+      if(!med.lastConsumedDate) med.lastConsumedDate = bdEffectiveDate();
+      showToast(t('entryAdded'));
+    }else{
+      const rec = med.records.find(x=>x.id===m.id);
+      if(!rec){ showToast(t('profileNotFoundErr')); return; }
+      const diff = pcs - rec.pcs;
+      if(rec.type==='add'){ med.stock = Math.max(0, (med.stock||0) + diff); }
+      else{ med.stock = Math.max(0, (med.stock||0) - diff); }
+      rec.pcs = pcs; rec.date = date;
+      showToast(t('entryUpdated'));
+    }
+    await saveData();
+    state.stockModal = null;
+    render();
+  }catch(e){
+    showToast(t('unexpectedErr') + ': ' + e.message);
+  }
+}
+
+function renderStockModal(){
+  const m = state.stockModal;
+  if(!m) return '';
+  return `
+    <div class="overlay" onclick="if(event.target===this) closeStockModal()">
+      <div class="sheet">
+        <h2 class="serif">${m.mode==='add' ? t('addStockTitle') : t('editRecordTitle')}</h2>
+        <div class="field">
+          <label>${t('dateLabel')}</label>
+          <input id="stock-date-input" type="date" value="${m.date}">
+        </div>
+        <div class="field">
+          <label>${t('pcsLabel')}</label>
+          <input id="stock-pcs-input" type="number" inputmode="decimal" value="${escapeHtml(m.pcs)}" placeholder="1">
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-secondary" onclick="closeStockModal()">${t('cancel')}</button>
+          <button class="btn btn-primary" onclick="saveStockModal()">${t('save')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+function renderSettings(){
+  const roleKey = 'role_' + (state.currentUser ? state.currentUser.role : 'viewer');
+  return `
+    <div class="stat-card" style="margin-bottom:20px; text-align:center;">
+      <div class="label">${t('loggedInAs')}</div>
+      <div class="val" style="font-size:16px;">${escapeHtml(state.currentUser.username)} (${t(roleKey)})</div>
+    </div>
+
+    <div class="section-title" style="margin-top:0;">${t('language')}</div>
+    <div class="filter-chips" style="margin-bottom:22px;">
+      <span class="chip ${appLang==='en'?'active':''}" onclick="setLang('en')">English</span>
+      <span class="chip ${appLang==='bn'?'active':''}" onclick="setLang('bn')">বাংলা</span>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="person-card" style="border-left-color:var(--maroon); cursor:pointer;" onclick="openChangeMyPassword()">
+        <div class="person-name">${t('changePassword')}</div>
+      </div>
+      ${isAdmin() ? `
+      <div class="person-card" style="border-left-color:var(--maroon); cursor:pointer;" onclick="setView('admin')">
+        <div class="person-name">${t('adminPanelLink')}</div>
+      </div>` : ''}
+      ${isIndividual() ? `
+      <div class="person-card" style="border-left-color:var(--loan-blue); cursor:pointer;" onclick="openCreateUser('admin')">
+        <div class="person-name">${t('createAdminLink')}</div>
+        <div class="person-meta">${appLang==='en' ? 'You can only create new admin accounts' : 'আপনি শুধু নতুন অ্যাডমিন অ্যাকাউন্ট তৈরি করতে পারবেন'}</div>
+      </div>` : ''}
+      <div class="person-card" style="border-left-color:var(--red); cursor:pointer;" onclick="logout()">
+        <div class="person-name" style="color:var(--red);">${t('logout')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminPanel(){
+  const others = lock.users.filter(u=>u.role!=='admin');
+  const rows = others.map(u=>{
+    const isInd = u.role === 'individual';
+    const tag = isInd ? t('role_individual') : (u.role==='editor' ? t('role_editor') : t('role_viewer'));
+    const tagClass = isInd ? 'tag-gave' : (u.role==='editor' ? 'tag-gave' : 'tag-got');
+    return `
+    <div class="txn-row">
+      <div class="txn-top">
+        <div>
+          <span class="txn-tag ${tagClass}">${tag}</span>
+          <div style="font-size:15px; font-weight:600; margin-top:4px;">${escapeHtml(u.username)}</div>
+          ${isInd ? `<div style="font-size:11px; color:var(--ink-soft); margin-top:2px;">${t('individualDataPrivateNote')}</div>` : ''}
+        </div>
+      </div>
+      <div class="txn-actions" style="margin-top:10px;">
+        ${!isInd ? `<span onclick="toggleUserRole('${escapeHtml(u.username)}')">${u.role==='editor'?t('makeViewOnly'):t('makeEditor')}</span>` : ''}
+        <span onclick="openAdminResetPassword('${escapeHtml(u.username)}')">${t('changeUserPassword')}</span>
+        <span onclick="confirmDeleteUser('${escapeHtml(u.username)}')">${t('delete')}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="stat-card" style="margin-bottom:18px; text-align:center;">
+      <div class="label">${t('loggedInAs')}:</div>
+      <div class="val" style="font-size:16px;">${escapeHtml(state.currentUser.username)} (${t('role_admin')})</div>
+    </div>
+    <div class="section-title">
+      <span>${t('userList')}</span>
+      <span class="link-btn" onclick="openCreateUser()">+ ${t('newUser')}</span>
+    </div>
+    ${others.length===0 ? `<div class="empty-state"><p>${t('noUsersYet')}</p></div>` : rows}
+  `;
+}
+
+async function bootApp(){
+
+  document.getElementById('app').innerHTML = `<div class="empty-state"><p>${t('loadingText')}</p></div>`;
+  await loadData();
+  render();
+  startSyncPolling();
+}
+
+function startSyncPolling(){
+  if(window.__syncInterval) return;
+  window.__syncInterval = setInterval(async ()=>{
+    const modalOpen = state.txnModal || state.personModal || state.confirmModal || state.pwModal || state.newUserModal || state.pwConfirmModal || state.entryModal || state.ageModal || state.hpInfoModal || state.weightModal || state.medInfoModal || state.stockModal;
+    if(modalOpen) return;
+    try{
+      const parsed = await fbGet(dataPath());
+      const fresh = parsed || { persons: [], transactions: [], income: [], expenses: [], expenseCategories: [], incomeCategories: [], ageEntries: [], healthProfiles: [], medicines: [] };
+      const freshStr = JSON.stringify({ persons: fresh.persons||[], transactions: fresh.transactions||[], income: fresh.income||[], expenses: fresh.expenses||[], expenseCategories: fresh.expenseCategories||[], incomeCategories: fresh.incomeCategories||[], ageEntries: fresh.ageEntries||[], healthProfiles: fresh.healthProfiles||[], medicines: fresh.medicines||[] });
+      const currentStr = JSON.stringify({ persons: data.persons, transactions: data.transactions, income: data.income, expenses: data.expenses, expenseCategories: data.expenseCategories, incomeCategories: data.incomeCategories, ageEntries: data.ageEntries, healthProfiles: data.healthProfiles, medicines: data.medicines });
+      if(freshStr !== currentStr){
+        data.persons = fresh.persons || [];
+        data.transactions = fresh.transactions || [];
+        data.income = fresh.income || [];
+        data.expenses = fresh.expenses || [];
+        data.expenseCategories = fresh.expenseCategories || [];
+        data.incomeCategories = fresh.incomeCategories || [];
+        data.ageEntries = fresh.ageEntries || [];
+        data.healthProfiles = fresh.healthProfiles || [];
+        data.medicines = fresh.medicines || [];
+        const consumed = processMedicineConsumption();
+        if(consumed) await saveData();
+        render();
+      }
+    }catch(e){}
+  }, 6000);
+}
+
+function render(){
+  const app = document.getElementById('app');
+  let headerTitle = t('appTitle');
+  let headerSub = '';
+  let backBtn = '';
+  let mainHtml = '';
+
+  if(state.view === 'home'){
+    const roleKey = state.currentUser ? ('role_' + state.currentUser.role) : '';
+    const baseSub = isIndividual() ? t('homeSubPrivate') : t('homeSubShared');
+    headerSub = baseSub + (state.currentUser ? ' · ' + escapeHtml(state.currentUser.username) + ' (' + t(roleKey) + ')' : '');
+    mainHtml = renderHome();
+  }else if(state.view === 'person'){
+    const p = data.persons.find(x=>x.id===state.personId);
+    headerTitle = p ? p.name : t('personFallback');
+    backBtn = `<button class="icon-btn" onclick="setView('home')">←</button>`;
+    mainHtml = renderPerson();
+  }else if(state.view === 'category'){
+    const c = catsFor(state.category).find(x=>x.id===state.personId);
+    headerTitle = c ? c.name : t('categoryFallback');
+    const backCat = state.category;
+    backBtn = `<button class="icon-btn" onclick="state.category='${backCat}'; setView('home')">←</button>`;
+    mainHtml = renderCategoryDetail();
+  }else if(state.view === 'summary'){
+    headerTitle = t('summaryTitle');
+    headerSub = t('summarySub');
+    mainHtml = renderSummary();
+  }else if(state.view === 'agecalc'){
+    headerTitle = t('ageCalcTitle');
+    headerSub = t('ageCalcSub');
+    mainHtml = renderAgeCalc();
+  }else if(state.view === 'healthProfile'){
+    const p = data.healthProfiles.find(x=>x.id===state.personId);
+    headerTitle = p ? p.name : t('categoryFallback');
+    backBtn = `<button class="icon-btn" onclick="state.ageCategory='health'; setView('agecalc')">←</button>`;
+    mainHtml = renderHealthProfileDetail();
+  }else if(state.view === 'medicine'){
+    const med = data.medicines.find(x=>x.id===state.personId);
+    headerTitle = med ? med.name : t('categoryFallback');
+    backBtn = `<button class="icon-btn" onclick="state.ageCategory='ms'; setView('agecalc')">←</button>`;
+    mainHtml = renderMedicineDetail();
+  }else if(state.view === 'settings'){
+    headerTitle = t('settingsTitle');
+    mainHtml = renderSettings();
+  }else if(state.view === 'admin'){
+    headerTitle = t('adminPanelTitle');
+    backBtn = `<button class="icon-btn" onclick="setView('settings')">←</button>`;
+    mainHtml = isAdmin() ? renderAdminPanel() : `<div class="empty-state"><p>${t('noPagePermission')}</p></div>`;
+  }
+
+  app.innerHTML = `
+    <header class="topbar">
+      <div class="back-row">
+        ${backBtn}
+        <div>
+          <h1>${headerTitle}</h1>
+          ${headerSub ? `<div class="sub">${headerSub}</div>` : ''}
+        </div>
+      </div>
+    </header>
+    <main>${mainHtml}</main>
+    ${state.view==='home' && state.category==='loan' && canEdit() ? `<button class="fab-btn" onclick="openAddPerson()">+</button>` : ''}
+    ${state.view==='home' && state.category==='income' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openQuickAddEntry('income')">+</button>` : ''}
+    ${state.view==='home' && state.category==='expense' && canEdit() ? `<button class="fab-btn" style="background:var(--khoiri);" onclick="openQuickAddEntry('expense')">+</button>` : ''}
+    ${state.view==='person' && canEdit() ? `<button class="fab-btn" onclick="openAddTxn('${state.personId}')">+</button>` : ''}
+    ${state.view==='category' && canEdit() ? `<button class="fab-btn" style="background:${state.category==='income'?'var(--green)':'var(--khoiri)'};" onclick="openAddCategoryEntry('${state.personId}')">+</button>` : ''}
+    ${state.view==='agecalc' && state.ageCategory==='task' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddAgeEntry()">+</button>` : ''}
+    ${state.view==='agecalc' && state.ageCategory==='health' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddHealthProfile()">+</button>` : ''}
+    ${state.view==='agecalc' && state.ageCategory==='ms' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddMedicine()">+</button>` : ''}
+    ${state.view==='healthProfile' && canEdit() ? `<button class="fab-btn" style="background:var(--loan-blue);" onclick="openAddWeightEntry('${state.personId}')">+</button>` : ''}
+    ${state.view==='medicine' && canEdit() ? `<button class="fab-btn" style="background:var(--green);" onclick="openAddStock('${state.personId}')">+</button>` : ''}
+    <nav class="bottomnav">
+      <button class="${state.view==='home'||state.view==='person'||state.view==='category'?'active':''}" onclick="setView('home')">
+        <span class="ic">🏠</span>${t('navHome')}
+      </button>
+      <button class="${state.view==='summary'?'active':''}" onclick="setView('summary')">
+        <span class="ic">📊</span>${t('navSummary')}
+      </button>
+      <button class="${state.view==='agecalc'||state.view==='healthProfile'||state.view==='medicine'?'active':''}" onclick="setView('agecalc')">
+        <span class="ic">💪</span>${t('navAge')}
+      </button>
+      <button class="${state.view==='settings'||state.view==='admin'?'active':''}" onclick="setView('settings')">
+        <span class="ic">⚙️</span>${t('navSettings')}
+      </button>
+    </nav>
+    ${renderPersonModal()}
+    ${renderTxnModal()}
+    ${renderEntryModal()}
+    ${renderAgeModal()}
+    ${renderHpInfoModal()}
+    ${renderWeightModal()}
+    ${renderMedInfoModal()}
+    ${renderStockModal()}
+    ${renderConfirmModal()}
+    ${renderPwModal()}
+    ${renderNewUserModal()}
+    ${renderPwConfirmModal()}
+  `;
+}
+
+(async function init(){
+  document.getElementById('app').innerHTML = `<div class="empty-state"><p>${t('loadingText')}</p></div>`;
+  await loadUsers();
+  if(lock.status === 'unlocked'){
+    await loadData();
+    render();
+  }else{
+    renderLock();
+  }
+})();
+</script>
+</body>
+</html>
