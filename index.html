@@ -702,10 +702,13 @@ const T = {
   medicineDetailsLabel: { en:'Details', bn:'বিস্তারিত' },
   pricePerPcsLabel: { en:'Per pcs price', bn:'প্রতি পিস দাম' },
   intervalDaysLabel: { en:'Consumption Interval (days)', bn:'সেবনের বিরতি (দিন)' },
+  nextConsumptionDateLabel: { en:'Next Consumption Date', bn:'পরবর্তী সেবনের তারিখ' },
   consumptionPcsLabel: { en:'Consumption (pcs)', bn:'সেবনের পরিমাণ (পিস)' },
   consumptionAmountLabel: { en:'Consumption Amount', bn:'সেবনের খরচ' },
   lastThreeMonthIncome: { en:'Last Three Month Income', bn:'গত তিন মাসের আয়' },
   lastThreeMonthExpense: { en:'Last Three Month Expense', bn:'গত তিন মাসের খরচ' },
+  lastFourMonthSummaryTitle: { en:'Last Four Month Summary', bn:'গত চার মাসের সারসংক্ষেপ' },
+  balanceRowLabel: { en:'Balance', bn:'ব্যালেন্স' },
   confirmDeleteMedicineTitle: { en:'Delete this medicine?', bn:'ঔষধ মুছে ফেলবেন?' },
   confirmDeleteMedicineMsg: { en:'All stock records under this medicine will also be deleted. This cannot be undone.', bn:'এই ঔষধের সব স্টক রেকর্ডও মুছে যাবে। এই কাজ ফিরিয়ে নেওয়া যাবে না।' },
   activatedToast: { en:'Activated', bn:'একটিভ করা হয়েছে' },
@@ -1365,6 +1368,43 @@ function renderLastThreeMonthsCard(kind){
     </div>`;
 }
 
+function renderLastFourMonthSummary(){
+  const now = new Date();
+  const MONTHS = appLang==='en' ? MONTHS_EN : MONTHS_BN;
+  const months = [];
+  for(let i=0;i<4;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({ key: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: MONTHS[d.getMonth()]+'-'+String(d.getFullYear()).slice(-2) });
+  }
+  const incomeByMonth = {}, expenseByMonth = {};
+  data.income.forEach(i=>{ const k=monthKey(i.date); incomeByMonth[k]=(incomeByMonth[k]||0)+i.amount; });
+  data.expenses.forEach(e=>{ const k=monthKey(e.date); expenseByMonth[k]=(expenseByMonth[k]||0)+e.amount; });
+  return `
+    <div class="l3m-card">
+      <div class="l3m-header">${t('lastFourMonthSummaryTitle')}</div>
+      <div class="l3m-row l3m-labels">
+        <div class="l3m-cell" style="flex:0.75;"></div>
+        ${months.map((m,i)=>`<div class="l3m-cell">${i===0?'▶️ ':''}${m.label}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        <div class="l3m-cell" style="flex:0.75; font-weight:600; background:#F6EFDF;">${t('tabIncome')}</div>
+        ${months.map(m=>`<div class="l3m-cell" style="color:var(--green);">${Math.round(incomeByMonth[m.key]||0).toLocaleString('en-IN')}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        <div class="l3m-cell" style="flex:0.75; font-weight:600; background:#F6EFDF;">${t('tabExpense')}</div>
+        ${months.map(m=>`<div class="l3m-cell" style="color:var(--khoiri);">${Math.round(expenseByMonth[m.key]||0).toLocaleString('en-IN')}</div>`).join('')}
+      </div>
+      <div class="l3m-row">
+        <div class="l3m-cell" style="flex:0.75; font-weight:600; background:#F6EFDF;">${t('balanceRowLabel')}</div>
+        ${months.map(m=>{
+          const bal = (incomeByMonth[m.key]||0) - (expenseByMonth[m.key]||0);
+          const color = bal>0?'var(--green)':bal<0?'var(--red)':'#000';
+          return `<div class="l3m-cell" style="color:${color};">${Math.round(bal).toLocaleString('en-IN')}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
 function renderCategoryList(kind){
   const cats0 = catsFor(kind);
   const entries0 = entriesFor(kind);
@@ -1786,11 +1826,11 @@ function renderIncomeExpenseBarChart(){
     bars += `<rect x="${ex.toFixed(1)}" y="${ey.toFixed(1)}" width="${barW.toFixed(1)}" height="${eh.toFixed(1)}" fill="var(--khoiri)" rx="1"/>`;
     if(incomeVals[i] > 0){
       const tx = ix + barW/2 + 2.5;
-      bars += `<text x="0" y="0" font-size="6.5" fill="#000" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(incomeVals[i]).toLocaleString('en-IN')}</text>`;
+      bars += `<text x="0" y="0" font-size="13" fill="#fff" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(incomeVals[i]).toLocaleString('en-IN')}</text>`;
     }
     if(expenseVals[i] > 0){
       const tx = ex + barW/2 + 2.5;
-      bars += `<text x="0" y="0" font-size="6.5" fill="#000" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(expenseVals[i]).toLocaleString('en-IN')}</text>`;
+      bars += `<text x="0" y="0" font-size="13" fill="#fff" text-anchor="start" transform="translate(${tx.toFixed(1)},${(baseline-3).toFixed(1)}) rotate(-90)">${Math.round(expenseVals[i]).toLocaleString('en-IN')}</text>`;
     }
     bars += `<text x="${(gx+groupW/2).toFixed(1)}" y="${height-8}" font-size="7.5" fill="#6B6055" text-anchor="middle">${m.label}</text>`;
   });
@@ -1874,6 +1914,7 @@ function renderSummary(){
 
   return `
     ${renderIncomeExpenseBarChart()}
+    ${renderLastFourMonthSummary()}
 
     <div class="section-title" style="margin-top:0;"><span style="font-weight:700; color:var(--green);">${t('incomeExpenseSectionTitle')}</span></div>
     <div class="summary-cards">
@@ -3102,7 +3143,7 @@ function renderMedicineList(){
 
 function openAddMedicine(){
   if(!canEdit()){ showToast(t('noPermission')); return; }
-  state.medInfoModal = { mode:'add', id:null, name:'', details:'', pricePerPcs:'', intervalDays:'1', consumptionPcs:'1' };
+  state.medInfoModal = { mode:'add', id:null, name:'', details:'', pricePerPcs:'', intervalDays:'1', consumptionPcs:'1', nextConsumptionDate: addDaysToDateStr(bdEffectiveDate(), 1) };
   render();
 }
 
@@ -3110,7 +3151,9 @@ function openEditMedicineInfo(id){
   if(!canEdit()){ showToast(t('noPermission')); return; }
   requestPasswordConfirm(()=>{
     const med = data.medicines.find(x=>x.id===id);
-    state.medInfoModal = { mode:'edit', id, name:med.name, details:med.details||'', pricePerPcs:String(med.pricePerPcs||''), intervalDays:String(med.intervalDays||1), consumptionPcs:String(med.consumptionPcs||1) };
+    const interval = Math.max(1, parseInt(med.intervalDays)||1);
+    const nextDate = med.lastConsumedDate ? addDaysToDateStr(med.lastConsumedDate, interval) : addDaysToDateStr(bdEffectiveDate(), interval);
+    state.medInfoModal = { mode:'edit', id, name:med.name, details:med.details||'', pricePerPcs:String(med.pricePerPcs||''), intervalDays:String(med.intervalDays||1), consumptionPcs:String(med.consumptionPcs||1), nextConsumptionDate: nextDate };
     render();
   });
 }
@@ -3147,19 +3190,22 @@ async function saveMedInfoModal(){
     const priceInput = document.getElementById('med-price-input');
     const intervalInput = document.getElementById('med-interval-input');
     const consInput = document.getElementById('med-consumption-input');
+    const nextDateInput = document.getElementById('med-nextdate-input');
     const name = nameInput.value.trim();
     if(!name){ showToast(t('enterName')); return; }
     const details = detailsInput.value.trim();
     const pricePerPcs = parseFloat(normalizeDigits(priceInput.value)) || 0;
     const intervalDays = Math.max(1, parseInt(normalizeDigits(intervalInput.value)) || 1);
     const consumptionPcs = parseFloat(normalizeDigits(consInput.value)) || 1;
+    const nextConsumptionDate = nextDateInput.value || addDaysToDateStr(bdEffectiveDate(), intervalDays);
+    const lastConsumedDate = addDaysToDateStr(nextConsumptionDate, -intervalDays);
     if(m.mode === 'add'){
-      data.medicines.push({ id: uid(), name, details, pricePerPcs, intervalDays, consumptionPcs, active:true, stock:0, lastConsumedDate:null, records:[], createdAt: Date.now() });
+      data.medicines.push({ id: uid(), name, details, pricePerPcs, intervalDays, consumptionPcs, active:true, stock:0, lastConsumedDate, records:[], createdAt: Date.now() });
       showToast(t('entryAdded'));
     }else{
       const med = data.medicines.find(x=>x.id===m.id);
       if(!med){ showToast(t('profileNotFoundErr')); return; }
-      med.name=name; med.details=details; med.pricePerPcs=pricePerPcs; med.intervalDays=intervalDays; med.consumptionPcs=consumptionPcs;
+      med.name=name; med.details=details; med.pricePerPcs=pricePerPcs; med.intervalDays=intervalDays; med.consumptionPcs=consumptionPcs; med.lastConsumedDate=lastConsumedDate;
       showToast(t('entryUpdated'));
     }
     await saveData();
@@ -3192,6 +3238,10 @@ function renderMedInfoModal(){
         <div class="field">
           <label>${t('intervalDaysLabel')}</label>
           <input id="med-interval-input" type="number" inputmode="numeric" value="${escapeHtml(m.intervalDays)}" placeholder="1">
+        </div>
+        <div class="field">
+          <label>${t('nextConsumptionDateLabel')}</label>
+          <input id="med-nextdate-input" type="date" value="${escapeHtml(m.nextConsumptionDate||'')}">
         </div>
         <div class="field">
           <label>${t('consumptionPcsLabel')}</label>
@@ -3249,6 +3299,7 @@ function renderMedicineDetail(){
       <div class="hp-info-row"><span>${t('intervalDaysLabel')}</span><span>${med.intervalDays} ${t('daysUnit')}</span></div>
       <div class="hp-info-row"><span>${t('consumptionPcsLabel')}</span><span>${med.consumptionPcs} pcs</span></div>
       <div class="hp-info-row"><span>${t('consumptionAmountLabel')}</span><span>${fmtAmt((med.consumptionPcs||0) * (med.pricePerPcs||0))}</span></div>
+      <div class="hp-info-row"><span>${t('nextConsumptionDateLabel')}</span><span>${med.lastConsumedDate ? fmtDate(addDaysToDateStr(med.lastConsumedDate, Math.max(1, parseInt(med.intervalDays)||1))) : '-'}</span></div>
       <div class="hp-info-row"><span>${t('presentStock')}</span><span style="font-weight:700;">${med.stock||0} pcs</span></div>
       <div class="hp-info-row"><span>${t('runsOutIn')}</span><span style="font-weight:700;">${days!=null ? days+' '+t('daysUnit') : '-'}</span></div>
       <div style="text-align:center; margin-top:14px;">
